@@ -1,0 +1,12 @@
+{
+  "status": "ok",
+  "version": "1.1.0",
+  "provider": "anthropic",
+  "features": { "web_search": true },
+  "budget": {
+    "requests_remaining": 180,
+    "tokens_remaining": 412000,
+    "web_searches_remaining": 18,
+    "resets_at": "2026-10-09T00:00:00+09:00"
+  }
+}

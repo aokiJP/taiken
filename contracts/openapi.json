@@ -1,0 +1,373 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Taiken Backend API",
+    "version": "1.1.0",
+    "description": "体験生成AIのBackend。iOSアプリだけが呼ぶ前提の非公開API。キーは snake_case。このファイルが契約の正であり、Backend と iOS (TaikenCore) の両方のテストがフィクスチャと実際の出力をこのスキーマで検証する。"
+  },
+  "servers": [{ "url": "http://localhost:8787" }],
+  "security": [{ "bearer": [] }],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "生存確認 (認証不要・情報は最小限)",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Health" } } }
+          }
+        }
+      }
+    },
+    "/v1/status": {
+      "get": {
+        "summary": "接続テスト・機能と今日の残り予算",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StatusResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/v1/experience": {
+      "post": {
+        "summary": "状況を整理し、体験を1つ提案する",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ExperienceRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ExperienceResponse" } } }
+          },
+          "400": { "$ref": "#/components/responses/Error" },
+          "401": { "$ref": "#/components/responses/Error" },
+          "413": { "$ref": "#/components/responses/Error" },
+          "429": { "$ref": "#/components/responses/Error" },
+          "503": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    },
+    "/v1/chat": {
+      "post": {
+        "summary": "会話への返答 (必要なときだけ体験を提案)",
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ChatRequest" } } }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ChatResponse" } } }
+          },
+          "400": { "$ref": "#/components/responses/Error" },
+          "401": { "$ref": "#/components/responses/Error" },
+          "429": { "$ref": "#/components/responses/Error" },
+          "503": { "$ref": "#/components/responses/Error" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearer": { "type": "http", "scheme": "bearer", "description": "Backendの CLIENT_TOKENS に登録したトークン。AI APIキーとは別物。" }
+    },
+    "responses": {
+      "Error": {
+        "description": "エラー",
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" } } }
+      }
+    },
+    "schemas": {
+      "Basis": {
+        "description": "calendar=予定に書かれた事実 / stated=ユーザーが言った事実 / inferred=AIの推測",
+        "type": "string",
+        "enum": ["calendar", "stated", "inferred"]
+      },
+      "Rating": { "type": "string", "enum": ["positive", "neutral", "negative"] },
+      "Reaction": { "type": "string", "enum": ["accepted", "alternative", "declined", "completed"] },
+      "Difficulty": { "type": "string", "enum": ["low", "medium", "high"] },
+      "Source": {
+        "description": "ai=AIが生成 / mock=Backendのモック / fallback=AIが使えずBackendが代替生成",
+        "type": "string",
+        "enum": ["ai", "mock", "fallback"]
+      },
+      "FallbackReason": {
+        "description": "source=fallback のときの理由。それ以外は null",
+        "type": ["string", "null"],
+        "enum": ["budget_exceeded", "upstream_error", "invalid_output", "unsafe_output", "circuit_open", "busy", null]
+      },
+      "Observation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text", "basis"],
+        "properties": {
+          "text": { "type": "string" },
+          "basis": { "$ref": "#/components/schemas/Basis" }
+        }
+      },
+      "Experience": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "perspective", "invitation", "reason", "difficulty", "tags"],
+        "properties": {
+          "title": { "type": "string" },
+          "perspective": { "type": "string" },
+          "invitation": { "type": "string" },
+          "reason": { "type": "string" },
+          "difficulty": { "$ref": "#/components/schemas/Difficulty" },
+          "tags": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "CalendarItem": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "start", "end", "is_all_day", "day"],
+        "properties": {
+          "title": { "type": ["string", "null"], "description": "タイトル送信を許可していない場合は null" },
+          "start": { "type": "string", "format": "date-time" },
+          "end": { "type": ["string", "null"], "format": "date-time" },
+          "is_all_day": { "type": "boolean" },
+          "day": { "type": "string", "enum": ["today", "tomorrow"] }
+        }
+      },
+      "ExperienceRef": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title"],
+        "properties": {
+          "title": { "type": "string" },
+          "theme": { "type": ["string", "null"] },
+          "reaction": { "anyOf": [{ "$ref": "#/components/schemas/Reaction" }, { "type": "null" }] },
+          "rating": { "anyOf": [{ "$ref": "#/components/schemas/Rating" }, { "type": "null" }] },
+          "date": { "type": ["string", "null"] }
+        }
+      },
+      "FeedbackSignal": {
+        "description": "最近の反応の傾向 (性格分類ではない)。weight は傾向の強さ 0〜1",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["tag", "rating"],
+        "properties": {
+          "tag": { "type": "string" },
+          "rating": { "$ref": "#/components/schemas/Rating" },
+          "weight": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      },
+      "Area": {
+        "description": "おおよその地域 (市区町村レベル)。位置情報を許可したときだけ送る。座標は送らない",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["locality", "administrative_area", "country_code"],
+        "properties": {
+          "locality": { "type": ["string", "null"] },
+          "administrative_area": { "type": ["string", "null"] },
+          "country_code": { "type": ["string", "null"] }
+        }
+      },
+      "ExperienceRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["current_time"],
+        "properties": {
+          "current_time": { "type": "string", "format": "date-time" },
+          "time_zone": { "type": "string" },
+          "locale": { "type": "string" },
+          "calendar_context": { "type": "array", "items": { "$ref": "#/components/schemas/CalendarItem" } },
+          "recent_user_messages": { "type": "array", "items": { "type": "string" } },
+          "recent_experiences": { "type": "array", "items": { "$ref": "#/components/schemas/ExperienceRef" } },
+          "user_feedback": { "type": "array", "items": { "$ref": "#/components/schemas/FeedbackSignal" } },
+          "exclude_titles": { "type": "array", "items": { "type": "string" } },
+          "area": { "anyOf": [{ "$ref": "#/components/schemas/Area" }, { "type": "null" }] },
+          "allow_web_search": { "type": "boolean", "description": "ユーザーが必要時のWeb検索を許可しているか" }
+        }
+      },
+      "Situation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["summary", "observations"],
+        "properties": {
+          "summary": { "type": "string" },
+          "observations": { "type": "array", "items": { "$ref": "#/components/schemas/Observation" } }
+        }
+      },
+      "DetectedAction": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "basis"],
+        "properties": {
+          "label": { "type": "string" },
+          "basis": { "$ref": "#/components/schemas/Basis" }
+        }
+      },
+      "PossibleObligation": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["label", "likelihood"],
+        "properties": {
+          "label": { "type": "string" },
+          "likelihood": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      },
+      "NotificationContent": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "body"],
+        "properties": {
+          "title": { "type": "string" },
+          "body": { "type": "string" }
+        }
+      },
+      "Reference": {
+        "description": "Web検索で参考にしたページ (タイトルとURLのみ)",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["title", "url"],
+        "properties": {
+          "title": { "type": "string" },
+          "url": { "type": "string" }
+        }
+      },
+      "ExperienceResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "situation",
+          "detected_actions",
+          "possible_obligations",
+          "experience_opportunities",
+          "is_obligation",
+          "confidence",
+          "experience",
+          "should_notify",
+          "notification",
+          "references",
+          "source",
+          "fallback_reason"
+        ],
+        "properties": {
+          "situation": { "$ref": "#/components/schemas/Situation" },
+          "detected_actions": { "type": "array", "items": { "$ref": "#/components/schemas/DetectedAction" } },
+          "possible_obligations": { "type": "array", "items": { "$ref": "#/components/schemas/PossibleObligation" } },
+          "experience_opportunities": { "type": "array", "items": { "type": "string" } },
+          "is_obligation": { "type": "boolean" },
+          "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+          "experience": { "$ref": "#/components/schemas/Experience" },
+          "should_notify": { "type": "boolean" },
+          "notification": { "anyOf": [{ "$ref": "#/components/schemas/NotificationContent" }, { "type": "null" }] },
+          "references": { "type": "array", "items": { "$ref": "#/components/schemas/Reference" } },
+          "source": { "$ref": "#/components/schemas/Source" },
+          "fallback_reason": { "$ref": "#/components/schemas/FallbackReason" }
+        }
+      },
+      "ChatTurn": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["role", "text"],
+        "properties": {
+          "role": { "type": "string", "enum": ["user", "assistant"] },
+          "text": { "type": "string" }
+        }
+      },
+      "ChatRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["current_time", "messages"],
+        "properties": {
+          "current_time": { "type": "string", "format": "date-time" },
+          "time_zone": { "type": "string" },
+          "locale": { "type": "string" },
+          "messages": { "type": "array", "items": { "$ref": "#/components/schemas/ChatTurn" } },
+          "calendar_context": { "type": "array", "items": { "$ref": "#/components/schemas/CalendarItem" } },
+          "current_experience": { "anyOf": [{ "$ref": "#/components/schemas/ExperienceRef" }, { "type": "null" }] }
+        }
+      },
+      "ChatResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reply", "observations", "suggest_experience", "experience", "needs_care", "source", "fallback_reason"],
+        "properties": {
+          "reply": { "type": "string" },
+          "observations": { "type": "array", "items": { "$ref": "#/components/schemas/Observation" } },
+          "suggest_experience": { "type": "boolean" },
+          "experience": { "anyOf": [{ "$ref": "#/components/schemas/Experience" }, { "type": "null" }] },
+          "needs_care": {
+            "type": "boolean",
+            "description": "強い苦痛がうかがえる場合 true。アプリは体験の提案を出さず、相談先への案内を表示する"
+          },
+          "source": { "$ref": "#/components/schemas/Source" },
+          "fallback_reason": { "$ref": "#/components/schemas/FallbackReason" }
+        }
+      },
+      "Health": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status"],
+        "properties": { "status": { "type": "string", "enum": ["ok"] } }
+      },
+      "StatusResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status", "version", "provider", "features", "budget"],
+        "properties": {
+          "status": { "type": "string", "enum": ["ok"] },
+          "version": { "type": "string" },
+          "provider": { "type": "string", "enum": ["anthropic", "mock"] },
+          "features": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["web_search"],
+            "properties": { "web_search": { "type": "boolean" } }
+          },
+          "budget": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["requests_remaining", "tokens_remaining", "web_searches_remaining", "resets_at"],
+            "properties": {
+              "requests_remaining": { "type": "integer", "minimum": 0 },
+              "tokens_remaining": { "type": "integer", "minimum": 0 },
+              "web_searches_remaining": { "type": "integer", "minimum": 0 },
+              "resets_at": { "type": "string", "format": "date-time" }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["error"],
+        "properties": {
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["code", "message"],
+            "properties": {
+              "code": {
+                "type": "string",
+                "enum": [
+                  "bad_request",
+                  "unauthorized",
+                  "not_found",
+                  "method_not_allowed",
+                  "payload_too_large",
+                  "unsupported_media_type",
+                  "rate_limited",
+                  "busy",
+                  "upstream_unavailable",
+                  "internal"
+                ]
+              },
+              "message": { "type": "string" },
+              "retry_after_seconds": { "type": "integer", "minimum": 1 },
+              "request_id": { "type": "string" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

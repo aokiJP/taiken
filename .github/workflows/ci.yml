@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (型検査・テスト・カバレッジ)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test:coverage
+      - name: 本番設定の検証 (キー無しでは起動しないこと)
+        run: |
+          set +e
+          NODE_ENV=production node src/index.ts
+          test $? -eq 78
+
+  backend-image:
+    name: Backend (Docker イメージ)
+    runs-on: ubuntu-latest
+    needs: backend
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t taiken-backend:ci backend
+      - name: 起動とヘルスチェック
+        run: |
+          docker run -d --name taiken -p 8787:8787 \
+            -e AI_PROVIDER=mock -e CLIENT_TOKENS=ci-token-0123456789abcdefghijklmnop taiken-backend:ci
+          for i in $(seq 1 20); do curl -fsS http://127.0.0.1:8787/health && exit 0; sleep 1; done
+          docker logs taiken; exit 1
+
+  ios-core:
+    name: iOS 中核 (Swift 6 / Linux)
+    runs-on: ubuntu-latest
+    container: swift:6.2
+    steps:
+      - uses: actions/checkout@v4
+      - run: swift test
+        working-directory: ios/TaikenCore
+
+  ios-app:
+    name: iOS アプリ (ビルド・テスト)
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - run: brew install xcodegen
+      - run: xcodegen generate
+        working-directory: ios
+      - name: 中核パッケージのテスト (macOS)
+        run: swift test
+        working-directory: ios/TaikenCore
+      - name: アプリのビルドとテスト (シミュレータ)
+        working-directory: ios
+        run: |
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c "import json,sys; d=json.load(sys.stdin)['devices']; print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          set -o pipefail
+          xcodebuild test -project Taiken.xcodeproj -scheme Taiken \
+            -destination "id=$DEVICE" CODE_SIGNING_ALLOWED=NO | tail -n 50

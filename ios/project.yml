@@ -1,0 +1,77 @@
+# XcodeGen 定義: `brew install xcodegen && xcodegen generate` で Taiken.xcodeproj を生成
+name: Taiken
+options:
+  bundleIdPrefix: com.example.taiken
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+configFiles:
+  Debug: Config/Debug.xcconfig
+  Release: Config/Release.xcconfig
+settings:
+  base:
+    MARKETING_VERSION: "1.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # アプリ層は Swift 5 モード + 並行性チェックは警告として全面有効 (中核パッケージは Swift 6 モード)
+    SWIFT_VERSION: "5.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    DEAD_CODE_STRIPPING: YES
+packages:
+  TaikenCore:
+    path: TaikenCore
+targets:
+  Taiken:
+    type: application
+    platform: iOS
+    sources:
+      - Taiken
+    dependencies:
+      - package: TaikenCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(TAIKEN_BUNDLE_ID)
+        TARGETED_DEVICE_FAMILY: "1"
+        DEVELOPMENT_TEAM: $(TAIKEN_DEVELOPMENT_TEAM)
+        CODE_SIGN_STYLE: Automatic
+    info:
+      path: Taiken/Info.plist
+      properties:
+        CFBundleDisplayName: 体験
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        ITSAppUsesNonExemptEncryption: false
+        NSCalendarsFullAccessUsageDescription: 今日と明日の予定から、いつもの行動を少し違う視点で体験する提案をつくるために使います。送るのは予定の時間とタイトルだけです。
+        NSLocationWhenInUseUsageDescription: 天気など地域の情報が体験づくりに役立つときに、おおよその地域 (市区町村) を知るために使います。座標は送信しません。
+        NSLocationDefaultAccuracyReduced: true
+        UIBackgroundModes: [fetch]
+        BGTaskSchedulerPermittedIdentifiers: [com.example.taiken.refresh]
+        DevelopmentBackendURL: $(DEVELOPMENT_BACKEND_URL)
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+  TaikenTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - TaikenTests
+    dependencies:
+      - target: Taiken
+      - package: TaikenCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(TAIKEN_BUNDLE_ID).tests
+        DEVELOPMENT_TEAM: $(TAIKEN_DEVELOPMENT_TEAM)
+schemes:
+  Taiken:
+    build:
+      targets:
+        Taiken: all
+        TaikenTests: [test]
+    test:
+      gatherCoverageData: true
+      coverageTargets: [Taiken]
+      targets:
+        - TaikenTests

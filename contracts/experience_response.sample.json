@@ -1,0 +1,53 @@
+{
+  "situation": {
+    "summary": "夕方。19時から数学の課題の予定があり、少し疲れているとのこと。",
+    "observations": [
+      {
+        "text": "19:00〜20:30に「数学の課題」の予定がある",
+        "basis": "calendar"
+      },
+      {
+        "text": "今日は疲れていると話していた",
+        "basis": "stated"
+      },
+      {
+        "text": "長い作業は負担に感じやすいかもしれない",
+        "basis": "inferred"
+      }
+    ]
+  },
+  "detected_actions": [
+    {
+      "label": "数学の課題に取り組む",
+      "basis": "calendar"
+    }
+  ],
+  "possible_obligations": [
+    {
+      "label": "課題を提出に向けて進める必要がある可能性",
+      "likelihood": 0.7
+    }
+  ],
+  "experience_opportunities": [
+    "解けた問題より、つまずいた瞬間に注目する",
+    "昨日の自分との違いを探す"
+  ],
+  "is_obligation": true,
+  "confidence": 0.74,
+  "experience": {
+    "title": "つまずきの観察",
+    "perspective": "課題を「終わらせる作業」ではなく、自分がどこで手を止めるかを観察する時間として見てみる。",
+    "invitation": "今日の課題で、いちばん手が止まった瞬間を1つだけ覚えておいてみませんか？",
+    "reason": "疲れている日でも、量ではなく気づきに目を向けると取り組みやすいかもしれないため。",
+    "difficulty": "low",
+    "tags": [
+      "new_perspective",
+      "short"
+    ]
+  },
+  "should_notify": false,
+  "notification": null,
+  "references": [],
+  "source": "ai",
+  "fallback_reason": null
+}

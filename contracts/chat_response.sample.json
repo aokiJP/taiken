@@ -1,0 +1,28 @@
+{
+  "reply": "面倒だと感じながらも始めようとしているんですね。よければ、今日の宿題を少しだけ違う角度から見る提案をしてみましょうか？",
+  "observations": [
+    {
+      "text": "これから宿題をする",
+      "basis": "stated"
+    },
+    {
+      "text": "宿題を面倒に感じている",
+      "basis": "stated"
+    }
+  ],
+  "suggest_experience": true,
+  "experience": {
+    "title": "一問だけの探偵",
+    "perspective": "宿題全体ではなく、一問を「なぜこの答えになるのか」を探る対象として見る。",
+    "invitation": "今日の宿題の中から、気になる一問だけ「なぜ？」を深掘りしてみませんか？",
+    "reason": "面倒さを全体に感じているとき、焦点を一つに絞ると始めやすいかもしれないため。",
+    "difficulty": "low",
+    "tags": [
+      "new_perspective",
+      "short"
+    ]
+  },
+  "needs_care": false,
+  "source": "ai",
+  "fallback_reason": null
+}

@@ -1,0 +1,6 @@
+// 全構成で共通の値。個人の値は Local.xcconfig (gitに入れない) で上書きする。
+// Local.xcconfig の例:
+//   TAIKEN_BUNDLE_ID = jp.yourname.taiken
+//   TAIKEN_DEVELOPMENT_TEAM = ABCDE12345
+TAIKEN_BUNDLE_ID = com.example.taiken.app
+TAIKEN_DEVELOPMENT_TEAM =

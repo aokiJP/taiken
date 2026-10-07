@@ -1,0 +1,11 @@
+{
+  "current_time": "2026-10-08T18:12:00+09:00",
+  "time_zone": "Asia/Tokyo",
+  "locale": "ja-JP",
+  "messages": [
+    { "role": "assistant", "text": "こんばんは。今日はどんな一日でしたか？" },
+    { "role": "user", "text": "今から宿題する。面倒だけど" }
+  ],
+  "calendar_context": [],
+  "current_experience": null
+}

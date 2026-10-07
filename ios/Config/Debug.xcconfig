@@ -1,0 +1,9 @@
+// 開発用設定。xcconfig では "//" がコメント扱いになるため $() を挟む。
+#include "Shared.xcconfig"
+
+// 設定画面で接続先を保存するまでの、開発用の既定の接続先 (秘密情報ではない)。
+// シミュレータ → Mac で動かしている Backend。実機なら Mac の IP や Tailscale のホスト名に変える。
+DEVELOPMENT_BACKEND_URL = http:/$()/localhost:8787
+
+// 個人の値 (Team ID・バンドルID) はここで上書きする。gitに入れない
+#include? "Local.xcconfig"

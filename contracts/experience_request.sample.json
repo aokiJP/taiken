@@ -1,0 +1,52 @@
+{
+  "current_time": "2026-10-08T18:10:00+09:00",
+  "time_zone": "Asia/Tokyo",
+  "locale": "ja-JP",
+  "calendar_context": [
+    {
+      "title": "数学の課題",
+      "start": "2026-10-08T19:00:00+09:00",
+      "end": "2026-10-08T20:30:00+09:00",
+      "is_all_day": false,
+      "day": "today"
+    },
+    {
+      "title": null,
+      "start": "2026-10-09T09:00:00+09:00",
+      "end": "2026-10-09T10:00:00+09:00",
+      "is_all_day": false,
+      "day": "tomorrow"
+    }
+  ],
+  "recent_user_messages": [
+    "今日ちょっと疲れた"
+  ],
+  "recent_experiences": [
+    {
+      "title": "通学路の音を数える",
+      "theme": "移動",
+      "reaction": "accepted",
+      "rating": "positive",
+      "date": "2026-10-07"
+    }
+  ],
+  "user_feedback": [
+    {
+      "tag": "new_perspective",
+      "rating": "positive",
+      "weight": 0.8
+    },
+    {
+      "tag": "long_duration",
+      "rating": "negative",
+      "weight": 0.5
+    }
+  ],
+  "exclude_titles": [],
+  "area": {
+    "locality": "堺市",
+    "administrative_area": "大阪府",
+    "country_code": "JP"
+  },
+  "allow_web_search": true
+}

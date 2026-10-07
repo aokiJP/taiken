@@ -1,0 +1,8 @@
+{
+  "error": {
+    "code": "rate_limited",
+    "message": "リクエストが多すぎます。少し時間をおいてから試してください。",
+    "retry_after_seconds": 30,
+    "request_id": "0b9c6f8e-3c1a-4d5e-9f00-123456789abc"
+  }
+}

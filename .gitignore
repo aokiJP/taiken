@@ -1,0 +1,16 @@
+.DS_Store
+
+# backend
+node_modules/
+backend/.env
+backend/data/
+coverage/
+
+# iOS
+ios/Config/Local.xcconfig
+ios/*.xcodeproj
+ios/build/
+ios/TaikenCore/.build/
+ios/TaikenCore/.swiftpm/
+DerivedData/
+xcuserdata/

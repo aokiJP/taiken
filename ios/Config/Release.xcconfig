@@ -1,0 +1,6 @@
+#include "Shared.xcconfig"
+
+// リリースビルドに既定の接続先は入れない (設定画面で入力し、トークンはキーチェーンへ)
+DEVELOPMENT_BACKEND_URL =
+
+#include? "Local.xcconfig"
