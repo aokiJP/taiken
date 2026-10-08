@@ -8,28 +8,35 @@ final class HomeViewModelTests: XCTestCase {
         HomeViewModel(service: service, assembler: h.assembler, history: h.history, cache: h.cache)
     }
 
-    func testGeneratesOnFirstRefreshAndCaches() async {
-        let h = Harness()
-        let model = make(h)
-        await model.refresh()
-        XCTAssertEqual(model.phase, .ready)
-        XCTAssertEqual(model.proposal?.experience.title, "つまずきの観察")
-        XCTAssertNil(model.notice)
-        XCTAssertEqual(h.cache.load()?.generatedAt, referenceDate)
-        XCTAssertEqual(model.calendarAccess, .granted)
-    }
-
-    func testDoesNotCallAIAgainWhileFresh() async {
+    func testRefreshDoesNotGenerateButAskingDoesAndCaches() async {
         let h = Harness()
         let service = StubService()
         let model = make(h, service: service)
         await model.refresh()
+        XCTAssertEqual(model.stage, .idle)
+        XCTAssertEqual(service.experienceRequests.count, 0)
+        XCTAssertEqual(model.calendarAccess, .granted)
+        await model.requestPrompt()
+        XCTAssertEqual(model.phase, .ready)
+        XCTAssertEqual(model.proposal?.experience.title, "つまずきの観察")
+        XCTAssertNil(model.notice)
+        XCTAssertEqual(h.cache.load()?.generatedAt, referenceDate)
+    }
+
+    func testStalePromptsStepAsideQuietly() async {
+        let h = Harness()
+        let service = StubService()
+        let model = make(h, service: service)
+        await model.requestPrompt()
         h.clock.advance(10 * 60)
         await model.refresh()
-        XCTAssertEqual(service.experienceRequests.count, 1)
-        h.clock.advance(31 * 60)
+        XCTAssertNotNil(model.proposal)
+        h.clock.advance(3 * 3600)
         await model.refresh()
-        XCTAssertEqual(service.experienceRequests.count, 2)
+        XCTAssertNil(model.proposal, "時間のたったきっかけは下げる")
+        XCTAssertEqual(model.stage, .idle)
+        XCTAssertEqual(service.experienceRequests.count, 1, "作り直さない")
+        XCTAssertTrue(h.history.storage.isEmpty, "断ったことにはしない")
     }
 
     /// 通知から開いたときなど、保存された当日の提案をそのまま表示する
@@ -48,7 +55,8 @@ final class HomeViewModelTests: XCTestCase {
         h.cache.save(CachedProposal(generatedAt: referenceDate.addingTimeInterval(-86_400), response: sampleResponse(title: "昨日の体験")))
         let model = make(h)
         await model.refresh()
-        XCTAssertEqual(model.proposal?.experience.title, "つまずきの観察")
+        XCTAssertNil(model.proposal)
+        XCTAssertEqual(model.stage, .idle)
     }
 
     func testFallsBackToLocalWhenOffline() async {

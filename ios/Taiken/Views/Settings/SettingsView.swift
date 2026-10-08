@@ -4,7 +4,7 @@ import UIKit
 import UniformTypeIdentifiers
 
 /// 設定 (指示書 §19: 情報の種類ごとに許可・拒否できる)。
-/// どのしくみが提案をつくっているか、次に何を渡すのかを、いつでも確かめられるようにする
+/// どのしくみがきっかけをつくっているか、次に何を渡すのかを、いつでも確かめられるようにする
 struct SettingsView: View {
     let dependencies: AppDependencies
     @Bindable private var model: SettingsViewModel
@@ -65,13 +65,13 @@ struct SettingsView: View {
                     vaultFiles = []
                 }
             } message: {
-                Text("押した印とひとこと、編んだ体験と結んだ糸が、すべて消えます。接続先・情報の許可・通知の設定は残ります。")
+                Text("押した印とひとこと、身についた技・編んだ技・結んだ糸が、すべて消えます。接続先・情報の許可・通知の設定は残ります。")
             }
         }
         .presentationBackground(Palette.paper)
     }
 
-    // MARK: - 提案のしくみ
+    // MARK: - きっかけのしくみ
 
     private var engineSection: some View {
         Section {
@@ -91,7 +91,7 @@ struct SettingsView: View {
                 LabeledContent("自分のサーバー", value: model.isConfigured ? "接続中" : "未設定")
             }
         } header: {
-            Text("提案のしくみ")
+            Text("きっかけのしくみ")
         } footer: {
             Text(engineFooter)
         }
@@ -100,11 +100,11 @@ struct SettingsView: View {
     private var engineFooter: String {
         switch engineState.engine {
         case .server:
-            "接続を解除すると、端末内のしくみ (Apple Intelligence または体験ライブラリ) に戻ります。サーバーに繋がらないときも、端末内で提案を続けます。"
+            "接続を解除すると、端末内のしくみ (Apple Intelligence または体験ライブラリ) に戻ります。サーバーに繋がらないときも、端末内できっかけを選びます。"
         case .onDevice:
             "サーバーに接続しなくても使えます。端末内のAIの出力にも、サーバーと同じ安全確認をかけています。"
         case .library:
-            "サーバーに接続しなくても、端末内の体験ライブラリ (10の要素の体験の樹) で使えます。iOS 26 以降の対応機種で Apple Intelligence をオンにすると、端末内のAIが提案をつくります。"
+            "サーバーに接続しなくても、端末内の体験ライブラリ (技の樹の稽古) で使えます。iOS 26 以降の対応機種で Apple Intelligence をオンにすると、端末内のAIがきっかけをつくります。"
         }
     }
 
@@ -115,8 +115,8 @@ struct SettingsView: View {
             Toggle("予定を体験づくりに使う", isOn: $useCalendar)
             Toggle("予定のタイトルも使う", isOn: $sendEventTitles)
                 .disabled(!useCalendar)
-            Toggle("最近の会話を提案に使う", isOn: $useChatContext)
-            Toggle("体験帳と反応を提案に使う", isOn: $useHistory)
+            Toggle("最近の会話をきっかけに使う", isOn: $useChatContext)
+            Toggle("体験帳と反応をきっかけに使う", isOn: $useHistory)
             Toggle("おおよその地域を使う", isOn: $useLocation)
                 .onChange(of: useLocation) { _, enabled in
                     guard enabled else { return }
@@ -132,9 +132,9 @@ struct SettingsView: View {
                 Label("次に渡す内容を確かめる", systemImage: "doc.text.magnifyingglass")
             }
         } header: {
-            Text("提案に使う情報")
+            Text("きっかけに使う情報")
         } footer: {
-            Text("予定は今日と明日の時間とタイトルだけを使い、メモ・場所・参加者は読み取りません。地域は市区町村名だけで、座標は使いません。Web検索はサーバー接続時に、天気など外部の情報が本当に必要なときだけ行い、検索語に予定のタイトルや発言は含めません。体験の樹 (灯った体験の名前と要素、その先の芽) は「体験帳と反応を提案に使う」がオンのときだけ使います。会話は保存しません。")
+            Text("予定は今日と明日の時間とタイトルだけを使い、メモ・場所・参加者は読み取りません。地域は市区町村名だけで、座標は使いません。Web検索はサーバー接続時に、天気など外部の情報が本当に必要なときだけ行い、検索語に予定のタイトルや発言は含めません。技の樹 (記したライブラリの体験の名前と要素、身についた技の稽古) は「体験帳と反応をきっかけに使う」がオンのときだけ使います。自分で見つけて記した体験と、ひとことは送りません。会話は保存しません。")
         }
     }
 
@@ -172,7 +172,7 @@ struct SettingsView: View {
         } header: {
             Text("通知")
         } footer: {
-            Text("朝の便りは、決まった時刻に一度だけ、その日の小さな体験のきっかけとして届きます。その日すでに体験に触れていれば届きません。「ちょうどよい時に知らせる」は、ときどき裏側で状況を確かめ、今がよいタイミングで負担にならないときだけ知らせます。どちらも音は鳴らしません。")
+            Text("どちらも、オンにしたときだけ届きます (はじめはオフ)。朝の便りは、決まった時刻に一度だけ、きっかけをひとつ届けます。その日すでに体験に触れていれば届きません。「ちょうどよい時に知らせる」は、ときどき裏側で状況を確かめ、今がよいタイミングで負担にならないときだけ知らせます。どちらも音は鳴らしません。")
         }
     }
 
@@ -237,9 +237,9 @@ struct SettingsView: View {
             if !vaultFiles.isEmpty {
                 ShareLink(
                     item: TreeVaultExport(files: vaultFiles),
-                    preview: SharePreview("体験の樹（Markdown）", image: Image(systemName: "point.3.connected.trianglepath.dotted"))
+                    preview: SharePreview("技の樹（Markdown）", image: Image(systemName: "point.3.connected.trianglepath.dotted"))
                 ) {
-                    Label("体験の樹を書き出す（Markdown）", systemImage: "point.3.connected.trianglepath.dotted")
+                    Label("技の樹を書き出す（Markdown）", systemImage: "point.3.connected.trianglepath.dotted")
                 }
             }
             if let exportData {
@@ -255,7 +255,7 @@ struct SettingsView: View {
         } header: {
             Text("端末内のデータ")
         } footer: {
-            Text("体験帳と体験の樹 (編んだ体験・結んだ糸) は、この端末の中だけにあります。iCloud にも送りません。Markdown で書き出すと、体験ごとのページが [[リンク]] でつながったフォルダになり、Obsidian などのノートアプリで樹のまま開けます。サーバーに接続しているときも、サーバーは会話や予定を保存せず、1日の利用量の数字だけを記録します。")
+            Text("体験帳と技の樹 (身についた技・編んだ技・結んだ糸) は、この端末の中だけにあります。iCloud にも送りません。Markdown で書き出すと、要素・技・記録のページが [[リンク]] でつながったフォルダになり、Obsidian などのノートアプリで樹のまま開けます。サーバーに接続しているときも、サーバーは会話や予定を保存せず、1日の利用量の数字だけを記録します。")
         }
     }
 
@@ -274,7 +274,7 @@ struct SettingsView: View {
         } header: {
             Text("このアプリについて")
         } footer: {
-            Text("体験は、AIが一日を管理するためのものではありません。いつもの一日に、視点をひとつ差し出すためのものです。やるかどうか、どう感じるかは、いつもあなたが決めます。")
+            Text("体験は、AIが出す課題ではありません。自分で生きて、自分で記すものです。AIは、求めたときにきっかけをひとつ差し出すだけ。やるかどうか、どう感じるかは、いつもあなたが決めます。")
         }
     }
 
@@ -352,7 +352,7 @@ struct ConnectionSettingsView: View {
             if model.isConfigured {
                 Button("接続を確かめる") { Task { await model.testSavedConnection() } }
             } else {
-                Label("未設定: 端末内で提案しています", systemImage: "iphone")
+                Label("未設定: 端末内できっかけを選んでいます", systemImage: "iphone")
                     .font(.footnote)
                     .foregroundStyle(Palette.ink2)
             }
@@ -362,7 +362,7 @@ struct ConnectionSettingsView: View {
             VStack(alignment: .leading, spacing: 4) {
                 Label("接続できました（v\(status.version) · \(status.provider == "mock" ? "開発用モック" : "AI")）", systemImage: "checkmark.circle")
                     .foregroundStyle(Palette.ink)
-                Text("今日の残り: 提案 \(status.budget.requestsRemaining)回 · Web検索 \(status.budget.webSearchesRemaining)回")
+                Text("今日の残り: きっかけ \(status.budget.requestsRemaining)回 · Web検索 \(status.budget.webSearchesRemaining)回")
                     .foregroundStyle(Palette.ink2)
                 if !status.features.webSearch {
                     Text("サーバー側でWeb検索は無効です")
@@ -378,9 +378,9 @@ struct ConnectionSettingsView: View {
     }
 }
 
-// MARK: - 体験の樹の書き出し
+// MARK: - 技の樹の書き出し
 
-/// 体験の樹の Markdown 保管庫。共有するときに初めて、フォルダを書いて zip にまとめる
+/// 技の樹の Markdown 保管庫。共有するときに初めて、フォルダを書いて zip にまとめる
 struct TreeVaultExport: Transferable {
     let files: [VaultExporter.File]
 

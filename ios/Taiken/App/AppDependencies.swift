@@ -16,7 +16,7 @@ struct AppConfiguration {
     }
 }
 
-/// 提案をつくるしくみ。画面に正直に表示する
+/// きっかけをつくるしくみ。画面に正直に表示する
 enum ProposalEngine: Equatable, Sendable {
     /// 自分のサーバー (Backend) のAI
     case server
@@ -35,9 +35,9 @@ enum ProposalEngine: Equatable, Sendable {
 
     var detail: String {
         switch self {
-        case .server: "予定や気分を、自分で用意したサーバー経由でAIに渡して提案をつくります。"
-        case .onDevice: "この iPhone の中のAIが提案をつくります。予定や会話は端末の外に出ません。"
-        case .library: "体験ライブラリから、予定・気分・時間帯と、あなたの体験の樹の芽に合うものを選びます。何も外へ送りません。"
+        case .server: "予定や気分を、自分で用意したサーバー経由でAIに渡して、きっかけをつくります。自分で記した体験は渡しません。"
+        case .onDevice: "この iPhone の中のAIが、きっかけをつくります。予定や会話は端末の外に出ません。"
+        case .library: "体験ライブラリから、予定・気分・時間帯と、あなたの技の樹に合う稽古を選びます。何も外へ送りません。"
         }
     }
 
@@ -70,13 +70,15 @@ final class AppRouter {
 
     enum Destination: Hashable {
         case journal
-        /// 体験の樹。focus があれば、その体験を中心に見せる
+        /// 技の樹。focus があれば、その技を中心に見せる
         case tree(focus: String?)
     }
 
     var sheet: Sheet?
     /// 体験帳 → 記録の詳細 と重ねていくので、型を混ぜられる NavigationPath を使う
     var path = NavigationPath()
+    /// 「体験を記す」をひらいてほしい (ショートカット・ウィジェットから)。ホームが受け取ったら false に戻す
+    var recordRequested = false
 
     func openJournal() {
         sheet = nil
@@ -84,7 +86,7 @@ final class AppRouter {
         path.append(Destination.journal)
     }
 
-    /// 体験の樹をひらく (体験帳や記録の上からでも、いま見ている画面に重ねる)
+    /// 技の樹をひらく (体験帳や記録の上からでも、いま見ている画面に重ねる)
     func openTree(focus: String? = nil, fromHome: Bool = true) {
         sheet = nil
         if fromHome { path = NavigationPath() }
@@ -95,6 +97,12 @@ final class AppRouter {
     func returnHome() {
         sheet = nil
         path = NavigationPath()
+    }
+
+    /// ホームに戻って、「体験を記す」をひらく
+    func openRecord() {
+        returnHome()
+        recordRequested = true
     }
 }
 
@@ -143,7 +151,7 @@ final class AppDependencies {
         }
         repository = SwiftDataHistoryRepository(container: container)
 
-        // 端末内の提案: Apple Intelligence が使えればそれを、使えなければ体験ライブラリを使う。
+        // 端末内のきっかけ: Apple Intelligence が使えればそれを、使えなければ体験ライブラリを使う。
         // 端末内のAIの出力にも、サーバーと同じ安全確認をかける (SafeguardedExperienceService)
         let library = LocalExperienceService()
         var localService: any ExperienceService = library
@@ -179,7 +187,7 @@ final class AppDependencies {
         let letterScheduler = letters ?? UserNotificationLetterScheduler()
         self.letters = letterScheduler
 
-        // 自分の樹 (編んだ体験・見つけた体験・結び)。体験帳と同じく、アプリ自身の領域にだけ置く
+        // 自分の樹 (身についた技・編んだ技・結び)。体験帳と同じく、アプリ自身の領域にだけ置く
         let gardenStore: any GardenStore = garden ?? (inMemory ? InMemoryGardenStore() : FileGardenStore.applicationSupport())
         let trees = TreeSource(history: repository, store: gardenStore)
         self.trees = trees
@@ -215,8 +223,8 @@ final class AppDependencies {
         let router = self.router
         tree = TreeViewModel(
             source: trees,
-            onStart: { [weak home] node in
-                home?.begin(node)
+            onStart: { [weak home] experience in
+                home?.begin(experience)
                 router.returnHome()
             },
             onChange: { [weak home] in home?.treeDidChange() }
@@ -286,7 +294,7 @@ final class AppDependencies {
         Task { await scheduler.replaceLetters(with: plan) }
     }
 
-    /// 通知から開かれた: シートを閉じ、保存済みの提案を表示する。「やってみる」なら、そのまま体験を始める。
+    /// 通知から開かれた: シートを閉じ、保存済みのきっかけを表示する。「やってみる」なら、そのまま体験を始める。
     /// 「あとで」はアプリを開かないボタンなので、何もしない (押しつけない)
     func handleNotification(action: String) async {
         guard action != NotificationAction.later, defaults.hasCompletedOnboarding else { return }
@@ -298,7 +306,7 @@ final class AppDependencies {
         rescheduleLetters()
     }
 
-    /// ウィジェット・ショートカットから開かれた (taiken://today, taiken://journal, taiken://tree, taiken://talk)
+    /// ウィジェット・ショートカットから開かれた (taiken://today, taiken://journal, taiken://tree, taiken://talk, taiken://record)
     func open(_ url: URL) {
         guard url.scheme == DeepLink.scheme, defaults.hasCompletedOnboarding else { return }
         switch DeepLink(url: url) {
@@ -310,6 +318,8 @@ final class AppDependencies {
         case .talk:
             router.returnHome()
             router.sheet = .chat
+        case .record:
+            router.openRecord()
         case .today, nil:
             router.returnHome()
             Task { await home.refresh() }
@@ -349,7 +359,7 @@ final class AppDependencies {
     static func make(arguments: [String] = ProcessInfo.processInfo.arguments) -> AppDependencies {
         #if DEBUG
         if arguments.contains("-UITesting") {
-            // 前の実行の提案・ひと休みを持ち越さない。はじめの案内から試すときは、見終えた印も消す
+            // 前の実行のきっかけ・ひと休みを持ち越さない。はじめの案内から試すときは、見終えた印も消す
             let defaults = DefaultsStore()
             defaults.removeAll()
             if arguments.contains("-UITestResetOnboarding") {
@@ -396,18 +406,9 @@ final class AppDependencies {
         return deps
     }
 
-    /// 見本の体験帳と、自分の樹 (編んだ体験と結び)。プレビューと UI テストで使う
+    /// 見本の体験帳と、自分の樹 (身についた技・編んだ技・結び)。プレビューと UI テストで使う
     func seedSamples() {
-        for entry in HistoryEntry.sampleJournal() { try? repository.add(entry) }
-        _ = try? trees.weave(WeaveDraft(
-            title: "湯気のゆくえ",
-            invitation: "温かい飲み物の湯気が、どこまで昇って消えるか見届けてみませんか？",
-            perspective: "飲み物の時間を、湯気を見送る時間として過ごす。",
-            reflectionQuestion: "湯気は、どこで見えなくなりましたか？",
-            elements: ["see", "pause"],
-            growsFrom: "root-see"
-        ))
-        _ = try? trees.tie("meal-first-bite", "rest-far", note: "どちらも、思ったより長く見ていた")
+        trees.plantSamples()
         history.reload()
         tree.reload()
         home.treeDidChange()

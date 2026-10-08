@@ -239,7 +239,7 @@ test('モック: 灯った体験の先の芽から選び、どこから伸びた
   );
   assert.equal(out.experience.node_id, 'taste-water');
   assert.equal(out.experience.grows_from, 'meal-first-bite');
-  assert.equal(out.experience.reason, '前に記した「ひと口目の観察」の先にある体験です。');
+  assert.equal(out.experience.reason, 'あなたの技の樹にある、技の稽古になる体験です。');
   assert.ok(out.situation.observations.some((o) => o.text === '体験帳に「ひと口目の観察」が記されている'));
   assert.deepEqual(contractErrors('ExperienceResponse', out), []);
 });

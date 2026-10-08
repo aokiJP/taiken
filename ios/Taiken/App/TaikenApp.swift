@@ -24,9 +24,9 @@ struct TaikenApp: App {
         .onChange(of: scenePhase) { _, phase in
             switch phase {
             case .active:
-                // はじめの案内の途中では、まだ提案を作らない
+                // はじめの案内の途中では、まだ何もしない
                 guard dependencies.defaults.hasCompletedOnboarding else { return }
-                // 戻ってきたとき、古い提案だけ作り直す (毎回AIを呼ばない)
+                // 戻ってきたとき、樹と今日の印を読み直す (きっかけは求められたときだけ作る)
                 Task {
                     await dependencies.home.refresh()
                     dependencies.rescheduleLetters()

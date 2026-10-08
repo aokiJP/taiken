@@ -32,6 +32,16 @@ public struct ElementClassifier: Sendable {
         return [fallback(tags: tags)]
     }
 
+    /// 自分で記す言葉から、触れた要素を推し量る (1〜3個)。手がかりが無ければ空 (自分で選んでもらう)
+    public func suggest(for text: String) -> [String] {
+        let words = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !words.isEmpty else { return [] }
+        let hasClue = content.elements.contains { element in
+            element.keywords.contains { !$0.isEmpty && words.contains($0) }
+        }
+        return hasClue ? classify(title: words, invitation: "", perspective: "", tags: []) : []
+    }
+
     func fallback(tags: [String]) -> String {
         let byTag: [(String, String)] = [
             ("social", "people"), ("creative", "word"), ("question", "think"), ("reflection", "think"),

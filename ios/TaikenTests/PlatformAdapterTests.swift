@@ -53,10 +53,21 @@ final class SwiftDataHistoryRepositoryTests: XCTestCase {
         )
         let home = HomeViewModel(service: LocalExperienceService(), assembler: assembler, history: repo, cache: InMemoryProposalCache())
         await home.refresh()
+        XCTAssertNil(home.proposal, "きっかけは、求められたときだけ")
+        await home.requestPrompt()
         home.tryIt()
         XCTAssertNotNil(home.activeEntry)
         home.finish(rating: .positive)
         XCTAssertEqual(repo.entries(since: nil, limit: nil).first?.rating, .positive)
+
+        // 自分で見つけた体験を記す (誘いかけの無い記録も、SwiftData にそのまま残る)
+        home.dismissCompleted()
+        home.record(LivedDraft(text: "帰り道、パン屋の前で足が止まった", elements: ["smell", "move"]))
+        let lived = repo.entries(since: nil, limit: nil).first
+        XCTAssertEqual(lived?.title, "帰り道、パン屋の前で足が止まった")
+        XCTAssertEqual(lived?.isSelfRecorded, true)
+        XCTAssertEqual(lived?.status, .completed)
+        XCTAssertEqual(lived?.elements, ["smell", "move"])
     }
 }
 
@@ -113,29 +124,37 @@ final class AppDependenciesTests: XCTestCase {
         XCTAssertTrue(deps.isLocalMode)
         XCTAssertEqual(deps.engineState.engine, .library)
         await deps.home.refresh()
+        XCTAssertNil(deps.home.proposal, "きっかけは、求められたときだけ")
+        await deps.home.requestPrompt()
         XCTAssertEqual(deps.home.proposal?.source, .local)
-        XCTAssertNotNil(deps.home.proposalLineage, "提案には、樹の上の位置が添えられる")
+        XCTAssertNotNil(deps.home.proposalLineage, "きっかけには、樹の上の位置が添えられる")
         deps.deleteAllLocalData()
         XCTAssertNil(deps.home.proposal)
         XCTAssertTrue(deps.history.isEmpty)
-        XCTAssertTrue(deps.trees.garden.isEmpty, "編んだ体験と結びも消える")
-        XCTAssertTrue(deps.tree.tree.litNodes.isEmpty)
+        XCTAssertTrue(deps.trees.garden.isEmpty, "身についた技・編んだ技・結びも消える")
+        XCTAssertTrue(deps.tree.tree.learnedNodes.isEmpty)
+        XCTAssertEqual(deps.tree.tree.totalRank, 0)
     }
 
-    func testSeededTreeHasWovenNodeAndTie() throws {
+    func testSeededTreeHasLearnedSkillsWovenSkillAndTie() throws {
         let deps = AppDependencies.preview()
-        let woven = deps.tree.tree.nodes.first { $0.kind == .woven }
-        XCTAssertEqual(woven?.title, "湯気のゆくえ")
-        XCTAssertEqual(woven?.parentID, "root-see")
-        XCTAssertEqual(deps.tree.tied(to: "rest-far").map(\.node.id), ["meal-first-bite"])
-        XCTAssertFalse(deps.tree.tree.litNodes.isEmpty, "見本の体験帳で、樹に灯りがある")
+        let tree = deps.tree.tree
+        let woven = try XCTUnwrap(tree.nodes.first { $0.kind == .woven })
+        XCTAssertEqual(woven.title, "湯気のゆくえ")
+        XCTAssertEqual(woven.after, ["see-tomeru"])
+        XCTAssertEqual(tree.state(of: woven.id), .learned)
+        XCTAssertEqual(deps.tree.tied(to: "see-tomeru").map(\.node.id), ["taste-hitokuchi"])
+        XCTAssertTrue(tree.learnedNodes.contains { $0.id == "flash-hibiki" }, "糸を結ぶと、響き合いが閃く")
+        XCTAssertFalse(tree.sproutingElements.isEmpty, "見本では、芽を残しておく")
         XCTAssertFalse(deps.history.vaultFiles().isEmpty)
 
-        // 樹から体験を始めると、ホームの「体験中」になり、ホームへ戻る
-        deps.router.openTree(focus: "rest-far")
+        // 技の稽古から体験を始めると、ホームの「体験中」になり、ホームへ戻る
+        deps.router.openTree(focus: "see-tomeru")
         XCTAssertEqual(deps.router.path.count, 1)
-        deps.tree.start(try XCTUnwrap(deps.tree.node("taste-water")))
-        XCTAssertEqual(deps.home.activeEntry?.nodeID, "taste-water")
+        let node = try XCTUnwrap(deps.tree.node("see-tomeru"))
+        let practice = try XCTUnwrap(deps.tree.practices(of: node.id).first)
+        deps.tree.start(practice: practice, for: node)
+        XCTAssertEqual(deps.home.activeEntry?.nodeID, practice.id)
         XCTAssertTrue(deps.router.path.isEmpty)
     }
 
@@ -158,26 +177,31 @@ final class AppDependenciesTests: XCTestCase {
         deps.open(DeepLink.journal.url)
         XCTAssertEqual(deps.router.path.count, 1)
         deps.open(DeepLink.tree.url)
-        XCTAssertEqual(deps.router.path.count, 1, "体験の樹は、ホームの上に開く")
+        XCTAssertEqual(deps.router.path.count, 1, "技の樹は、ホームの上に開く")
         deps.open(DeepLink.talk.url)
         XCTAssertTrue(deps.router.path.isEmpty)
         XCTAssertEqual(deps.router.sheet, .chat)
         deps.open(DeepLink.today.url)
         XCTAssertNil(deps.router.sheet)
+        // 「体験を記す」は、ホームに戻ってから開く
+        deps.router.openJournal()
+        deps.open(DeepLink.record.url)
+        XCTAssertTrue(deps.router.path.isEmpty)
+        XCTAssertTrue(deps.router.recordRequested)
         // 知らない URL は無視する
         deps.open(URL(string: "https://example.com/journal")!)
         XCTAssertNil(deps.router.sheet)
     }
 
     func testDeepLinkRoundTrip() {
-        for link in [DeepLink.today, .journal, .tree, .talk] {
+        for link in [DeepLink.today, .journal, .tree, .talk, .record] {
             XCTAssertEqual(DeepLink(url: link.url), link)
         }
         XCTAssertNil(DeepLink(url: URL(string: "taiken://unknown")!))
     }
 }
 
-/// 古い体験帳 (v1: 問いの無い体験帳・v2: 樹の位置の無い体験帳) から v3 への移行で、記録が失われないこと
+/// 古い体験帳 (v1: 問いの無い体験帳・v2: 樹の位置の無い体験帳) から v3 への移行で、記録が失われないこと (4.0 も v3 のまま)
 @MainActor
 final class SchemaMigrationTests: XCTestCase {
     func testV1StoreOpensWithV3WithoutLosingEntries() throws {
@@ -250,10 +274,13 @@ final class SchemaMigrationTests: XCTestCase {
         XCTAssertEqual(entry.reflectionQuestion, library.reflectionQuestion)
         XCTAssertNil(entry.nodeID, "古い記録には樹の位置が無い")
 
-        // 名前から、樹の上の位置が見つかる
+        // 名前から、ライブラリの体験の要素が見つかり、その要素の経験になる
+        XCTAssertEqual(entry.resolvedElements(), library.elements)
         let tree = TreeBuilder.build(garden: .empty, entries: repo.entries(since: nil, limit: nil))
-        XCTAssertEqual(tree.nodeID(of: entry), "meal-first-bite")
-        XCTAssertEqual(tree.state(of: "meal-first-bite"), .lit)
+        for element in library.elements {
+            XCTAssertEqual(tree.progress(of: element).experience, 1)
+            XCTAssertEqual(tree.progress(of: element).rank, 1, "一つで一段")
+        }
 
         // v3 では樹の位置と要素も保存できる
         let next = HistoryEntry(

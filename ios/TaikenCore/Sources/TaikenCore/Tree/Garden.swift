@@ -1,36 +1,109 @@
 import Foundation
 
-/// 自分の樹にだけある体験と、体験どうしを結んだ糸。端末の中にだけ置く (体験帳と同じ扱い)。
+/// 自分の樹にだけあるもの。端末の中にだけ置く (体験帳と同じ扱い)。
 ///
-/// - 編んだ体験 (woven): 自分で書いた体験。どの体験から伸ばすかを選べる
-/// - 見つけた体験 (found): AIが新しく作り、自分で「やってみる」を選んだ体験。ライブラリに無いので、ここで樹に植える
-/// - 結び (ties): 灯った体験どうしを、自分で結んだ朱の糸。何が響き合ったかを短く添えられる
+/// - 身についた技 (learned): 芽を使って伸ばした技と、閃いた技。いつ身についたか
+/// - 記録と技 (uses): 記した体験で、どの技を使ったか (自分で選んだもの)
+/// - 編んだ技 (nodes, woven): 自分で名づけて樹に植えた技。3.0 で編んだ体験も、ここに残っている
+/// - 結び (ties): 響き合った技どうしを、自分で結んだ朱の糸
+/// - 見届け (seen): 4.0 にしてから、樹の伸びを見せたか
+///
+/// 経験と段は体験帳から毎回数え直すので、ここには置かない (食い違う二つの真実を持たない)。
 public struct Garden: Codable, Sendable, Equatable {
+    public static let currentVersion = 2
+
     public var version: Int
     public var nodes: [PersonalNode]
     public var ties: [Tie]
+    public var learned: [LearnedSkill]
+    public var uses: [SkillUse]
+    /// 4.0 の樹の伸びを、いちど見届けたか (3.0 から来たときに一度だけ「これまでの体験から」を見せる)
+    public var seen: Bool
 
-    public init(version: Int = 1, nodes: [PersonalNode] = [], ties: [Tie] = []) {
+    public init(
+        version: Int = Garden.currentVersion, nodes: [PersonalNode] = [], ties: [Tie] = [], learned: [LearnedSkill] = [],
+        uses: [SkillUse] = [], seen: Bool = false
+    ) {
         self.version = version
         self.nodes = nodes
         self.ties = ties
+        self.learned = learned
+        self.uses = uses
+        self.seen = seen
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case version, nodes, ties, learned, uses, seen
+    }
+
+    /// 3.0 の形 (version 1: nodes と ties だけ) も読む
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        version = try c.decodeIfPresent(Int.self, forKey: .version) ?? 1
+        nodes = try c.decodeIfPresent([PersonalNode].self, forKey: .nodes) ?? []
+        ties = try c.decodeIfPresent([Tie].self, forKey: .ties) ?? []
+        learned = try c.decodeIfPresent([LearnedSkill].self, forKey: .learned) ?? []
+        uses = try c.decodeIfPresent([SkillUse].self, forKey: .uses) ?? []
+        seen = try c.decodeIfPresent(Bool.self, forKey: .seen) ?? false
     }
 
     public static let empty = Garden()
 
-    public var isEmpty: Bool { nodes.isEmpty && ties.isEmpty }
+    public var isEmpty: Bool { nodes.isEmpty && ties.isEmpty && learned.isEmpty && uses.isEmpty }
 
     public func node(_ id: String) -> PersonalNode? { nodes.first { $0.id == id } }
 
     public func node(titled title: String) -> PersonalNode? { nodes.first { $0.title == title } }
+
+    /// 編んだ技 (3.0 で見つけた体験は、樹には出さない。記録は体験帳に残っている)
+    public var wovenNodes: [PersonalNode] { nodes.filter { $0.kind == .woven } }
+
+    public func learned(_ id: String) -> LearnedSkill? { learned.first { $0.id == id } }
+
+    public func isLearned(_ id: String) -> Bool { learned.contains { $0.id == id } }
+
+    /// 記録に結んだ技
+    public func skills(usedIn entryID: UUID) -> [String] {
+        uses.first { $0.entryID == entryID }?.skills ?? []
+    }
 }
 
-/// 自分の樹にだけある体験
+/// 身についた技
+public struct LearnedSkill: Codable, Sendable, Hashable, Identifiable {
+    public let id: String
+    /// 芽を使った要素 (閃きは芽を使わないので nil)
+    public let element: String?
+    public let learnedAt: Date
+
+    public init(id: String, element: String?, learnedAt: Date) {
+        self.id = id
+        self.element = element
+        self.learnedAt = learnedAt
+    }
+}
+
+/// 記した体験で使った技 (自分で選んだもの。稽古から始めた体験は、選ばなくてもその技に数える)
+public struct SkillUse: Codable, Sendable, Hashable {
+    public let entryID: UUID
+    public var skills: [String]
+
+    public init(entryID: UUID, skills: [String]) {
+        self.entryID = entryID
+        self.skills = skills
+    }
+}
+
+/// 自分の樹にだけある技 (と、3.0 で編んだり見つけたりした体験)
+///
+/// 4.0 では、編んだもの (woven) は「自分で名づけた技」として読む:
+/// - title: 技の名前
+/// - perspective: できるようになること (3.0 の体験で空なら、誘いかけを使う)
+/// - invitation: 自分の稽古 (この技の見方で、いつもの一日を過ごす入口。空でもよい)
 public struct PersonalNode: Codable, Sendable, Hashable, Identifiable {
     public enum Kind: String, Codable, Sendable {
         /// 自分で編んだ
         case woven
-        /// AIが作った体験を、やってみることにした
+        /// 3.0: AIが作った体験を、やってみることにした (4.0 では樹に出さない)
         case found
     }
 
@@ -43,7 +116,7 @@ public struct PersonalNode: Codable, Sendable, Hashable, Identifiable {
     /// 要素の id (先頭が主な要素)
     public var elements: [String]
     public var tags: [String]
-    /// どの体験から伸びているか
+    /// どの技から伸びているか (無ければ要素の根から)
     public var growsFrom: String?
     public let createdAt: Date
 
@@ -63,15 +136,21 @@ public struct PersonalNode: Codable, Sendable, Hashable, Identifiable {
         self.createdAt = createdAt
     }
 
-    /// 新しい id (英小文字と数字。API の id の形に合わせる)
+    /// 新しい id (英小文字と数字)
     public static func makeID(kind: Kind) -> String {
         let prefix = kind == .woven ? "w-" : "f-"
         let raw = UUID().uuidString.lowercased().replacingOccurrences(of: "-", with: "")
         return prefix + String(raw.prefix(12))
     }
+
+    /// 技として読んだときの「できるようになること」
+    public var ability: String {
+        let text = perspective.trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty ? invitation : text
+    }
 }
 
-/// 体験どうしを結んだ糸 (向きは無い)
+/// 技どうしを結んだ糸 (向きは無い)
 public struct Tie: Codable, Sendable, Hashable, Identifiable {
     public let id: UUID
     public let a: String

@@ -96,6 +96,18 @@ public struct HistoryEntry: Codable, Hashable, Sendable, Identifiable {
     /// ユーザーが実際に選んだ体験か (体験帳に出すもの)
     public var wasChosen: Bool { status == .active || status == .completed }
 
+    /// 自分で見つけて記した体験 (きっかけから始めたものではない)。誘いかけを持たない。
+    /// 自分の言葉なので、AIへは送らない (ひとことと同じ扱い)
+    public var isSelfRecorded: Bool { invitation.isEmpty }
+
+    /// 自分で見つけた体験を、記したものとして作る
+    public static func lived(_ draft: LivedDraft, at date: Date, content: TaikenContent = .shared) -> HistoryEntry {
+        HistoryEntry(
+            createdAt: date, finishedAt: date, title: draft.trimmedText, theme: nil, invitation: "", perspective: "", tags: [],
+            status: .completed, elements: Array(content.knownElements(draft.elements).prefix(3))
+        )
+    }
+
     public var experience: Experience {
         Experience(
             title: title, perspective: perspective, invitation: invitation, reason: "", difficulty: .low,

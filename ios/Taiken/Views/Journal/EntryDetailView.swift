@@ -1,10 +1,12 @@
 import SwiftUI
 import TaikenCore
 
-/// 体験帳の1ページ。押した印と、その時間と、残したひとこと。樹の上の場所へも渡れる
+/// 体験帳の1ページ。押した印と、その時間と、残したひとこと。この記録で育った技と、技の樹へも渡れる
 struct EntryDetailView: View {
     let entry: HistoryEntry
-    /// 体験の樹で、この体験の場所をひらく
+    /// この記録で育った技 (稽古から始めたもの・使ったと選んだもの)
+    var skills: [HistoryViewModel.GrownSkill] = []
+    /// 技の樹で、この記録に近い場所をひらく
     let openTree: @MainActor () -> Void
     let onDelete: @MainActor () -> Void
 
@@ -22,8 +24,8 @@ struct EntryDetailView: View {
                         Text(entry.createdAt.formatted(.dateTime.year().month(.wide).day().weekday(.wide)))
                             .font(.footnote)
                             .foregroundStyle(Palette.ink3)
-                        Text(entry.title)
-                            .font(.displayTitle)
+                        Text(entry.isSelfRecorded ? "「\(entry.title)」" : entry.title)
+                            .font(entry.isSelfRecorded ? .sectionTitle : .displayTitle)
                             .foregroundStyle(Palette.ink)
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityAddTraits(.isHeader)
@@ -38,17 +40,19 @@ struct EntryDetailView: View {
                     )
                 }
 
-                Text(entry.invitation)
-                    .font(.invitation)
-                    .lineSpacing(7)
-                    .foregroundStyle(Palette.ink)
-                    .fixedSize(horizontal: false, vertical: true)
+                if !entry.isSelfRecorded {
+                    Text(entry.invitation)
+                        .font(.invitation)
+                        .lineSpacing(7)
+                        .foregroundStyle(Palette.ink)
+                        .fixedSize(horizontal: false, vertical: true)
 
-                Text(entry.perspective)
-                    .font(.footnote)
-                    .lineSpacing(4)
-                    .foregroundStyle(Palette.ink2)
-                    .fixedSize(horizontal: false, vertical: true)
+                    Text(entry.perspective)
+                        .font(.footnote)
+                        .lineSpacing(4)
+                        .foregroundStyle(Palette.ink2)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
                 if let question = entry.reflectionQuestion {
                     LinedBox {
@@ -68,6 +72,13 @@ struct EntryDetailView: View {
                         Text("いま体験中です。終えたら、ホームから記せます。")
                             .font(.footnote)
                             .foregroundStyle(Palette.ink2)
+                    } else if entry.isSelfRecorded {
+                        Text(entry.elementLabels.isEmpty
+                            ? "自分で見つけて、記した体験です。"
+                            : "自分で見つけて、記した体験です。\(entry.elementLabels.joined(separator: "・"))に、経験が積もりました。")
+                            .font(.footnote)
+                            .foregroundStyle(Palette.ink2)
+                            .fixedSize(horizontal: false, vertical: true)
                     } else {
                         if let rating = entry.rating {
                             Label(rating.label, systemImage: rating.symbolName)
@@ -96,6 +107,30 @@ struct EntryDetailView: View {
                         .foregroundStyle(Palette.ink3)
                 }
 
+                if !skills.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        MiniHead("この記録で育った技")
+                        ForEach(skills) { skill in
+                            HStack(spacing: 10) {
+                                SealView(
+                                    character: skill.glyph, size: 26, style: skill.state == .learned ? .outlined : .ghost,
+                                    rotation: -4
+                                )
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(skill.node.title)
+                                        .font(.experienceTitle)
+                                        .foregroundStyle(Palette.ink)
+                                    Text(Self.caption(of: skill.state))
+                                        .font(.caption)
+                                        .foregroundStyle(skill.state == .learned ? Palette.shu : Palette.ink3)
+                                }
+                                Spacer(minLength: 0)
+                            }
+                            .accessibilityElement(children: .combine)
+                        }
+                    }
+                }
+
                 Button(action: openTree) {
                     HStack(spacing: 10) {
                         ForEach(entry.resolvedElements(), id: \.self) { id in
@@ -103,7 +138,7 @@ struct EntryDetailView: View {
                                 ElementMark(glyph: element.glyph, size: 20)
                             }
                         }
-                        Text("体験の樹で、この体験の場所を見る")
+                        Text("技の樹で見る")
                             .font(.callout)
                             .foregroundStyle(Palette.ink)
                         Spacer(minLength: 0)
@@ -140,6 +175,16 @@ struct EntryDetailView: View {
             }
         } message: {
             Text("印と、ひとことが消えます。元に戻せません。")
+        }
+    }
+
+    /// 育った技に添える一文
+    static func caption(of state: NodeState) -> String {
+        switch state {
+        case .learned: "身についた技 · 記録がひとつ重なりました"
+        case .ready: "育てられる技 · この記録が稽古になりました"
+        case .sensed: "気配のある技 · この記録が稽古になりました"
+        case .unknown: ""
         }
     }
 
@@ -208,18 +253,20 @@ struct StampCard: View {
                     SealView(character: entry.sealCharacter, size: 62, style: .filled, rotation: -6)
                 }
                 Spacer(minLength: 16)
-                Text(entry.invitation)
+                Text(entry.isSelfRecorded ? "「\(entry.title)」" : entry.invitation)
                     .font(Typeface.fixedMincho(19, bold: false))
                     .lineSpacing(7)
                     .foregroundStyle(Palette.ink)
                     .fixedSize(horizontal: false, vertical: true)
-                HStack(spacing: 10) {
-                    Rectangle().fill(Palette.ink2.opacity(0.5)).frame(width: 22, height: 1)
-                    Text(entry.title)
-                        .font(Typeface.fixedMincho(14))
-                        .foregroundStyle(Palette.ink2)
+                if !entry.isSelfRecorded {
+                    HStack(spacing: 10) {
+                        Rectangle().fill(Palette.ink2.opacity(0.5)).frame(width: 22, height: 1)
+                        Text(entry.title)
+                            .font(Typeface.fixedMincho(14))
+                            .foregroundStyle(Palette.ink2)
+                    }
+                    .padding(.top, 14)
                 }
-                .padding(.top, 14)
                 if includeNote, let note = entry.note {
                     Text("「\(note)」")
                         .font(Typeface.fixedMincho(14, bold: false))
@@ -243,14 +290,20 @@ struct StampCard: View {
 }
 
 extension HistoryEntry {
-    /// 「夕方に始めた体験」
+    /// 「夕方に始めた体験」「夜に記した体験」
     var momentLine: String {
-        "\(TimeOfDay.at(createdAt, calendar: .current).label)に始めた体験"
+        let label = TimeOfDay.at(createdAt, calendar: .current).label
+        return isSelfRecorded ? "\(label)に記した体験" : "\(label)に始めた体験"
+    }
+
+    /// 「見る」「休む」(触れた要素の名前)
+    var elementLabels: [String] {
+        Array(resolvedElements().prefix(3)).compactMap { TaikenContent.shared.element($0)?.label }
     }
 
     /// 「見る · 休む の体験」(共有カードに添える)
     var elementLine: String {
-        let labels = resolvedElements().compactMap { TaikenContent.shared.element($0)?.label }
+        let labels = elementLabels
         return labels.isEmpty ? "体験帳より" : "\(labels.joined(separator: " · ")) の体験"
     }
 }

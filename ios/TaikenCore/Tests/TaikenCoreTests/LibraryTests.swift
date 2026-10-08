@@ -73,7 +73,7 @@ final class ContentTests: XCTestCase {
         XCTAssertTrue(TaikenContent.minimal.isWellFormed)
         let choice = LibrarySelector(content: .minimal).choose(LibrarySelector.Input(day: 1, timeOfDay: .night))
         XCTAssertEqual(choice.experience.id, "daily-difference", "時間帯が合わなくても、何かは選ぶ")
-        XCTAssertEqual(TreeBuilder.build(content: .minimal, garden: .empty, entries: []).buds, ["daily-difference"])
+        XCTAssertEqual(TreeBuilder.build(content: .minimal, garden: .empty, entries: []).context(entries: []).buds, ["daily-difference"])
     }
 }
 
@@ -219,7 +219,7 @@ final class LocalExperienceServiceTests: XCTestCase {
         XCTAssertNil(response.experience.growsFrom)
     }
 
-    /// 灯った体験の先の芽から選んだら、どこから伸びたかを正直に書き、樹の上の位置を返す
+    /// 技の稽古から選んだら、そう正直に書く (どの技かは、霧を明かさないよう端末の樹がカードに添える)
     func testGrowsFromTheLivedExperience() async throws {
         let tree = TreeContext(
             lived: [TreeContext.LivedNode(id: "meal-first-bite", title: "ひと口目の観察", elements: ["taste"])],
@@ -229,7 +229,7 @@ final class LocalExperienceServiceTests: XCTestCase {
         let id = try XCTUnwrap(response.experience.nodeID)
         XCTAssertTrue(tree.buds.contains(id), id)
         XCTAssertEqual(response.experience.growsFrom, "meal-first-bite")
-        XCTAssertEqual(response.experience.reason, "前に記した「ひと口目の観察」の先にある体験です。")
+        XCTAssertEqual(response.experience.reason, "あなたの技の樹にある、技の稽古になる体験です。")
         XCTAssertTrue(response.situation.observations.contains { $0.text == "体験帳に「ひと口目の観察」が記されている" })
     }
 
@@ -239,7 +239,7 @@ final class LocalExperienceServiceTests: XCTestCase {
         let response = try await service.generateExperience(experienceRequest(at: tokyoDate("2026-10-08", hour: 13), tree: TreeContext(lived: [], buds: roots)))
         let id = try XCTUnwrap(response.experience.nodeID)
         XCTAssertTrue(TaikenContent.shared.isRoot(id), id)
-        XCTAssertTrue(response.experience.reason.hasSuffix("の根にある、いちばん小さなかたちの体験です。"), response.experience.reason)
+        XCTAssertTrue(response.experience.reason.hasSuffix("の、いちばん小さなかたちの体験です。"), response.experience.reason)
     }
 
     func testAnotherProposalIsDifferent() async throws {

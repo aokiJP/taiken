@@ -401,7 +401,7 @@ extension Rating {
 }
 
 extension ResultSource {
-    /// 提案をつくったしくみ (「提案の手がかり」に正直に出す)
+    /// きっかけをつくったしくみ (「きっかけの手がかり」に正直に出す)
     var engineLabel: String {
         switch self {
         case .ai: "自分のサーバーのAI"

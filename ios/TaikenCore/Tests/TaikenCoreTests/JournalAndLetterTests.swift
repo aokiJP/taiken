@@ -70,13 +70,31 @@ final class JournalTests: XCTestCase {
         let repo = InMemoryHistoryRepository([livedEntry("meal-first-bite")])
         let store = InMemoryGardenStore()
         let trees = TreeSource(history: repo, store: store, now: { referenceDate })
-        try trees.weave(WeaveDraft(title: "湯気を見る", invitation: "湯気の形を見てみませんか？", elements: ["see"]))
+        try trees.weave(WeaveDraft(title: "湯気を見る", ability: "湯気の形で、温度が分かる。", practice: "湯気の形を見てみる", elements: ["see"]))
         let model = HistoryViewModel(history: repo, calendar: tokyoCalendar, now: { referenceDate }, trees: trees)
         let json = try jsonObject(model.exportJSON())
         let garden = try XCTUnwrap(json["garden"] as? NSDictionary)
         XCTAssertEqual((garden["nodes"] as? [NSDictionary])?.first?["title"] as? String, "湯気を見る")
         XCTAssertEqual((json["entries"] as? [NSDictionary])?.first?["node_id"] as? String, "meal-first-bite")
         XCTAssertFalse(model.vaultFiles().isEmpty)
+    }
+
+    func testShowsRanksAndWhatEachRecordGrew() async throws {
+        let own = selfEntry("窓の外をじっと眺めた", ["see"])
+        let repo = InMemoryHistoryRepository([own, livedEntry("rest-far"), livedEntry("root-see")])
+        let trees = TreeSource(history: repo, store: InMemoryGardenStore(Garden(learned: learned(["see-tomeru"]))), calendar: tokyoCalendar, now: { referenceDate })
+        trees.link(entry: own.id, skills: ["see-tomeru"])
+        let model = HistoryViewModel(history: repo, calendar: tokyoCalendar, now: { referenceDate }, trees: trees)
+        model.reload()
+        XCTAssertEqual(model.progress.count, 10)
+        XCTAssertEqual(model.progress.first?.rank, 2, "見るは、三つの体験で二段")
+        XCTAssertEqual(model.learnedCount, 1)
+        XCTAssertEqual(model.stats.selfRecorded, 1)
+        XCTAssertEqual(model.skills(of: own).map(\.id), ["see-tomeru"])
+        XCTAssertEqual(model.treeFocus(of: own), "see-tomeru")
+        XCTAssertEqual(model.treeFocus(of: livedEntry("people-listen")), ExperienceTree.rootID("people"))
+        model.delete(own)
+        XCTAssertTrue(trees.garden.uses.isEmpty, "記録を消すと、技との結びも外れる")
     }
 
     func testSampleJournalUsesLibraryEntries() async {
@@ -125,7 +143,7 @@ final class RequestPreviewTests: XCTestCase {
         XCTAssertEqual(byTitle["時刻"], ["2026-10-08 18:10 (Asia/Tokyo)"])
         XCTAssertNil(byTitle["季節"])
         XCTAssertEqual(byTitle["いまの気分"], ["疲れぎみ"])
-        XCTAssertEqual(byTitle["体験の樹"], ["灯った体験: ひと口目の観察、三つの音", "芽: 食感をことばに、最後のひと口、自分の足音"])
+        XCTAssertEqual(byTitle["技の樹"], ["記した体験: ひと口目の観察、三つの音", "技の稽古: 食感をことばに、最後のひと口、自分の足音"])
         XCTAssertEqual(byTitle["予定"], ["今日 19:00〜 数学の課題", "明日 09:00〜 (タイトルは送りません)"])
         XCTAssertEqual(byTitle["最近の発言"], ["「今日ちょっと疲れた」"])
         XCTAssertEqual(byTitle["最近の体験"], ["通学路の音を数える — やってみた · 響いた"])
@@ -147,7 +165,7 @@ final class RequestPreviewTests: XCTestCase {
         XCTAssertEqual(byTitle["予定"], [RequestPreview.notSent])
         XCTAssertEqual(byTitle["おおよその地域"], [RequestPreview.notSent])
         XCTAssertEqual(byTitle["いまの気分"], ["選んでいません"])
-        XCTAssertEqual(byTitle["体験の樹"], [RequestPreview.notSent])
+        XCTAssertEqual(byTitle["技の樹"], [RequestPreview.notSent])
         XCTAssertEqual(byTitle["Web検索"], ["使わない"])
     }
 

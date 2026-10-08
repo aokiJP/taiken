@@ -1,12 +1,14 @@
 import SwiftUI
 import TaikenCore
 
-/// 体験の樹を空の上に描く。
-/// - 根: 要素の字の入った丸 (内側の輪)
-/// - 灯った体験: 朱の印 (重ねるほど少し大きく)
-/// - 芽: 呼吸する藍墨の丸
-/// - まだ遠い体験: 小さな点
-/// - 自分で結んだ糸: 朱の線
+/// 技の樹を空の上に描く。
+/// - 根: 要素の字の入った丸。まわりの細い弧が次の段までの経験、外に添えた字が段、朱の点は芽
+/// - 身についた技: 朱の印 (破・離と深まるほど、うしろに印が重なる。奥義は外に細い輪)
+/// - 閃き: 傾けた朱の印「閃」
+/// - 育てられる技: 呼吸する芽 (芽を使って伸ばせるときは朱)
+/// - 気配: 細い輪 (名前と条件が見える)
+/// - 霧の中: 小さな点だけ (名前は見えない)
+/// - 自分で結んだ糸: 朱の弧
 struct TreeCanvas: View, Animatable {
     let scene: TreeScene
     var viewport: TreeViewport
@@ -15,7 +17,7 @@ struct TreeCanvas: View, Animatable {
     let highlighted: String?
     /// 芽の呼吸 (視差効果を減らす設定では止める)
     let time: Double
-    /// 体験の名前を添えるか (案内の挿絵では添えない)
+    /// 技の名前を添えるか (案内の挿絵では添えない)
     var labels = true
 
     /// 拡大・移動を、指を離したあとや要素を選んだときに、なめらかに動かす
@@ -83,7 +85,7 @@ struct TreeDrawing {
         for edge in scene.edges {
             let touchesSelection = selected != nil && (edge.fromID == selected || edge.toID == selected)
             let inHighlight = highlighted != nil && (edge.fromElement == highlighted || edge.toElement == highlighted)
-            // 別の要素へ渡る静かなつながりは、選んだとき・その要素を見ているときだけ
+            // 別の要素から渡る静かなつながりは、選んだとき・その要素を見ているときだけ
             if edge.style == .quiet && edge.isCross && !touchesSelection && !inHighlight { continue }
             let a = viewport.screen(edge.from, size: size, base: base)
             let b = viewport.screen(edge.to, size: size, base: base)
@@ -95,15 +97,21 @@ struct TreeDrawing {
             var color = ink
             switch edge.style {
             case .quiet:
-                opacity = edge.isCross ? 0.16 : 0.13
+                opacity = edge.isCross ? 0.16 : 0.12
                 width = 0.8
-            case .toBud:
-                opacity = 0.42
+                if edge.isCross { dash = [3, 4] }
+            case .toReady:
+                opacity = 0.45
                 width = 1
                 dash = [2, 3]
-            case .lit:
+            case .learned:
                 opacity = 0.62
                 width = 1.4
+            case .spark:
+                color = Palette.shu
+                opacity = 0.35
+                width = 0.8
+                dash = [1, 4]
             case .tie:
                 color = Palette.shu
                 opacity = 0.85
@@ -149,9 +157,9 @@ struct TreeDrawing {
         return path
     }
 
-    // MARK: - 体験
+    // MARK: - 節
 
-    /// 描いた体験の、画面上の位置と大きさ (ラベルの置き場所に使う)
+    /// 描いた節の、画面上の位置と大きさ (ラベルの置き場所に使う)
     struct Placed {
         let node: TreeScene.Node
         let point: CGPoint
@@ -181,94 +189,176 @@ struct TreeDrawing {
     }
 
     private func rank(_ node: TreeScene.Node) -> Int {
+        if node.kind == .root { return 5 }
         switch node.state {
-        case .quiet: 0
-        case .bud: 1
-        case .lit: 2
-        case .active: 3
+        case .unknown: return 0
+        case .sensed: return 1
+        case .ready: return node.growable ? 3 : 2
+        case .learned: return 4
         }
     }
 
     private func drawNode(_ node: TreeScene.Node, at p: CGPoint, scale: CGFloat, in context: inout GraphicsContext) -> CGFloat {
-        if node.kind == .root && node.state != .lit && node.state != .active {
-            return drawRoot(node, at: p, scale: scale, in: &context)
-        }
+        if node.kind == .root { return drawRoot(node, at: p, scale: scale, in: &context) }
+        if node.kind == .flash { return drawFlash(node, at: p, scale: scale, in: &context) }
         switch node.state {
-        case .lit, .active:
+        case .learned:
             return drawSeal(node, at: p, scale: scale, in: &context)
-        case .bud:
-            return drawBud(node, at: p, scale: scale, in: &context)
-        case .quiet:
-            return drawQuiet(node, at: p, scale: scale, in: &context)
+        case .ready:
+            return node.kind == .woven
+                ? drawDiamond(node, at: p, scale: scale, emphasized: true, in: &context)
+                : drawBud(node, at: p, scale: scale, in: &context)
+        case .sensed:
+            return node.kind == .woven
+                ? drawDiamond(node, at: p, scale: scale, emphasized: false, in: &context)
+                : drawSensed(node, at: p, scale: scale, in: &context)
+        case .unknown:
+            return drawFog(at: p, scale: scale, in: &context)
         }
     }
 
+    /// 根: 要素の字の丸。次の段までの経験を細い弧で、段を外に小さく、芽を朱の点で
     private func drawRoot(_ node: TreeScene.Node, at p: CGPoint, scale: CGFloat, in context: inout GraphicsContext) -> CGFloat {
-        let r: CGFloat = 12 * scale
+        let r: CGFloat = 13 * scale
         let rect = CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2)
-        context.fill(Path(ellipseIn: rect), with: .color(ink.opacity(palette.isDark ? 0.10 : 0.07)))
-        let budGlow: Double = node.state == .bud ? 0.55 + 0.25 * sin(time * 1.6 + node.angle) : 0.45
-        context.stroke(Path(ellipseIn: rect), with: .color(ink.opacity(budGlow)), lineWidth: 1)
-        var glyph = context.resolve(Text(node.glyph).font(Typeface.fixedMincho(12 * scale)))
-        glyph.shading = .color(ink)
+        let lived = node.rank > 0
+        context.fill(Path(ellipseIn: rect), with: .color(ink.opacity(lived ? (palette.isDark ? 0.16 : 0.11) : 0.05)))
+        context.stroke(Path(ellipseIn: rect), with: .color(ink.opacity(lived ? 0.7 : 0.4)), lineWidth: lived ? 1.1 : 0.8)
+        var glyph = context.resolve(Text(node.glyph).font(Typeface.fixedMincho(12.5 * scale)))
+        glyph.shading = .color(ink.opacity(lived ? 1 : 0.6))
         context.draw(glyph, at: p)
-        return r
+
+        // 次の段までの経験 (上から時計回り)
+        let ringRadius: CGFloat = r + 3.5 * scale
+        let ringRect = CGRect(x: p.x - ringRadius, y: p.y - ringRadius, width: ringRadius * 2, height: ringRadius * 2)
+        context.stroke(Path(ellipseIn: ringRect), with: .color(ink.opacity(0.12)), lineWidth: 1.6)
+        if node.progress > 0 {
+            var arc = Path()
+            arc.addArc(
+                center: p, radius: ringRadius, startAngle: .degrees(-90), endAngle: .degrees(-90 + 360 * min(1, node.progress)),
+                clockwise: false
+            )
+            context.stroke(arc, with: .color(ink.opacity(0.75)), style: StrokeStyle(lineWidth: 1.6, lineCap: .round))
+        }
+
+        // 段 (外側に、漢数字で)
+        if lived {
+            let distance: CGFloat = ringRadius + 8 * scale
+            let label = CGPoint(x: p.x + cos(node.angle) * distance, y: p.y + sin(node.angle) * distance)
+            var rankText = context.resolve(Text(Ranks.kanji(node.rank)).font(Typeface.fixedMincho(9.5 * scale)))
+            rankText.shading = .color(ink.opacity(0.8))
+            context.draw(rankText, at: label)
+        }
+
+        // 芽 (使える芽があるとき、朱の点)
+        if node.sprouts > 0 {
+            let dot: CGFloat = 3.2 * scale
+            let breath: Double = 0.75 + 0.25 * sin(time * 2.2 + node.angle)
+            let center = CGPoint(x: p.x + r * 0.78, y: p.y - r * 0.78)
+            context.fill(
+                Path(ellipseIn: CGRect(x: center.x - dot, y: center.y - dot, width: dot * 2, height: dot * 2)),
+                with: .color(Palette.shu.opacity(breath))
+            )
+        }
+        return ringRadius
     }
 
+    /// 身についた技: 朱の印。破・離と深まるほど、うしろに印が重なる
     private func drawSeal(_ node: TreeScene.Node, at p: CGPoint, scale: CGFloat, in context: inout GraphicsContext) -> CGFloat {
-        let stack: CGFloat = CGFloat(min(max(node.litCount - 1, 0), 3))
-        let side: CGFloat = (11 + stack * 2.2) * scale
+        let stack: CGFloat = CGFloat(max(node.mastery - 1, 0))
+        let baseSide: CGFloat = node.kind == .secret ? 15 : 12
+        let side: CGFloat = (baseSide + stack * 1.8) * scale
         let rect = CGRect(x: p.x - side / 2, y: p.y - side / 2, width: side, height: side)
         let shape = Path(roundedRect: rect, cornerRadius: side * 0.2)
-        if node.state == .active {
-            let pulse: CGFloat = side * (0.9 + 0.25 * CGFloat(sin(time * 2)))
-            let ring = CGRect(x: p.x - pulse, y: p.y - pulse, width: pulse * 2, height: pulse * 2)
-            context.stroke(Path(ellipseIn: ring), with: .color(Palette.shu.opacity(0.45)), lineWidth: 1.2)
-        }
-        // 重ねた印: うしろに少しずらした印をもう一枚
+        // 重ねた印: うしろに少しずらした印
         if stack > 0 {
-            let back = Path(roundedRect: rect.offsetBy(dx: 2 * scale, dy: -2 * scale), cornerRadius: side * 0.2)
-            context.fill(back, with: .color(Palette.shu.opacity(0.35)))
+            for i in stride(from: Int(stack), through: 1, by: -1) {
+                let offset: CGFloat = CGFloat(i) * 2.2 * scale
+                let back = Path(roundedRect: rect.offsetBy(dx: offset, dy: -offset), cornerRadius: side * 0.2)
+                context.fill(back, with: .color(Palette.shu.opacity(0.42 / Double(i))))
+            }
         }
         context.fill(shape, with: .color(Palette.shu))
-        if side >= 13 {
+        if node.kind == .secret {
+            let outer = rect.insetBy(dx: -3.5 * scale, dy: -3.5 * scale)
+            context.stroke(Path(roundedRect: outer, cornerRadius: side * 0.28), with: .color(Palette.shu.opacity(0.8)), lineWidth: 1)
+        }
+        if side >= 12 {
             var glyph = context.resolve(Text(node.glyph).font(Typeface.fixedMincho(side * 0.6)))
             glyph.shading = .color(Palette.onShu)
             context.draw(glyph, at: p)
         }
-        return side / 2
+        return side / 2 + (node.kind == .secret ? 3.5 * scale : 0)
     }
 
+    /// 閃き: 傾けた朱の印「閃」
+    private func drawFlash(_ node: TreeScene.Node, at p: CGPoint, scale: CGFloat, in context: inout GraphicsContext) -> CGFloat {
+        let r: CGFloat = 8.5 * scale
+        var diamond = Path()
+        diamond.move(to: CGPoint(x: p.x, y: p.y - r))
+        diamond.addLine(to: CGPoint(x: p.x + r, y: p.y))
+        diamond.addLine(to: CGPoint(x: p.x, y: p.y + r))
+        diamond.addLine(to: CGPoint(x: p.x - r, y: p.y))
+        diamond.closeSubpath()
+        let glow: Double = 0.18 + 0.12 * sin(time * 1.4 + node.angle * 2)
+        let halo: CGFloat = r + 4 * scale
+        context.fill(
+            Path(ellipseIn: CGRect(x: p.x - halo, y: p.y - halo, width: halo * 2, height: halo * 2)),
+            with: .color(Palette.shu.opacity(glow))
+        )
+        context.fill(diamond, with: .color(Palette.shu))
+        var glyph = context.resolve(Text(node.glyph).font(Typeface.fixedMincho(r * 0.95)))
+        glyph.shading = .color(Palette.onShu)
+        context.draw(glyph, at: p)
+        return r
+    }
+
+    /// 育てられる技: 呼吸する芽。芽を使っていま伸ばせるときは朱
     private func drawBud(_ node: TreeScene.Node, at p: CGPoint, scale: CGFloat, in context: inout GraphicsContext) -> CGFloat {
-        let r: CGFloat = 4.6 * scale
+        let r: CGFloat = (node.kind == .secret ? 6.2 : 5) * scale
+        let color: Color = node.growable ? Palette.shu : ink
         let rect = CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2)
-        context.stroke(Path(ellipseIn: rect), with: .color(ink.opacity(0.9)), lineWidth: 1.2)
+        context.stroke(Path(ellipseIn: rect), with: .color(color.opacity(0.95)), lineWidth: 1.3)
         let breath: CGFloat = 0.45 + 0.35 * CGFloat(sin(time * 1.8 + node.angle * 3))
         let inner: CGFloat = r * 0.45 * (0.7 + breath * 0.5)
         context.fill(
             Path(ellipseIn: CGRect(x: p.x - inner, y: p.y - inner, width: inner * 2, height: inner * 2)),
-            with: .color(ink.opacity(Double(breath)))
+            with: .color(color.opacity(Double(breath)))
         )
         return r
     }
 
-    private func drawQuiet(_ node: TreeScene.Node, at p: CGPoint, scale: CGFloat, in context: inout GraphicsContext) -> CGFloat {
-        if node.kind == .woven || node.kind == .found {
-            // 自分の樹にある体験は、小さな菱形
-            let r: CGFloat = 3.6 * scale
-            var path = Path()
-            path.move(to: CGPoint(x: p.x, y: p.y - r))
-            path.addLine(to: CGPoint(x: p.x + r, y: p.y))
-            path.addLine(to: CGPoint(x: p.x, y: p.y + r))
-            path.addLine(to: CGPoint(x: p.x - r, y: p.y))
-            path.closeSubpath()
-            context.stroke(path, with: .color(ink.opacity(0.8)), lineWidth: 1)
-            return r
-        }
-        let r: CGFloat = 2.1 * scale
+    /// 気配: 細い輪だけ (名前と条件は見える)
+    private func drawSensed(_ node: TreeScene.Node, at p: CGPoint, scale: CGFloat, in context: inout GraphicsContext) -> CGFloat {
+        let r: CGFloat = (node.kind == .secret ? 5.5 : 4) * scale
+        let rect = CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2)
+        context.stroke(
+            Path(ellipseIn: rect), with: .color(ink.opacity(0.55)),
+            style: StrokeStyle(lineWidth: 0.9, dash: node.kind == .secret ? [2, 2] : [])
+        )
+        return r
+    }
+
+    /// 編んだ技 (まだ身についていない): 小さな菱形
+    private func drawDiamond(_ node: TreeScene.Node, at p: CGPoint, scale: CGFloat, emphasized: Bool, in context: inout GraphicsContext) -> CGFloat {
+        let r: CGFloat = 4.4 * scale
+        var path = Path()
+        path.move(to: CGPoint(x: p.x, y: p.y - r))
+        path.addLine(to: CGPoint(x: p.x + r, y: p.y))
+        path.addLine(to: CGPoint(x: p.x, y: p.y + r))
+        path.addLine(to: CGPoint(x: p.x - r, y: p.y))
+        path.closeSubpath()
+        let color: Color = node.growable ? Palette.shu : ink
+        context.stroke(path, with: .color(color.opacity(emphasized ? 0.95 : 0.6)), lineWidth: 1.1)
+        return r
+    }
+
+    /// 霧の中: 小さな点だけ
+    private func drawFog(at p: CGPoint, scale: CGFloat, in context: inout GraphicsContext) -> CGFloat {
+        let r: CGFloat = 1.8 * scale
         context.fill(
             Path(ellipseIn: CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2)),
-            with: .color(ink.opacity(0.36))
+            with: .color(ink.opacity(0.26))
         )
         return r
     }
@@ -276,15 +366,14 @@ struct TreeDrawing {
     // MARK: - 名前
 
     private func labelPriority(_ node: TreeScene.Node) -> Int? {
-        if node.id == selected { return 0 }
-        if node.kind == .root { return nil }
+        if node.id == selected { return node.kind == .root ? nil : 0 }
+        if node.kind == .root || node.title.isEmpty { return nil }
+        if node.kind == .flash { return 2 }
         switch node.state {
-        case .active: return 1
-        case .bud: return 2
-        case .lit: return 3
-        case .quiet:
-            if node.kind == .woven { return 4 }
-            return viewport.zoom >= 1.9 ? 5 : nil
+        case .learned: return 2
+        case .ready: return node.growable ? 1 : 3
+        case .sensed: return viewport.zoom >= 1.5 ? 4 : nil
+        case .unknown: return nil
         }
     }
 
@@ -294,16 +383,17 @@ struct TreeDrawing {
             if dims(item.node.element) && item.node.id != selected { return nil }
             return (item, priority)
         }.sorted { lhs, rhs in
-            lhs.1 == rhs.1 ? (lhs.0.node.lastLived ?? .distantPast) > (rhs.0.node.lastLived ?? .distantPast) : lhs.1 < rhs.1
+            lhs.1 == rhs.1 ? (lhs.0.node.learnedAt ?? .distantPast) > (rhs.0.node.learnedAt ?? .distantPast) : lhs.1 < rhs.1
         }
         var taken: [CGRect] = points.filter { $0.node.kind == .root }.map {
             CGRect(x: $0.point.x - $0.radius, y: $0.point.y - $0.radius, width: $0.radius * 2, height: $0.radius * 2)
         }
         let fontSize: CGFloat = viewport.zoom >= 1.6 ? 11.5 : 10.5
         for (item, priority) in candidates {
-            var text = context.resolve(Text(item.node.title).font(Typeface.fixedMincho(fontSize, bold: priority <= 1)))
-            let opacity: Double = item.node.state == .quiet ? 0.7 : 0.95
-            text.shading = .color(ink.opacity(opacity))
+            let title = item.node.title.isEmpty ? "？" : item.node.title
+            var text = context.resolve(Text(title).font(Typeface.fixedMincho(fontSize, bold: priority <= 1)))
+            let opacity: Double = item.node.state == .sensed ? 0.62 : 0.95
+            text.shading = .color((item.node.growable ? Palette.shu : ink).opacity(opacity))
             let measured = text.measure(in: CGSize(width: 180, height: 40))
             let toRight = cos(item.node.angle) >= -0.15
             let gap: CGFloat = item.radius + 4
@@ -321,7 +411,7 @@ struct TreeDrawing {
 
     // MARK: - タップ
 
-    /// 画面上の点に、いちばん近い体験 (指の届く範囲だけ)
+    /// 画面上の点に、いちばん近い節 (指の届く範囲だけ)
     static func hit(_ location: CGPoint, scene: TreeScene, viewport: TreeViewport, size: CGSize, reach: CGFloat = 26) -> String? {
         let base = TreeViewport.base(for: size, radius: scene.radius)
         var best: (id: String, distance: CGFloat)?
@@ -338,7 +428,7 @@ struct TreeDrawing {
 
 // MARK: - ホームの小さな樹
 
-/// ホームの見出しの横に置く、小さな樹 (根の輪と、灯った体験と芽だけ)。押すと体験の樹がひらく
+/// ホームの見出しの横に置く、小さな樹 (段のある根と、身についた技と、伸ばせる芽だけ)。押すと技の樹がひらく
 struct MiniTreeBadge: View {
     let scene: TreeScene
     let palette: SkyPalette
@@ -361,17 +451,17 @@ struct MiniTreeBadge: View {
             let p = CGPoint(x: center.x + node.point.x * base, y: center.y + node.point.y * base)
             let r: CGFloat
             let color: Color
-            switch node.state {
-            case .lit, .active:
-                r = 2.2
+            if node.kind == .root {
+                r = node.rank > 0 ? 1.8 : 1.2
+                color = palette.onSky.opacity(node.rank > 0 ? 0.75 : 0.35)
+            } else if node.state == .learned {
+                r = node.kind == .flash ? 2.4 : 2.1
                 color = Palette.shu
-            case .bud:
-                r = 1.3
-                color = palette.onSky.opacity(0.8)
-            case .quiet:
-                guard node.kind == .root else { continue }
+            } else if node.growable {
                 r = 1.4
-                color = palette.onSky.opacity(0.45)
+                color = Palette.shu.opacity(0.75)
+            } else {
+                continue
             }
             context.fill(Path(ellipseIn: CGRect(x: p.x - r, y: p.y - r, width: r * 2, height: r * 2)), with: .color(color))
         }
@@ -380,7 +470,7 @@ struct MiniTreeBadge: View {
 
 // MARK: - 要素の小さな印 (カードや一覧で)
 
-/// 要素の字を、細い枠の小さな四角に (朱は記した印だけに使うので、ここは藍墨)
+/// 要素の字を、細い枠の小さな四角に (朱は印だけに使うので、ここは藍墨)
 struct ElementMark: View {
     let glyph: String
     var size: CGFloat = 18
@@ -396,30 +486,43 @@ struct ElementMark: View {
     }
 }
 
-/// 一覧・つながりの行に添える、体験の様子の印
+/// 一覧・つながりの行に添える、技の様子の印
 struct NodeStateMark: View {
     let state: NodeState
+    let kind: TreeNode.Kind
     let glyph: String
+    var mastery: Mastery?
+    var growable = false
     var size: CGFloat = 26
 
     var body: some View {
-        switch state {
-        case .lit, .active:
-            SealView(character: glyph, size: size, style: .filled, rotation: -4)
-        case .bud:
-            Circle()
-                .strokeBorder(Palette.ink, lineWidth: 1.2)
-                .overlay(Circle().fill(Palette.ink.opacity(0.55)).padding(size * 0.3))
-                .frame(width: size * 0.62, height: size * 0.62)
-                .frame(width: size, height: size)
-                .accessibilityHidden(true)
-        case .quiet:
-            Circle()
-                .fill(Palette.ink3.opacity(0.6))
-                .frame(width: size * 0.22, height: size * 0.22)
-                .frame(width: size, height: size)
-                .accessibilityHidden(true)
+        Group {
+            if kind == .root {
+                ElementMark(glyph: glyph, size: size * 0.9, color: Palette.ink)
+            } else if kind == .flash {
+                SealView(character: glyph, size: size * 0.86, style: .filled, rotation: 45)
+            } else {
+                switch state {
+                case .learned:
+                    SealView(character: glyph, size: size, style: mastery == .ri ? .filled : .outlined, rotation: -4)
+                case .ready:
+                    Circle()
+                        .strokeBorder(growable ? Palette.shu : Palette.ink, lineWidth: 1.2)
+                        .overlay(Circle().fill((growable ? Palette.shu : Palette.ink).opacity(0.55)).padding(size * 0.18))
+                        .frame(width: size * 0.62, height: size * 0.62)
+                case .sensed:
+                    Circle()
+                        .strokeBorder(Palette.ink3, lineWidth: 1)
+                        .frame(width: size * 0.5, height: size * 0.5)
+                case .unknown:
+                    Circle()
+                        .fill(Palette.ink3.opacity(0.5))
+                        .frame(width: size * 0.2, height: size * 0.2)
+                }
+            }
         }
+        .frame(width: size, height: size)
+        .accessibilityHidden(true)
     }
 }
 
@@ -427,10 +530,10 @@ extension NodeState {
     /// 一覧やつながりの行に添える、短い説明
     var label: String {
         switch self {
-        case .active: "体験中"
-        case .lit: "灯った"
-        case .bud: "芽"
-        case .quiet: ""
+        case .learned: "身についた"
+        case .ready: "育てられる"
+        case .sensed: "気配"
+        case .unknown: ""
         }
     }
 }

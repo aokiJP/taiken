@@ -167,7 +167,8 @@ public final class ContextAssembler {
         let date = now()
         let permissions = consent()
         let area = permissions.useLocation ? await locationProvider.currentArea() : nil
-        let entries = permissions.useHistory ? history.entries(since: nil, limit: 40) : []
+        // 自分で見つけて記した体験は、自分の言葉なので送らない (ひとことと同じ扱い)
+        let entries = permissions.useHistory ? history.entries(since: nil, limit: 60).filter { !$0.isSelfRecorded }.prefix(40).map { $0 } : []
         return builder.experienceRequest(
             now: date,
             events: events(at: date, consent: permissions),

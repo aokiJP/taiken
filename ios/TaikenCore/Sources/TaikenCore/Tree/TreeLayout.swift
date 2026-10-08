@@ -1,6 +1,7 @@
 import Foundation
 
-/// 体験の樹の配置。中心から10の要素が放射状に伸び、根は内側の輪に、深い体験ほど外側に並ぶ。
+/// 技の樹の配置。中心から10の要素が放射状に伸び、根は内側の輪に、深い技ほど外側に並ぶ。
+/// 閃きは、その要素の扇のいちばん外の輪に置く。
 /// 同じ樹からはいつも同じ配置になる (乱数を使わない)。座標は中心 (0, 0)・根の輪の半径 0.3 前後の単位で返す。
 public struct TreeLayout: Sendable, Equatable {
     public struct Point: Sendable, Hashable {
@@ -70,7 +71,7 @@ public struct TreeLayout: Sendable, Equatable {
         // 扇の広さは、その要素の葉の数に合わせる (体験の多い要素が窮屈にならないように)
         var weights: [Double] = []
         for element in elements {
-            let weight = tree.node(element.root).map { leafWeight($0.id, depth: 0) } ?? 1
+            let weight = tree.root(of: element.id).map { leafWeight($0.id, depth: 0) } ?? 1
             weights.append(max(3, weight))
         }
         let total = weights.reduce(0, +)
@@ -101,15 +102,25 @@ public struct TreeLayout: Sendable, Equatable {
         }
 
         for sector in sectors {
-            guard let root = tree.content.element(sector.element)?.root, tree.node(root) != nil else { continue }
+            guard let root = tree.root(of: sector.element)?.id else { continue }
             let gap = (sector.end - sector.start) * 0.06
             place(root, from: sector.start + gap, to: sector.end - gap, depth: 0)
         }
-        // どの根にもつながらない体験 (根が無いなど) は外側の輪に並べる
+        // 閃きは、その要素の扇のいちばん外の輪に、扇の中で等しく間をあけて置く
+        let outer = (tree.depths.values.max() ?? 2) + 1
+        for sector in sectors {
+            let flashes = tree.nodes.filter { $0.kind == .flash && $0.primaryElement == sector.element }
+            for (i, node) in flashes.enumerated() {
+                let share = (sector.end - sector.start) / Double(flashes.count + 1)
+                angles[node.id] = sector.start + share * Double(i + 1)
+                radii[node.id] = ring(forDepth: outer)
+            }
+        }
+        // どの根にもつながらない技 (根が無いなど) は外側の輪に並べる
         let stray = tree.nodes.filter { angles[$0.id] == nil }
         for (i, node) in stray.enumerated() {
             angles[node.id] = -Double.pi / 2 + fullTurn * Double(i) / Double(max(stray.count, 1))
-            radii[node.id] = ring(forDepth: 5)
+            radii[node.id] = ring(forDepth: outer + 1)
         }
 
         relax(&angles, radii: radii, order: tree.nodes.map(\.id))

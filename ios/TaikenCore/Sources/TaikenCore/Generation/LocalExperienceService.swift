@@ -146,13 +146,17 @@ struct LocalGenerator {
             return "話していたことから選びました。"
         }
         if choice.isBud {
+            // どの技の稽古かはカードの「枝」に出す (ここでは霧の中の技の名前を明かさないよう、名前を出さない)
+            if !SkillBook.shared.skills(practicing: choice.experience.id).isEmpty, !content.isRoot(choice.experience.id) {
+                return "あなたの技の樹にある、技の稽古になる体験です。"
+            }
+            if content.isRoot(choice.experience.id), let element = choice.experience.elements.first.flatMap(content.element) {
+                return "「\(element.label)」の、いちばん小さなかたちの体験です。"
+            }
             if let parent {
                 return "前に記した「\(parent.title)」の先にある体験です。"
             }
-            if content.isRoot(choice.experience.id), let element = choice.experience.elements.first.flatMap(content.element) {
-                return "「\(element.label)」の根にある、いちばん小さなかたちの体験です。"
-            }
-            return "あなたの体験の樹の、芽のひとつです。"
+            return "あなたの技の樹の稽古になる体験です。"
         }
         return "特別な予定がなくても、いつもの時間の中に体験は見つけられます。"
     }
