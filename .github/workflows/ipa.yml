@@ -26,7 +26,7 @@ jobs:
     env:
       APP_GROUP: group.com.example.taiken.app
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Xcode を選ぶ
         run: |

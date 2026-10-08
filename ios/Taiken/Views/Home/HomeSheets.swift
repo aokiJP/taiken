@@ -402,45 +402,63 @@ struct SeasonRing: View {
 
     var body: some View {
         Canvas { context, size in
-            let side = min(size.width, size.height)
-            let scale = side / 300
-            let center = CGPoint(x: size.width / 2, y: size.height / 2)
-            func point(_ angle: Double, _ radius: CGFloat) -> CGPoint {
-                CGPoint(x: center.x + CGFloat(cos(angle)) * radius, y: center.y + CGFloat(sin(angle)) * radius)
-            }
-
-            for index in 0..<72 {
-                let angle = Double(index) / 72 * 2 * .pi - .pi / 2 + .pi / 72
-                let major = index % 3 == 0
-                let isLived = lived.contains(index)
-                var tick = Path()
-                tick.move(to: point(angle, (major ? 96 : 102) * scale))
-                tick.addLine(to: point(angle, 112 * scale))
-                context.stroke(
-                    tick,
-                    with: .color(isLived ? Palette.shu : Palette.line),
-                    style: StrokeStyle(lineWidth: (isLived ? 4 : major ? 1.6 : 1) * scale, lineCap: .round)
-                )
-                if index == current {
-                    let dot = point(angle, 124 * scale)
-                    let radius = 4.5 * scale
-                    context.fill(
-                        Path(ellipseIn: CGRect(x: dot.x - radius, y: dot.y - radius, width: radius * 2, height: radius * 2)),
-                        with: .color(Palette.ink)
-                    )
-                }
-            }
-
-            for (label, index) in [("春", 0), ("夏", 18), ("秋", 36), ("冬", 54)] {
-                let angle = Double(index + 9) / 72 * 2 * .pi - .pi / 2
-                var text = context.resolve(Text(label).font(Typeface.fixedMincho(12 * scale, bold: false)))
-                text.shading = .color(Palette.ink3)
-                context.draw(text, at: point(angle, 140 * scale))
-            }
+            Self.draw(in: &context, size: size, lived: lived, current: current)
         }
         .aspectRatio(1, contentMode: .fit)
         .accessibilityElement()
         .accessibilityLabel(accessibilityText)
+    }
+
+    /// 300×300 の座標で描いて、実際の大きさに合わせる (型推論を軽くするため、式は小さく分ける)
+    private static func draw(in context: inout GraphicsContext, size: CGSize, lived: Set<Int>, current: Int?) {
+        let side: CGFloat = min(size.width, size.height)
+        let scale: CGFloat = side / 300
+        let center = CGPoint(x: size.width / 2, y: size.height / 2)
+        let step: Double = Double.pi / 36
+        let top: Double = -Double.pi / 2
+
+        for index in 0..<72 {
+            let angle: Double = top + Double(index) * step + step / 2
+            let major: Bool = index % 3 == 0
+            let isLived: Bool = lived.contains(index)
+            let inner: CGFloat = (major ? 96 : 102) * scale
+            let outer: CGFloat = 112 * scale
+            var tick = Path()
+            tick.move(to: point(center, angle, inner))
+            tick.addLine(to: point(center, angle, outer))
+
+            let width: CGFloat
+            if isLived {
+                width = 4 * scale
+            } else if major {
+                width = 1.6 * scale
+            } else {
+                width = scale
+            }
+            let color: Color = isLived ? Palette.shu : Palette.line
+            context.stroke(tick, with: .color(color), style: StrokeStyle(lineWidth: width, lineCap: .round))
+
+            if index == current {
+                let dot: CGPoint = point(center, angle, 124 * scale)
+                let radius: CGFloat = 4.5 * scale
+                let rect = CGRect(x: dot.x - radius, y: dot.y - radius, width: radius * 2, height: radius * 2)
+                context.fill(Path(ellipseIn: rect), with: .color(Palette.ink))
+            }
+        }
+
+        let labels: [(String, Int)] = [("春", 0), ("夏", 18), ("秋", 36), ("冬", 54)]
+        for (label, index) in labels {
+            let angle: Double = top + Double(index + 9) * step
+            var text = context.resolve(Text(label).font(Typeface.fixedMincho(12 * scale, bold: false)))
+            text.shading = .color(Palette.ink3)
+            context.draw(text, at: point(center, angle, 140 * scale))
+        }
+    }
+
+    private static func point(_ center: CGPoint, _ angle: Double, _ radius: CGFloat) -> CGPoint {
+        let dx: CGFloat = CGFloat(cos(angle)) * radius
+        let dy: CGFloat = CGFloat(sin(angle)) * radius
+        return CGPoint(x: center.x + dx, y: center.y + dy)
     }
 
     private var accessibilityText: String {
