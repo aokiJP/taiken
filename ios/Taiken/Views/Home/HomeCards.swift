@@ -108,35 +108,51 @@ struct ProposalCard: View {
                     .padding(.top, 8)
                     .inkReveal(delay: 0.42)
 
-                DisclosureGroup(isExpanded: $showsReason) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text(experience.reason)
-                            .font(.footnote)
-                            .foregroundStyle(Palette.ink2)
-                            .fixedSize(horizontal: false, vertical: true)
-                        let labels = ExperienceTag.displayLabels(experience.tags)
-                        if !labels.isEmpty {
-                            HStack(spacing: 6) {
-                                ForEach(labels, id: \.self) { label in
-                                    Text(label)
-                                        .font(.caption2)
-                                        .foregroundStyle(Palette.ink2)
-                                        .padding(.horizontal, 9)
-                                        .padding(.vertical, 4)
-                                        .overlay(Capsule().strokeBorder(Palette.line, lineWidth: 1))
+                VStack(alignment: .leading, spacing: 0) {
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.25)) { showsReason.toggle() }
+                    } label: {
+                        HStack {
+                            Text("なぜ今？")
+                            Spacer()
+                            Image(systemName: "chevron.down")
+                                .font(.caption.weight(.semibold))
+                                .rotationEffect(.degrees(showsReason ? 180 : 0))
+                        }
+                        .font(.footnote)
+                        .foregroundStyle(Palette.ink3)
+                        .padding(.vertical, 6)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityValue(showsReason ? "開いています" : "閉じています")
+
+                    if showsReason {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text(experience.reason)
+                                .font(.footnote)
+                                .foregroundStyle(Palette.ink2)
+                                .fixedSize(horizontal: false, vertical: true)
+                            let labels = ExperienceTag.displayLabels(experience.tags)
+                            if !labels.isEmpty {
+                                HStack(spacing: 6) {
+                                    ForEach(labels, id: \.self) { label in
+                                        Text(label)
+                                            .font(.caption2)
+                                            .foregroundStyle(Palette.ink2)
+                                            .padding(.horizontal, 9)
+                                            .padding(.vertical, 4)
+                                            .overlay(Capsule().strokeBorder(Palette.line, lineWidth: 1))
+                                    }
                                 }
                             }
                         }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.top, 4)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 8)
-                } label: {
-                    Text("なぜ今？")
-                        .font(.footnote)
-                        .foregroundStyle(Palette.ink3)
                 }
-                .tint(Palette.ink3)
-                .padding(.top, 12)
+                .padding(.top, 8)
 
                 VStack(spacing: 10) {
                     Button("やってみる", action: tryIt)

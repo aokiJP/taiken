@@ -69,7 +69,7 @@ jobs:
             -destination "id=$UDID" -derivedDataPath build/dd -only-testing:TaikenUITests \
             -resultBundlePath build/ui-light.xcresult 2>&1 \
             | tee build/ui-light.log | grep -E "error:|Test Case|TEST (SUCCEEDED|FAILED)|Executed" || true
-          grep -q "TEST SUCCEEDED" build/ui-light.log
+          grep -qE "TEST (EXECUTE )?SUCCEEDED" build/ui-light.log
 
       - name: UIテスト (ダーク・夜)
         if: always()
@@ -83,7 +83,7 @@ jobs:
             -destination "id=$UDID" -derivedDataPath build/dd -only-testing:TaikenUITests \
             -resultBundlePath build/ui-dark.xcresult 2>&1 \
             | tee build/ui-dark.log | grep -E "error:|Test Case|TEST (SUCCEEDED|FAILED)|Executed" || true
-          grep -q "TEST SUCCEEDED" build/ui-dark.log
+          grep -qE "TEST (EXECUTE )?SUCCEEDED" build/ui-dark.log
 
       - name: 結果を ci-screens ブランチに置く
         if: always()
