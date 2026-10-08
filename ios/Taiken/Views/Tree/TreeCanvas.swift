@@ -244,7 +244,10 @@ struct TreeDrawing {
         // 段 (外側に、漢数字で)
         if lived {
             let distance: CGFloat = ringRadius + 8 * scale
-            let label = CGPoint(x: p.x + cos(node.angle) * distance, y: p.y + sin(node.angle) * distance)
+            // 角度は Double。CGFloat と混ぜると Darwin で cos / sin の候補が二つになるので、先に Double で計算する
+            let dx: Double = cos(node.angle)
+            let dy: Double = sin(node.angle)
+            let label = CGPoint(x: p.x + CGFloat(dx) * distance, y: p.y + CGFloat(dy) * distance)
             var rankText = context.resolve(Text(Ranks.kanji(node.rank)).font(Typeface.fixedMincho(9.5 * scale)))
             rankText.shading = .color(ink.opacity(0.8))
             context.draw(rankText, at: label)
