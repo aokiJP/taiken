@@ -1,7 +1,7 @@
 import Foundation
 
 /// 体験ライブラリから、今の状況にいちばん合う体験を1つ選ぶ。
-/// 仕様は contracts/tools/selection_reference.py。Backend (library.ts) と Web 版が同じ結果になることを
+/// 仕様は contracts/tools/selection_reference.py。Backend (library.ts) が同じ結果になることを
 /// contracts/selection_cases.json で確かめている。
 public struct LibrarySelector: Sendable {
     public struct Input: Sendable, Equatable {

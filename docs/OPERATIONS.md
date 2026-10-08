@@ -80,7 +80,7 @@ git pull
 cd backend && docker compose up -d --build
 ```
 
-体験ライブラリの文言やつながりを変えたときは、`contracts/tools/sync.sh` で検査し、iOS・Backend・Web 版にコピーしてから、両方のテストを流します。
+体験ライブラリの文言やつながりを変えたときは、`contracts/tools/sync.sh` で検査し、iOS・Backend にコピーしてから、両方のテストを流します。
 
 ## IPA を作る
 

@@ -86,7 +86,7 @@ interface SelectionCase {
   expected: string;
 }
 
-test('選び方は contracts/selection_cases.json (iOS・Web 版と共通) と同じ結果になる', () => {
+test('選び方は contracts/selection_cases.json (iOS と共通) と同じ結果になる', () => {
   const { cases } = JSON.parse(readFileSync(new URL('selection_cases.json', contracts), 'utf8')) as { cases: SelectionCase[] };
   assert.ok(cases.length >= 10);
   for (const c of cases) {

@@ -59,14 +59,13 @@ AIが状況について述べる項目には `basis` が付きます。
 | ファイル | 内容 | 検証 |
 |---|---|---|
 | `content.ja.json` | 体験ライブラリ (version 2): 10の要素 (字・名前・説明・根・言葉の手がかり)、94の体験、体験どうしのつながり130 (`opens`: `deepen` 深める / `widen` 広げる / `cross` 渡る)、テーマと気分のキーワード | iOS (`LibraryTests`) と Backend (`library.test.ts`) が、自分のコピーとバイト単位で一致することを確認 |
-| `selection_cases.json` | 体験ライブラリの選び方のテストケース (16件。芽のある場合を含む) | 同じ入力に、iOS と Backend と Web 版が同じ体験を返すことを確認 |
+| `selection_cases.json` | 体験ライブラリの選び方のテストケース (16件。芽のある場合を含む) | 同じ入力に、iOS と Backend が同じ体験を返すことを確認 |
 | `tools/check_content.py` | `content.ja.json` の約束ごとの検査 (要素と根・つながりの行き先・根からたどれること・文の形・季節の言葉が無いこと) | `sync.sh` の最初に実行 |
 | `tools/selection_reference.py` | 選び方の基準実装 (仕様)。`selection_cases.json` を作る | — |
-| `tools/embed_prototype.py` | `content.ja.json` を Web 版 (`docs/prototype/taiken.html`) に埋め込む | Web 版を開くと、選び方のテストケースを自分で確かめる |
-| `tools/sync.sh` | 検査してから、`content.ja.json` を iOS・Backend・Web 版にコピーし、テストケースを作り直す | — |
+| `tools/sync.sh` | 検査してから、`content.ja.json` を iOS・Backend にコピーし、テストケースを作り直す | — |
 
 体験や文言・つながりを変えるときは、`content.ja.json` を直して `sh tools/sync.sh` を実行し、`swift test` (ios/TaikenCore) と `npm run check` (backend) を流します。
-選び方を変えるときは、まず `selection_reference.py` を直してテストケースを作り直し、Swift (`LibrarySelector.swift`)・TypeScript (`library.ts`)・Web 版の JavaScript を合わせます。
+選び方を変えるときは、まず `selection_reference.py` を直してテストケースを作り直し、Swift (`LibrarySelector.swift`) と TypeScript (`library.ts`) を合わせます。
 
 体験の文は次の約束で書きます (`docs/DESIGN.md` の「言葉づかい」)。
 

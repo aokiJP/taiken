@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """体験ライブラリの選び方の基準実装 (仕様)。
-iOS (LibrarySelector.swift)・Backend (library.ts)・Web 版 (docs/prototype/taiken.html) はこれと同じ結果を返すことを、
+iOS (LibrarySelector.swift)・Backend (library.ts) はこれと同じ結果を返すことを、
 contracts/selection_cases.json で検証する。
 
 点数のつけ方
@@ -168,7 +168,7 @@ def main(content_path, out_path):
         out.append(full)
         print(f"{full['expected']:22s} ← {full['name']}")
     with open(out_path, "w", encoding="utf-8") as f:
-        json.dump({"description": "体験ライブラリの選び方のテストケース。iOS・Backend・Web 版が同じ結果を返すことを確かめる。", "cases": out},
+        json.dump({"description": "体験ライブラリの選び方のテストケース。iOS・Backend が同じ結果を返すことを確かめる。", "cases": out},
                   f, ensure_ascii=False, indent=2)
         f.write("\n")
 

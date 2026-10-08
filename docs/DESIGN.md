@@ -54,7 +54,7 @@
 | 要素の字 | 藍墨の細い枠に一文字 (`ElementMark`)。朱は記した印だけに使うので、要素そのものは藍墨 |
 | アイコン | 夜明けの空に、白文の印「体」。ダーク (夜空) と色付きの版もある (`ios/tools/make_app_icon.py`) |
 
-色の値は `ios/Shared/Design/Palette.swift` が正で、Web 版 (`docs/prototype/taiken.html`) も同じ値を使う。
+色の値は `ios/Shared/Design/Palette.swift` が正。
 
 ## 動きと触覚
 

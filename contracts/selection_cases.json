@@ -1,5 +1,5 @@
 {
-  "description": "体験ライブラリの選び方のテストケース。iOS・Backend・Web 版が同じ結果を返すことを確かめる。",
+  "description": "体験ライブラリの選び方のテストケース。iOS・Backend が同じ結果を返すことを確かめる。",
   "cases": [
     {
       "name": "予定も気分も無い夕方",

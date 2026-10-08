@@ -46,7 +46,7 @@
 ![夜の空 (ダーク)](docs/screenshots/overview-dark.jpg)
 
 iPhone 17 Pro (iOS 26) のシミュレータで、UI テストが体験の流れをたどりながら撮った画面です。ほかの場面は [docs/screenshots](docs/screenshots)。
-デザインの原則は [docs/DESIGN.md](docs/DESIGN.md)。ブラウザで動く Web 版は [docs/prototype/taiken.html](docs/prototype/taiken.html) (ダウンロードして開く。同じ体験ライブラリと選び方で、樹・体験のページ・編む・結ぶまで動きます)。
+デザインの原則は [docs/DESIGN.md](docs/DESIGN.md)。
 
 ## 構成
 
@@ -58,7 +58,7 @@ ios/
   Taiken/        アプリ (SwiftUI・SwiftData・EventKit・Keychain・通知・位置・App Intents・Apple Intelligence)
   TaikenWidgets/ ウィジェットと Live Activity
   Shared/        アプリとウィジェットで共有する見た目と定義
-docs/        DESIGN / ARCHITECTURE / SECURITY_PRIVACY / OPERATIONS / prototype (Web 版)
+docs/        DESIGN / ARCHITECTURE / SECURITY_PRIVACY / OPERATIONS / screenshots
 .github/     CI (Backend・Docker・Swift on Linux・Xcode) と IPA のビルド
 ```
 
@@ -115,7 +115,7 @@ Tailscale で iPhone からだけ繋がるようにし、アプリの「設定 �
 | Backend | `npm run check`: TypeScript strict の型検査と、テスト110件。カバレッジのしきい値付き | 全件成功 |
 | iOS 中核 | `swift test`: Swift 6 言語モード、テスト172件 (体験の樹の組み立て・芽・配置・編む・結ぶ・書き出しを含む) | 全件成功 |
 | 契約 | Backend と iOS が同じ `contracts/` を検証。Backend は実際の出力も OpenAPI で検証 | 一致 |
-| 体験ライブラリ | `contracts/content.ja.json` を正として iOS・Backend・Web 版にコピーし、一致を確認。`check_content.py` が、つながりの行き先・根・要素・季節の言葉が無いことを確かめる。選び方は Python の基準実装から作った16ケースを、Swift・TypeScript・Web 版の JavaScript が同じ結果で通る | 一致 |
+| 体験ライブラリ | `contracts/content.ja.json` を正として iOS・Backend にコピーし、一致を確認。`check_content.py` が、つながりの行き先・根・要素・季節の言葉が無いことを確かめる。選び方は Python の基準実装から作った16ケースを、Swift・TypeScript が同じ結果で通る | 一致 |
 | アプリ層 | `TaikenTests` をシミュレータで: SwiftData の保存と v1 / v2 → v3 移行 (体験帳が失われず、古い記録も樹の上の位置が見つかる)、ディープリンク、依存の組み立て、樹から始める、Markdown の書き出し、Keychain (署名なしの CI では省略) | 全件成功 |
 | 画面の流れ | `TaikenUITests` をシミュレータ (iOS 26) で、ライト表示・ダーク表示の2回: はじめの案内 → 受け取る → 手がかり → 体験の樹 (一覧・体験のページ・編む) → やってみる → 思い返して記す → 印 → 樹に灯る → 体験帳 → 記録 → 話す → 設定。各場面を撮影 (`Screens` ワークフロー) | 全件成功 |
 | 実機用ビルド | `IPA` ワークフロー: Xcode 26 / iOS 26 SDK でアプリとウィジェット拡張をビルドし、署名なしの IPA にまとめる | 成功 |
