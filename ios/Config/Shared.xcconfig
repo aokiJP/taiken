@@ -4,3 +4,5 @@
 //   TAIKEN_DEVELOPMENT_TEAM = ABCDE12345
 TAIKEN_BUNDLE_ID = com.example.taiken.app
 TAIKEN_DEVELOPMENT_TEAM =
+// アプリとウィジェットが共有する App Group (署名の設定で同じ ID を有効にする)
+TAIKEN_APP_GROUP = group.$(TAIKEN_BUNDLE_ID)

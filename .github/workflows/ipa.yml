@@ -1,0 +1,106 @@
+name: IPA
+
+# 実機用の .ipa を作る (署名なし)。
+# - Xcode 26 があればそれで作る (iOS 26 の Apple Intelligence に対応したビルドになる)。無ければ最新の Xcode 16
+# - 署名はしない (ad-hoc 署名に entitlements だけ埋め込む)。インストールするときに
+#   Sideloadly / AltStore などで自分の Apple ID で署名し直すか、自分の Team で Xcode からビルドする
+# - できた .ipa は Actions の成果物 (Artifacts) と、ci-results ブランチの両方に置く
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ipa-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ipa:
+    name: 実機用 IPA (署名なし)
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      APP_GROUP: group.com.example.taiken.app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode を選ぶ
+        run: |
+          ls -d /Applications/Xcode*.app || true
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -n 1)
+          if [ -z "$XCODE" ]; then XCODE=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -n 1); fi
+          if [ -n "$XCODE" ]; then sudo xcode-select -s "$XCODE/Contents/Developer"; fi
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-version
+
+      - name: プロジェクトを生成
+        working-directory: ios
+        run: |
+          brew install xcodegen >/dev/null 2>&1 || brew upgrade xcodegen || true
+          xcodegen generate
+
+      - name: ビルド (iphoneos / Release / 署名なし)
+        working-directory: ios
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcodebuild -project Taiken.xcodeproj -scheme Taiken -configuration Release \
+            -destination 'generic/platform=iOS' -derivedDataPath build/dd \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            build 2>&1 | tee build/xcodebuild.log | grep -E "error:|warning: unable|BUILD (SUCCEEDED|FAILED)|\*\* " || true
+          grep -q "BUILD SUCCEEDED" build/xcodebuild.log
+
+      - name: IPA にまとめる (ad-hoc 署名 + entitlements)
+        run: |
+          set -eu
+          APP=ios/build/dd/Build/Products/Release-iphoneos/Taiken.app
+          test -d "$APP"
+          printf '%s\n' '<?xml version="1.0" encoding="UTF-8"?>' \
+            '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
+            '<plist version="1.0"><dict>' \
+            '<key>com.apple.security.application-groups</key><array><string>'"$APP_GROUP"'</string></array>' \
+            '</dict></plist>' > entitlements.plist
+          for EXT in "$APP"/PlugIns/*.appex; do
+            [ -d "$EXT" ] && codesign --force --sign - --entitlements entitlements.plist --timestamp=none "$EXT"
+          done
+          codesign --force --sign - --entitlements entitlements.plist --timestamp=none "$APP"
+          codesign -dv "$APP" 2>&1 | head -5
+          rm -rf Payload && mkdir Payload && cp -R "$APP" Payload/
+          VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "$APP/Info.plist")
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          zip -qry "Taiken-$VERSION-unsigned.ipa" Payload
+          ls -la *.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Taiken-ipa
+          path: Taiken-*-unsigned.ipa
+          if-no-files-found: error
+
+      - name: 結果を ci-results ブランチに置く
+        if: always()
+        run: |
+          set -eu
+          mkdir -p /tmp/results
+          cp Taiken-*-unsigned.ipa /tmp/results/ 2>/dev/null || true
+          if [ -f ios/build/xcodebuild.log ]; then
+            grep -E "error:|warning:" ios/build/xcodebuild.log | sort -u | head -n 400 > /tmp/results/diagnostics.txt || true
+            tail -n 200 ios/build/xcodebuild.log > /tmp/results/xcodebuild-tail.txt
+          fi
+          {
+            echo "commit: $GITHUB_SHA"
+            echo "run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            xcodebuild -version | tr '\n' ' '; echo
+            date -u
+          } > /tmp/results/build-info.txt
+          cd /tmp/results
+          git init -q -b ci-results
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "ci results for $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-results

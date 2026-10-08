@@ -24,11 +24,51 @@ struct UserNotificationScheduler: NotificationScheduling {
         body.title = content.title
         body.body = content.body
         body.threadIdentifier = "experience"
+        // 通知から「やってみる」「あとで」を選べる
+        body.categoryIdentifier = NotificationAction.experienceCategory
         // 負担をかけない: 音は鳴らさない
         body.sound = nil
         body.interruptionLevel = .active
         body.userInfo = ["route": "home"]
         try await UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: identifier, content: body, trigger: nil))
+    }
+}
+
+/// 朝の便り: 決まった時刻の通知を、これから数日分まとめて予約し直す
+struct UserNotificationLetterScheduler: LetterScheduling {
+    func replaceLetters(with letters: [PlannedLetter]) async {
+        let center = UNUserNotificationCenter.current()
+        let pending = await center.pendingNotificationRequests()
+        let old = pending.map(\.identifier).filter { $0.hasPrefix(DailyLetter.identifierPrefix) }
+        center.removePendingNotificationRequests(withIdentifiers: old)
+        for letter in letters {
+            let content = UNMutableNotificationContent()
+            content.title = letter.title
+            content.body = letter.body
+            content.threadIdentifier = DailyLetter.categoryIdentifier
+            content.categoryIdentifier = DailyLetter.categoryIdentifier
+            content.sound = nil
+            content.interruptionLevel = .active
+            content.userInfo = ["route": "home"]
+            let parts = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: letter.fireDate)
+            let trigger = UNCalendarNotificationTrigger(dateMatching: parts, repeats: false)
+            do {
+                try await center.add(UNNotificationRequest(identifier: letter.identifier, content: content, trigger: trigger))
+            } catch {
+                Logger.app.notice("letter.schedule_failed")
+            }
+        }
+    }
+}
+
+enum NotificationCategories {
+    /// 通知のボタン。「やってみる」はアプリを開いてそのまま体験を始める
+    static func register() {
+        let accept = UNNotificationAction(identifier: NotificationAction.accept, title: "やってみる", options: [.foreground])
+        let later = UNNotificationAction(identifier: NotificationAction.later, title: "あとで", options: [])
+        let experience = UNNotificationCategory(identifier: NotificationAction.experienceCategory, actions: [accept, later], intentIdentifiers: [], options: [])
+        let letter = UNNotificationCategory(identifier: DailyLetter.categoryIdentifier, actions: [], intentIdentifiers: [], options: [])
+        UNUserNotificationCenter.current().setNotificationCategories([experience, letter])
     }
 }
 

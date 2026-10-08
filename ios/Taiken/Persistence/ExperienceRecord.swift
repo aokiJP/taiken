@@ -2,8 +2,9 @@ import Foundation
 import SwiftData
 import TaikenCore
 
-// 体験履歴の保存形式。将来モデルを変えるときは TaikenSchemaV2 を追加し、
-// TaikenMigrationPlan に移行手順を足す (既存ユーザーの履歴を壊さないため)。
+// 体験帳の保存形式。モデルを変えるときは新しい VersionedSchema を足し、
+// TaikenMigrationPlan に移行手順を足す (既存ユーザーの体験帳を壊さないため)。
+// 古いスキーマの型は、移行のために残しておく (中身を変えない)。
 
 enum TaikenSchemaV1: VersionedSchema {
     static let versionIdentifier = Schema.Version(1, 0, 0)
@@ -23,6 +24,39 @@ enum TaikenSchemaV1: VersionedSchema {
         var ratingRaw: String?
         var note: String?
 
+        init(id: UUID, createdAt: Date, title: String, invitation: String, perspective: String, tags: [String], statusRaw: String) {
+            self.id = id
+            self.createdAt = createdAt
+            self.title = title
+            self.invitation = invitation
+            self.perspective = perspective
+            self.tags = tags
+            self.statusRaw = statusRaw
+        }
+    }
+}
+
+/// v2.0: 体験のあとに思い返す問い (reflectionQuestion) を足した。
+/// 任意の項目を足しただけなので、軽量移行 (データの書き換えなし) で移れる
+enum TaikenSchemaV2: VersionedSchema {
+    static let versionIdentifier = Schema.Version(2, 0, 0)
+    static var models: [any PersistentModel.Type] { [ExperienceRecord.self] }
+
+    @Model
+    final class ExperienceRecord {
+        @Attribute(.unique) var id: UUID
+        var createdAt: Date
+        var finishedAt: Date?
+        var title: String
+        var theme: String?
+        var invitation: String
+        var perspective: String
+        var tags: [String]
+        var statusRaw: String
+        var ratingRaw: String?
+        var note: String?
+        var reflectionQuestion: String?
+
         init(_ entry: HistoryEntry) {
             id = entry.id
             createdAt = entry.createdAt
@@ -35,6 +69,7 @@ enum TaikenSchemaV1: VersionedSchema {
             statusRaw = entry.status.rawValue
             ratingRaw = entry.rating?.rawValue
             note = entry.note
+            reflectionQuestion = entry.reflectionQuestion
         }
 
         /// 変更できる項目だけを反映する
@@ -57,29 +92,39 @@ enum TaikenSchemaV1: VersionedSchema {
                 tags: tags,
                 status: HistoryEntry.Status(rawValue: statusRaw) ?? .completed,
                 rating: ratingRaw.flatMap(Rating.init(rawValue:)),
-                note: note
+                note: note,
+                reflectionQuestion: reflectionQuestion
             )
         }
     }
 }
 
-typealias ExperienceRecord = TaikenSchemaV1.ExperienceRecord
+typealias ExperienceRecord = TaikenSchemaV2.ExperienceRecord
 
 enum TaikenMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] { [TaikenSchemaV1.self] }
-    static var stages: [MigrationStage] { [] }
+    static var schemas: [any VersionedSchema.Type] { [TaikenSchemaV1.self, TaikenSchemaV2.self] }
+    static var stages: [MigrationStage] {
+        [.lightweight(fromVersion: TaikenSchemaV1.self, toVersion: TaikenSchemaV2.self)]
+    }
 }
 
 enum PersistenceFactory {
-    /// 保存領域が壊れていてもアプリは起動させる (その場合、履歴はこの起動中だけ保持)
-    static func makeContainer(inMemory: Bool, onFailure: (Error) -> Void = { _ in }) -> ModelContainer {
-        let schema = Schema(versionedSchema: TaikenSchemaV1.self)
-        do {
-            return try ModelContainer(
-                for: schema,
-                migrationPlan: TaikenMigrationPlan.self,
-                configurations: ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
+    /// 体験帳の保存先。
+    /// - アプリ自身の領域に置く (App Group には置かない: ウィジェットに体験帳全体を見せる必要はない)
+    /// - iCloud に同期しない
+    /// - 保存領域が壊れていてもアプリは起動させる (その場合、体験帳はこの起動中だけ保持)
+    static func makeContainer(inMemory: Bool, storeURL: URL? = nil, onFailure: (Error) -> Void = { _ in }) -> ModelContainer {
+        let schema = Schema(versionedSchema: TaikenSchemaV2.self)
+        let configuration: ModelConfiguration
+        if let storeURL {
+            configuration = ModelConfiguration(schema: schema, url: storeURL, cloudKitDatabase: .none)
+        } else {
+            configuration = ModelConfiguration(
+                schema: schema, isStoredInMemoryOnly: inMemory, groupContainer: .none, cloudKitDatabase: .none
             )
+        }
+        do {
+            return try ModelContainer(for: schema, migrationPlan: TaikenMigrationPlan.self, configurations: configuration)
         } catch {
             onFailure(error)
             do {

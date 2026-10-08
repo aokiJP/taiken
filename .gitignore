@@ -14,3 +14,8 @@ ios/TaikenCore/.build/
 ios/TaikenCore/.swiftpm/
 DerivedData/
 xcuserdata/
+# XcodeGen が生成するファイル
+ios/Taiken/Info.plist
+ios/Taiken/Taiken.entitlements
+ios/TaikenWidgets/Info.plist
+ios/TaikenWidgets/TaikenWidgets.entitlements

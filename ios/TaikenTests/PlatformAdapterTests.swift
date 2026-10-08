@@ -98,9 +98,81 @@ final class AppDependenciesTests: XCTestCase {
     func testPreviewGraphStartsInLocalMode() async {
         let deps = AppDependencies.preview()
         XCTAssertTrue(deps.isLocalMode)
+        XCTAssertEqual(deps.engineState.engine, .library)
         await deps.home.refresh()
         XCTAssertEqual(deps.home.proposal?.source, .local)
         deps.deleteAllLocalData()
         XCTAssertNil(deps.home.proposal)
+        XCTAssertTrue(deps.history.isEmpty)
+    }
+
+    func testDeepLinksRouteOnlyAfterOnboarding() {
+        let deps = AppDependencies.preview()
+        deps.defaults.defaults.set(false, forKey: OnboardingKey.completed)
+        deps.open(DeepLink.journal.url)
+        XCTAssertTrue(deps.router.path.isEmpty)
+
+        deps.defaults.defaults.set(true, forKey: OnboardingKey.completed)
+        deps.open(DeepLink.journal.url)
+        XCTAssertEqual(deps.router.path.count, 1)
+        deps.open(DeepLink.talk.url)
+        XCTAssertTrue(deps.router.path.isEmpty)
+        XCTAssertEqual(deps.router.sheet, .chat)
+        deps.open(DeepLink.today.url)
+        XCTAssertNil(deps.router.sheet)
+        // 知らない URL は無視する
+        deps.open(URL(string: "https://example.com/journal")!)
+        XCTAssertNil(deps.router.sheet)
+    }
+
+    func testDeepLinkRoundTrip() {
+        for link in [DeepLink.today, .journal, .talk] {
+            XCTAssertEqual(DeepLink(url: link.url), link)
+        }
+        XCTAssertNil(DeepLink(url: URL(string: "taiken://unknown")!))
+    }
+}
+
+/// v1 (問いの無い体験帳) から v2 への移行で、記録が失われないこと
+@MainActor
+final class SchemaMigrationTests: XCTestCase {
+    func testV1StoreOpensWithV2WithoutLosingEntries() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("taiken.store")
+        let id = UUID()
+
+        do {
+            let schema = Schema(versionedSchema: TaikenSchemaV1.self)
+            let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url))
+            let record = TaikenSchemaV1.ExperienceRecord(
+                id: id, createdAt: Date(timeIntervalSince1970: 1_790_000_000), title: "ひと口目の味",
+                invitation: "最初のひと口だけ、味に集中してみませんか？", perspective: "食事ではなく、味の観察として",
+                tags: ["sensory"], statusRaw: "completed"
+            )
+            record.ratingRaw = "positive"
+            record.note = "思ったより甘かった"
+            container.mainContext.insert(record)
+            try container.mainContext.save()
+        }
+
+        var failure: Error?
+        let container = PersistenceFactory.makeContainer(inMemory: false, storeURL: url) { failure = $0 }
+        XCTAssertNil(failure)
+        let repo = SwiftDataHistoryRepository(context: container.mainContext)
+        let entry = try XCTUnwrap(repo.entry(id: id))
+        XCTAssertEqual(entry.title, "ひと口目の味")
+        XCTAssertEqual(entry.rating, .positive)
+        XCTAssertEqual(entry.note, "思ったより甘かった")
+        XCTAssertNil(entry.reflectionQuestion)
+
+        // v2 では問いも保存できる
+        let next = HistoryEntry(
+            createdAt: Date(), title: "渡っていくもの", theme: nil, invitation: "i", perspective: "p",
+            tags: ["observation"], status: .active, reflectionQuestion: "空には、何が渡っていましたか？"
+        )
+        try repo.add(next)
+        XCTAssertEqual(repo.entry(id: next.id)?.reflectionQuestion, "空には、何が渡っていましたか？")
     }
 }
