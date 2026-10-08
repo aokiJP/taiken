@@ -64,7 +64,9 @@ final class HomeViewModelTests: XCTestCase {
         var r = sampleResponse(source: .fallback)
         r = ExperienceResponse(situation: r.situation, detectedActions: [], possibleObligations: [], experienceOpportunities: [], isObligation: false, confidence: 0.5, experience: r.experience, shouldNotify: false, notification: nil, source: .fallback, fallbackReason: .budgetExceeded)
         XCTAssertTrue(HomeViewModel.notice(for: r)?.message.contains("上限") == true)
-        XCTAssertEqual(HomeViewModel.notice(for: sampleResponse(source: .local))?.kind, .info)
+        // 端末内のライブラリ・端末内のAIは正常な動作なので知らせない
+        XCTAssertNil(HomeViewModel.notice(for: sampleResponse(source: .local)))
+        XCTAssertNil(HomeViewModel.notice(for: sampleResponse(source: .onDevice)))
         XCTAssertNil(HomeViewModel.notice(for: sampleResponse(source: .ai)))
     }
 
@@ -169,7 +171,7 @@ final class ChatViewModelTests: XCTestCase {
         model.draft = "  今から宿題する  "
         XCTAssertTrue(model.canSend)
         await model.send()
-        XCTAssertEqual(model.messages.map(\.text), [ChatViewModel.greeting, "今から宿題する", "返事"])
+        XCTAssertEqual(model.messages.map(\.text), [model.greeting, "今から宿題する", "返事"])
         XCTAssertEqual(service.chatRequests.first?.messages.map(\.role), [.assistant, .user])
         XCTAssertEqual(h.memory.recent(now: referenceDate), ["今から宿題する"])
         XCTAssertEqual(model.draft, "")
@@ -213,7 +215,7 @@ final class ChatViewModelTests: XCTestCase {
         XCTAssertNotNil(model.errorMessage)
 
         await model.retry(model.messages.last!)
-        XCTAssertEqual(model.messages.map(\.text), [ChatViewModel.greeting, "暇", "届きました"])
+        XCTAssertEqual(model.messages.map(\.text), [model.greeting, "暇", "届きました"])
         XCTAssertNil(model.errorMessage)
         // 失敗した発言を二重に送っていない
         XCTAssertEqual(service.chatRequests.last?.messages.filter { $0.text == "暇" }.count, 1)

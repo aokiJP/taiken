@@ -9,6 +9,7 @@ final class ContractTests: XCTestCase {
         XCTAssertEqual(response.experience.title, "つまずきの観察")
         XCTAssertEqual(response.situation.observations.map(\.basis), [.calendar, .stated, .inferred])
         XCTAssertEqual(response.experience.difficulty, .low)
+        XCTAssertEqual(response.experience.reflectionQuestion, "手が止まったとき、何が引っかかっていましたか？")
         XCTAssertNil(response.notification)
         XCTAssertEqual(response.references, [])
         XCTAssertNil(response.fallbackReason)
@@ -18,7 +19,7 @@ final class ContractTests: XCTestCase {
     func testDecodesChatResponse() throws {
         let response = try APICoding.decoder().decode(ChatResponse.self, from: Fixtures.data("chat_response.sample"))
         XCTAssertTrue(response.suggestExperience)
-        XCTAssertNotNil(response.experience)
+        XCTAssertNotNil(response.experience?.reflectionQuestion)
         XCTAssertFalse(response.needsCare)
     }
 
@@ -36,7 +37,30 @@ final class ContractTests: XCTestCase {
     func testExperienceRequestRoundTrip() throws {
         let data = try Fixtures.data("experience_request.sample")
         let request = try APICoding.decoder().decode(ExperienceRequest.self, from: data)
+        XCTAssertEqual(request.mood, .tired)
+        XCTAssertEqual(request.season, SeasonContext(solarTerm: "寒露", microSeason: "鴻雁来", meaning: "雁が北から渡ってくる頃"))
         XCTAssertEqual(try jsonObject(APICoding.encoder().encode(request)), try jsonObject(data))
+    }
+
+    /// 気分を選んでいないときは mood キーを送らない (契約では省略可)
+    func testOmitsMoodWhenNotChosen() throws {
+        let request = try APICoding.decoder().decode(ExperienceRequest.self, from: Fixtures.data("experience_request.sample"))
+        let withoutMood = ExperienceRequest(
+            currentTime: request.currentTime, timeZone: request.timeZone, locale: request.locale,
+            calendarContext: request.calendarContext, recentUserMessages: [], recentExperiences: [], userFeedback: [],
+            excludeTitles: [], area: nil, allowWebSearch: false, mood: nil, season: request.season
+        )
+        let json = try jsonObject(APICoding.encoder().encode(withoutMood))
+        XCTAssertNil(json["mood"])
+        XCTAssertNotNil(json["season"])
+    }
+
+    /// OpenAPI に書いた気分の値と、iOS の Mood が一致する
+    func testMoodValuesMatchContract() throws {
+        let api = try Fixtures.object("openapi")
+        let schemas = (api["components"] as? NSDictionary)?["schemas"] as? NSDictionary
+        let values = (schemas?["Mood"] as? NSDictionary)?["enum"] as? [String]
+        XCTAssertEqual(values, Mood.allCases.map(\.rawValue))
     }
 
     func testChatRequestRoundTrip() throws {
@@ -62,8 +86,12 @@ final class ContractTests: XCTestCase {
         let old = try Fixtures.object("experience_response.sample").mutableCopy() as! NSMutableDictionary
         old.removeObject(forKey: "references")
         old.removeObject(forKey: "fallback_reason")
+        let oldExperience = (old["experience"] as! NSDictionary).mutableCopy() as! NSMutableDictionary
+        oldExperience.removeObject(forKey: "reflection_question")
+        old["experience"] = oldExperience
         let response = try APICoding.decoder().decode(ExperienceResponse.self, from: JSONSerialization.data(withJSONObject: old))
         XCTAssertEqual(response.references, [])
+        XCTAssertNil(response.experience.reflectionQuestion)
 
         let oldChat = try Fixtures.object("chat_response.sample").mutableCopy() as! NSMutableDictionary
         oldChat.removeObject(forKey: "needs_care")

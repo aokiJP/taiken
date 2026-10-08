@@ -10,6 +10,8 @@ public enum NotificationPolicy {
         case dailyLimit
         case tooSoon
         case busyWithExperience
+        /// 「今はやらない」のあとのひと休み中
+        case resting
         case notSuggested
         case fallbackResult
     }
@@ -30,6 +32,7 @@ public enum NotificationPolicy {
         authorization: NotificationAuthorization,
         deliveries: [Date],
         hasActiveExperience: Bool,
+        isResting: Bool = false,
         now: Date,
         calendar: Calendar
     ) -> SkipReason? {
@@ -41,6 +44,7 @@ public enum NotificationPolicy {
         if deliveries.filter({ $0 >= startOfDay }).count >= p.maxPerDay { return .dailyLimit }
         if let last = deliveries.max(), now.timeIntervalSince(last) < TimeInterval(p.minimumIntervalHours) * 3600 { return .tooSoon }
         if hasActiveExperience { return .busyWithExperience }
+        if isResting { return .resting }
         return nil
     }
 
@@ -50,10 +54,11 @@ public enum NotificationPolicy {
         authorization: NotificationAuthorization,
         deliveries: [Date],
         hasActiveExperience: Bool,
+        isResting: Bool = false,
         now: Date,
         calendar: Calendar
     ) -> Decision {
-        if let reason = precheck(preferences: preferences, authorization: authorization, deliveries: deliveries, hasActiveExperience: hasActiveExperience, now: now, calendar: calendar) {
+        if let reason = precheck(preferences: preferences, authorization: authorization, deliveries: deliveries, hasActiveExperience: hasActiveExperience, isResting: isResting, now: now, calendar: calendar) {
             return .skip(reason)
         }
         guard response.source == .ai || response.source == .mock else { return .skip(.fallbackResult) }
@@ -122,8 +127,9 @@ public final class BackgroundCoordinator {
         let authorization = await scheduler.authorization()
         let deliveries = ledger.deliveries(since: now.addingTimeInterval(-2 * 86_400))
         let hasActive = history.activeEntry() != nil
+        let resting = cache.loadRestingUntil().map { $0 > now } ?? false
 
-        if let reason = NotificationPolicy.precheck(preferences: prefs, authorization: authorization, deliveries: deliveries, hasActiveExperience: hasActive, now: now, calendar: calendar) {
+        if let reason = NotificationPolicy.precheck(preferences: prefs, authorization: authorization, deliveries: deliveries, hasActiveExperience: hasActive, isResting: resting, now: now, calendar: calendar) {
             diagnostics.record("background.skipped", ["reason": reason.rawValue])
             return .skipped(reason)
         }
@@ -138,7 +144,7 @@ public final class BackgroundCoordinator {
             return .failed
         }
 
-        let decision = NotificationPolicy.decide(response: response, preferences: prefs, authorization: authorization, deliveries: deliveries, hasActiveExperience: hasActive, now: now, calendar: calendar)
+        let decision = NotificationPolicy.decide(response: response, preferences: prefs, authorization: authorization, deliveries: deliveries, hasActiveExperience: hasActive, isResting: resting, now: now, calendar: calendar)
         switch decision {
         case .skip(let reason):
             diagnostics.record("background.skipped", ["reason": reason.rawValue])

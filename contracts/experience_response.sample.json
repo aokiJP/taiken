@@ -43,7 +43,8 @@
     "tags": [
       "new_perspective",
       "short"
-    ]
+    ],
+    "reflection_question": "手が止まったとき、何が引っかかっていましたか？"
   },
   "should_notify": false,
   "notification": null,

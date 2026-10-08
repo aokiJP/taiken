@@ -32,11 +32,53 @@ public enum ResultSource: String, Codable, Sendable {
     case mock
     /// AIが使えずBackendが代替生成
     case fallback
-    /// 端末内の簡易生成 (未設定・オフライン時)
+    /// 端末内の体験ライブラリから選んだ (未設定・オフライン時)
     case local
+    /// 端末内のAI (Apple Intelligence) が生成。Backendは返さない
+    case onDevice = "on_device"
 
     public init(from decoder: any Decoder) throws {
         self = ResultSource(rawValue: try decoder.singleValueContainer().decode(String.self)) ?? .ai
+    }
+
+    /// AIが状況を見て作った提案か (ライブラリや代替生成ではない)
+    public var isGenerative: Bool {
+        switch self {
+        case .ai, .mock, .onDevice: true
+        case .fallback, .local: false
+        }
+    }
+}
+
+/// ユーザーが自分で選んだ、いまの気分。提案の手がかりにする (自己申告なので事実として扱う)
+public enum Mood: String, Codable, Sendable, CaseIterable, Identifiable {
+    case tired, bored, focus, refresh
+
+    public var id: String { rawValue }
+
+    public var label: String {
+        switch self {
+        case .tired: "疲れぎみ"
+        case .bored: "ひま"
+        case .focus: "集中したい"
+        case .refresh: "気分転換"
+        }
+    }
+}
+
+/// 七十二候。日付から決まる情報なので、許可なしで送ってよい (current_time 以上のことは分からない)
+public struct SeasonContext: Codable, Hashable, Sendable {
+    /// 二十四節気 (例: 寒露)
+    public let solarTerm: String
+    /// 七十二候 (例: 鴻雁来)
+    public let microSeason: String
+    /// 意味 (例: 雁が北から渡ってくる頃)
+    public let meaning: String
+
+    public init(solarTerm: String, microSeason: String, meaning: String) {
+        self.solarTerm = solarTerm
+        self.microSeason = microSeason
+        self.meaning = meaning
     }
 }
 
@@ -67,7 +109,7 @@ public enum Rating: String, Codable, Sendable, CaseIterable {
 
     public var label: String {
         switch self {
-        case .positive: "よかった"
+        case .positive: "響いた"
         case .neutral: "ふつう"
         case .negative: "合わなかった"
         }
@@ -106,14 +148,36 @@ public struct Experience: Codable, Hashable, Sendable {
     public let reason: String
     public let difficulty: Difficulty
     public let tags: [String]
+    /// 体験のあとに思い返すための問い。古いBackendの応答には無い
+    public let reflectionQuestion: String?
 
-    public init(title: String, perspective: String, invitation: String, reason: String, difficulty: Difficulty, tags: [String]) {
+    public init(
+        title: String, perspective: String, invitation: String, reason: String,
+        difficulty: Difficulty, tags: [String], reflectionQuestion: String? = nil
+    ) {
         self.title = title
         self.perspective = perspective
         self.invitation = invitation
         self.reason = reason
         self.difficulty = difficulty
         self.tags = tags
+        self.reflectionQuestion = reflectionQuestion
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case title, perspective, invitation, reason, difficulty, tags, reflectionQuestion
+    }
+
+    public init(from decoder: any Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        title = try c.decode(String.self, forKey: .title)
+        perspective = try c.decode(String.self, forKey: .perspective)
+        invitation = try c.decode(String.self, forKey: .invitation)
+        reason = try c.decodeIfPresent(String.self, forKey: .reason) ?? ""
+        difficulty = try c.decodeIfPresent(Difficulty.self, forKey: .difficulty) ?? .low
+        tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
+        let question = try c.decodeIfPresent(String.self, forKey: .reflectionQuestion)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        reflectionQuestion = question?.isEmpty == false ? question : nil
     }
 }
 
@@ -229,11 +293,15 @@ public struct ExperienceRequest: Codable, Sendable, Equatable {
     public let excludeTitles: [String]
     public let area: Area?
     public let allowWebSearch: Bool
+    /// ユーザーがその場で選んだ気分 (選んでいなければキーごと送らない)
+    public let mood: Mood?
+    /// 七十二候 (日付から決まる)
+    public let season: SeasonContext?
 
     public init(
         currentTime: String, timeZone: String, locale: String, calendarContext: [CalendarItem],
         recentUserMessages: [String], recentExperiences: [ExperienceRef], userFeedback: [FeedbackSignal],
-        excludeTitles: [String], area: Area?, allowWebSearch: Bool
+        excludeTitles: [String], area: Area?, allowWebSearch: Bool, mood: Mood? = nil, season: SeasonContext? = nil
     ) {
         self.currentTime = currentTime
         self.timeZone = timeZone
@@ -245,13 +313,15 @@ public struct ExperienceRequest: Codable, Sendable, Equatable {
         self.excludeTitles = excludeTitles
         self.area = area
         self.allowWebSearch = allowWebSearch
+        self.mood = mood
+        self.season = season
     }
 
     public func excluding(_ titles: [String]) -> ExperienceRequest {
         ExperienceRequest(
             currentTime: currentTime, timeZone: timeZone, locale: locale, calendarContext: calendarContext,
             recentUserMessages: recentUserMessages, recentExperiences: recentExperiences, userFeedback: userFeedback,
-            excludeTitles: titles, area: area, allowWebSearch: allowWebSearch
+            excludeTitles: titles, area: area, allowWebSearch: allowWebSearch, mood: mood, season: season
         )
     }
 }

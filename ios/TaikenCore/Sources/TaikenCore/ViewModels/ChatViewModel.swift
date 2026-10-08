@@ -31,9 +31,21 @@ public struct ChatMessage: Identifiable, Hashable, Sendable {
 @MainActor
 @Observable
 public final class ChatViewModel {
-    public static let greeting = "こんにちは。今どんな感じですか？ 疲れた、暇、面倒…なんでも大丈夫です。"
+    /// 話しはじめのきっかけ (タップするとそのまま送る)
+    public static let quickReplies = ["ちょっと疲れた", "ひまだな", "これから勉強する", "気分を変えたい", "何か提案して"]
 
-    public private(set) var messages: [ChatMessage] = [ChatMessage(role: .assistant, text: ChatViewModel.greeting)]
+    public static func greeting(for time: TimeOfDay) -> String {
+        switch time {
+        case .dawn, .morning: "おはようございます。今日はどんな一日になりそうですか？"
+        case .daytime: "こんにちは。いま、どんな感じですか？ 疲れた、ひま、面倒…なんでも大丈夫です。"
+        case .evening: "こんばんは。今日はどんな一日でしたか？"
+        case .night: "おつかれさまです。今日のこと、少し話していきますか？"
+        case .lateNight: "静かな夜ですね。少しだけ話してから、休みますか？"
+        }
+    }
+
+    public private(set) var greeting: String
+    public private(set) var messages: [ChatMessage]
     public var draft = ""
     public private(set) var isSending = false
     public private(set) var errorMessage: String?
@@ -56,10 +68,24 @@ public final class ChatViewModel {
         self.history = history
         self.diagnostics = diagnostics
         self.onAdopt = onAdopt
+        let greeting = Self.greeting(for: TimeOfDay.at(assembler.currentDate, calendar: assembler.calendar))
+        self.greeting = greeting
+        messages = [ChatMessage(role: .assistant, text: greeting)]
     }
 
     public var canSend: Bool {
         !isSending && !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    /// まだ何も話していないときだけ、きっかけの言葉を出す
+    public var showsQuickReplies: Bool {
+        !isSending && !messages.contains { $0.role == .user }
+    }
+
+    public func send(quickReply text: String) async {
+        guard !isSending else { return }
+        draft = text
+        await send()
     }
 
     /// 直近の返答で苦痛のサインがあったか (画面上部に相談先を出し続ける)
@@ -114,7 +140,7 @@ public final class ChatViewModel {
     public func adopt(_ message: ChatMessage) {
         guard let experience = message.suggestion, markHandled(message) else { return }
         onAdopt(experience)
-        messages.append(ChatMessage(role: .assistant, text: "ホームの「体験中」に置いておきました。終わったら感想を教えてください。"))
+        messages.append(ChatMessage(role: .assistant, text: "ホームの「体験中」に置いておきました。終わったら、体験帳に記してみてください。"))
     }
 
     public func dismissSuggestion(_ message: ChatMessage) {
@@ -128,7 +154,8 @@ public final class ChatViewModel {
 
     /// 会話を最初からにする (端末に残っている会話は無い)
     public func reset() {
-        messages = [ChatMessage(role: .assistant, text: Self.greeting)]
+        greeting = Self.greeting(for: TimeOfDay.at(assembler.currentDate, calendar: assembler.calendar))
+        messages = [ChatMessage(role: .assistant, text: greeting)]
         draft = ""
         errorMessage = nil
     }

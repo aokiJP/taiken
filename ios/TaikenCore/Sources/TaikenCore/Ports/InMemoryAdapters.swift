@@ -94,10 +94,13 @@ public final class InMemoryHistoryRepository: HistoryRepository {
 
 public final class InMemoryProposalCache: ProposalCaching {
     private let value = Mutex<CachedProposal?>(nil)
+    private let resting = Mutex<Date?>(nil)
     public init() {}
     public func load() -> CachedProposal? { value.withLock { $0 } }
     public func save(_ proposal: CachedProposal) { value.withLock { $0 = proposal } }
     public func clear() { value.withLock { $0 = nil } }
+    public func loadRestingUntil() -> Date? { resting.withLock { $0 } }
+    public func saveRestingUntil(_ date: Date?) { resting.withLock { $0 = date } }
 }
 
 public final class InMemoryNotificationLedger: NotificationLedger {
@@ -136,5 +139,34 @@ public final class RecordingNotificationScheduler: NotificationScheduling {
 
     public func deliver(_ content: NotificationContent, identifier: String) async throws {
         state.withLock { $0.delivered.append(content) }
+    }
+}
+
+// MARK: - プレビュー用のデータ
+
+extension HistoryEntry {
+    /// プレビュー・スクリーンショット用: 体験帳に印が並んでいる状態
+    public static func sampleJournal(now: Date = Date(), calendar: Calendar = .current) -> [HistoryEntry] {
+        let picks: [(days: Int, id: String, rating: Rating, note: String?)] = [
+            (0, "season-kanro", .positive, "雁ではなかったけれど、鳥が三羽。"),
+            (1, "meal-first-bite", .positive, "味噌汁が思ったより甘かった"),
+            (2, "commute-sounds", .neutral, nil),
+            (4, "study-stumble", .positive, "同じところで三回止まっていた"),
+            (6, "night-good-thing", .positive, nil),
+            (9, "people-new-question", .negative, nil),
+            (12, "rest-far", .positive, "遠くの鉄塔に初めて気づいた"),
+            (15, "shop-other-shelf", .neutral, nil),
+        ]
+        let library = TaikenContent.shared.experiences
+        return picks.compactMap { pick in
+            guard let item = library.first(where: { $0.id == pick.id }),
+                  let day = calendar.date(byAdding: .day, value: -pick.days, to: now) else { return nil }
+            let started = day.addingTimeInterval(-3 * 3600)
+            return HistoryEntry(
+                createdAt: started, finishedAt: started.addingTimeInterval(5400), title: item.title, theme: nil,
+                invitation: item.invitation, perspective: item.perspective, tags: item.tags, status: .completed,
+                rating: pick.rating, note: pick.note, reflectionQuestion: item.reflectionQuestion
+            )
+        }
     }
 }

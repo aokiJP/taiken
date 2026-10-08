@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Taiken Backend API",
-    "version": "1.1.0",
-    "description": "体験生成AIのBackend。iOSアプリだけが呼ぶ前提の非公開API。キーは snake_case。このファイルが契約の正であり、Backend と iOS (TaikenCore) の両方のテストがフィクスチャと実際の出力をこのスキーマで検証する。"
+    "version": "2.0.0",
+    "description": "体験生成AIのBackend。iOSアプリだけが呼ぶ前提の非公開API。キーは snake_case。このファイルが契約の正であり、Backend と iOS (TaikenCore) の両方のテストがフィクスチャと実際の出力をこのスキーマで検証する。2.0.0 で体験の reflection_question、リクエストの mood と season を追加 (いずれも後方互換)。"
   },
   "servers": [{ "url": "http://localhost:8787" }],
   "security": [{ "bearer": [] }],
@@ -96,6 +96,22 @@
         "type": "string",
         "enum": ["ai", "mock", "fallback"]
       },
+      "Mood": {
+        "description": "ユーザーがその場で選んだ気分 (自己申告)。tired=疲れぎみ / bored=ひま / focus=集中したい / refresh=気分転換",
+        "type": "string",
+        "enum": ["tired", "bored", "focus", "refresh"]
+      },
+      "Season": {
+        "description": "七十二候。日付から決まる情報で、current_time 以上のことは含まない",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["solar_term", "micro_season", "meaning"],
+        "properties": {
+          "solar_term": { "type": "string", "description": "二十四節気 (例: 寒露)" },
+          "micro_season": { "type": "string", "description": "七十二候 (例: 鴻雁来)" },
+          "meaning": { "type": "string", "description": "七十二候の意味 (例: 雁が北から渡ってくる頃)" }
+        }
+      },
       "FallbackReason": {
         "description": "source=fallback のときの理由。それ以外は null",
         "type": ["string", "null"],
@@ -113,14 +129,18 @@
       "Experience": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["title", "perspective", "invitation", "reason", "difficulty", "tags"],
+        "required": ["title", "perspective", "invitation", "reason", "difficulty", "tags", "reflection_question"],
         "properties": {
           "title": { "type": "string" },
           "perspective": { "type": "string" },
           "invitation": { "type": "string" },
           "reason": { "type": "string" },
           "difficulty": { "$ref": "#/components/schemas/Difficulty" },
-          "tags": { "type": "array", "items": { "type": "string" } }
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "reflection_question": {
+            "type": ["string", "null"],
+            "description": "体験のあとに思い返すための短い問い。評価や反省を迫らない。古いBackendには無いため、iOS は欠けていても読める"
+          }
         }
       },
       "CalendarItem": {
@@ -183,7 +203,12 @@
           "user_feedback": { "type": "array", "items": { "$ref": "#/components/schemas/FeedbackSignal" } },
           "exclude_titles": { "type": "array", "items": { "type": "string" } },
           "area": { "anyOf": [{ "$ref": "#/components/schemas/Area" }, { "type": "null" }] },
-          "allow_web_search": { "type": "boolean", "description": "ユーザーが必要時のWeb検索を許可しているか" }
+          "allow_web_search": { "type": "boolean", "description": "ユーザーが必要時のWeb検索を許可しているか" },
+          "mood": {
+            "anyOf": [{ "$ref": "#/components/schemas/Mood" }, { "type": "null" }],
+            "description": "ユーザーがその場で選んだ気分。選んでいなければ省略"
+          },
+          "season": { "anyOf": [{ "$ref": "#/components/schemas/Season" }, { "type": "null" }] }
         }
       },
       "Situation": {

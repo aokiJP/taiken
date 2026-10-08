@@ -23,6 +23,7 @@ public final class SettingsViewModel {
 
     // MARK: 通知
     public private(set) var notificationPreferences: NotificationPreferences
+    public private(set) var dailyLetter: DailyLetterPreferences
     public private(set) var notificationAuthorization: NotificationAuthorization = .notDetermined
     public private(set) var notificationMessage: String?
 
@@ -31,6 +32,7 @@ public final class SettingsViewModel {
     private let defaults: DefaultsStore
     private let onEndpointChange: @MainActor (BackendEndpoint?) -> Void
     private let onNotificationPreferencesChange: @MainActor (NotificationPreferences) -> Void
+    private let onDailyLetterChange: @MainActor (DailyLetterPreferences) -> Void
     private let makeService: @Sendable (BackendEndpoint) -> any ExperienceService
 
     public init(
@@ -39,7 +41,8 @@ public final class SettingsViewModel {
         defaults: DefaultsStore,
         makeService: @escaping @Sendable (BackendEndpoint) -> any ExperienceService,
         onEndpointChange: @escaping @MainActor (BackendEndpoint?) -> Void,
-        onNotificationPreferencesChange: @escaping @MainActor (NotificationPreferences) -> Void = { _ in }
+        onNotificationPreferencesChange: @escaping @MainActor (NotificationPreferences) -> Void = { _ in },
+        onDailyLetterChange: @escaping @MainActor (DailyLetterPreferences) -> Void = { _ in }
     ) {
         self.connectionStore = connectionStore
         self.scheduler = scheduler
@@ -47,16 +50,18 @@ public final class SettingsViewModel {
         self.makeService = makeService
         self.onEndpointChange = onEndpointChange
         self.onNotificationPreferencesChange = onNotificationPreferencesChange
+        self.onDailyLetterChange = onDailyLetterChange
         let saved = connectionStore.load()
         baseURLText = saved?.baseURL.absoluteString ?? ""
         hasSavedToken = saved?.token != nil
         isConfigured = saved != nil
         notificationPreferences = defaults.notificationPreferences()
+        dailyLetter = defaults.dailyLetterPreferences()
     }
 
     public func onAppear() async {
         notificationAuthorization = await scheduler.authorization()
-        if notificationPreferences.enabled, notificationAuthorization == .denied {
+        if notificationPreferences.enabled || dailyLetter.enabled, notificationAuthorization == .denied {
             notificationMessage = "iOSの設定で通知が許可されていないため、通知は届きません。"
         }
     }
@@ -131,11 +136,7 @@ public final class SettingsViewModel {
         notificationMessage = nil
         var prefs = notificationPreferences
         if enabled {
-            notificationAuthorization = await scheduler.authorization()
-            if notificationAuthorization == .notDetermined {
-                notificationAuthorization = await scheduler.requestAuthorization() ? .authorized : .denied
-            }
-            guard notificationAuthorization == .authorized else {
+            guard await ensureAuthorization() else {
                 notificationMessage = "通知が許可されていません。iOSの設定アプリから許可できます。"
                 return
             }
@@ -148,5 +149,44 @@ public final class SettingsViewModel {
         notificationPreferences = value.normalized
         defaults.saveNotificationPreferences(notificationPreferences)
         onNotificationPreferencesChange(notificationPreferences)
+    }
+
+    // MARK: - 朝の便り
+
+    /// オンにするときは通知の許可を求める。許可されなければオンにしない
+    @discardableResult
+    public func setDailyLetterEnabled(_ enabled: Bool) async -> Bool {
+        notificationMessage = nil
+        var value = dailyLetter
+        if enabled {
+            guard await ensureAuthorization() else {
+                notificationMessage = "通知が許可されていません。iOSの設定アプリから許可できます。"
+                return false
+            }
+        }
+        value.enabled = enabled
+        updateDailyLetter(value)
+        return true
+    }
+
+    public func updateDailyLetterTime(hour: Int, minute: Int) {
+        var value = dailyLetter
+        value.hour = hour
+        value.minute = minute
+        updateDailyLetter(value)
+    }
+
+    private func updateDailyLetter(_ value: DailyLetterPreferences) {
+        dailyLetter = value.normalized
+        defaults.saveDailyLetterPreferences(dailyLetter)
+        onDailyLetterChange(dailyLetter)
+    }
+
+    private func ensureAuthorization() async -> Bool {
+        notificationAuthorization = await scheduler.authorization()
+        if notificationAuthorization == .notDetermined {
+            notificationAuthorization = await scheduler.requestAuthorization() ? .authorized : .denied
+        }
+        return notificationAuthorization == .authorized
     }
 }

@@ -33,9 +33,9 @@ public enum PreferenceTrends {
 
         public var sentence: String {
             switch direction {
-            case .positive: "「\(label)」のある体験に、最近は良い反応が多めです"
+            case .positive: "「\(label)」のある体験は、最近よく響いています"
             case .negative: "「\(label)」のある体験は、最近は合わないことが多めです"
-            case .mixed: "「\(label)」のある体験への反応は、最近は半々です"
+            case .mixed: "「\(label)」のある体験は、日によって半々のようです"
             }
         }
     }

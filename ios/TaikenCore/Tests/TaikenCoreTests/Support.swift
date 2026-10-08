@@ -156,3 +156,41 @@ struct Harness {
         )
     }
 }
+
+/// "2026-10-08" の東京の時刻
+func tokyoDate(_ day: String, hour: Int = 0, minute: Int = 0) -> Date {
+    let parts = day.split(separator: "-").compactMap { Int($0) }
+    return tokyoCalendar.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2], hour: hour, minute: minute))!
+}
+
+/// 1970-01-01 からの日数 ("2026-10-08" → 20734)
+func dayNumber(_ day: String) -> Int {
+    var utc = Calendar(identifier: .gregorian)
+    utc.timeZone = TimeZone(secondsFromGMT: 0)!
+    let parts = day.split(separator: "-").compactMap { Int($0) }
+    let date = utc.date(from: DateComponents(year: parts[0], month: parts[1], day: parts[2]))!
+    return LibrarySelector.dayNumber(of: date, calendar: utc)
+}
+
+func experienceRequest(
+    at date: Date = referenceDate,
+    calendar items: [CalendarItem] = [],
+    messages: [String] = [],
+    mood: Mood? = nil,
+    exclude: [String] = [],
+    recent: [ExperienceRef] = []
+) -> ExperienceRequest {
+    ExperienceRequest(
+        currentTime: APICoding.timestamp(date, timeZone: tokyo), timeZone: "Asia/Tokyo", locale: "ja-JP",
+        calendarContext: items, recentUserMessages: messages, recentExperiences: recent, userFeedback: [],
+        excludeTitles: exclude, area: nil, allowWebSearch: false, mood: mood,
+        season: MicroSeason.at(date, calendar: tokyoCalendar).context
+    )
+}
+
+func calendarItem(_ title: String?, at date: Date, day: CalendarItem.Day = .today) -> CalendarItem {
+    CalendarItem(
+        title: title, start: APICoding.timestamp(date, timeZone: tokyo),
+        end: APICoding.timestamp(date.addingTimeInterval(3600), timeZone: tokyo), isAllDay: false, day: day
+    )
+}

@@ -51,7 +51,8 @@ public struct ContextBuilder: Sendable {
         history: [ExperienceRef],
         feedback: [FeedbackSignal],
         excludeTitles: [String],
-        area: Area? = nil
+        area: Area? = nil,
+        mood: Mood? = nil
     ) -> ExperienceRequest {
         ExperienceRequest(
             currentTime: APICoding.timestamp(now, timeZone: timeZone),
@@ -63,7 +64,11 @@ public struct ContextBuilder: Sendable {
             userFeedback: consent.useHistory ? feedback : [],
             excludeTitles: excludeTitles,
             area: consent.useLocation ? area : nil,
-            allowWebSearch: consent.allowWebSearch
+            allowWebSearch: consent.allowWebSearch,
+            // ユーザーがその場で選んだ気分は、提案のための明示的な入力なので許可の対象外
+            mood: mood,
+            // 七十二候は日付から決まり、current_time 以上の情報を含まない
+            season: MicroSeason.at(now, calendar: calendar).context
         )
     }
 
@@ -155,7 +160,7 @@ public final class ContextAssembler {
         return calendarProvider.events(from: window.start, to: window.end)
     }
 
-    public func experienceRequest(excluding titles: [String] = []) async -> ExperienceRequest {
+    public func experienceRequest(excluding titles: [String] = [], mood: Mood? = nil) async -> ExperienceRequest {
         let date = now()
         let permissions = consent()
         let area = permissions.useLocation ? await locationProvider.currentArea() : nil
@@ -168,7 +173,8 @@ public final class ContextAssembler {
             history: entries.prefix(builder.maxHistory).map { $0.reference(timeZone: builder.timeZone) },
             feedback: PreferenceTrends.signals(from: entries, now: date),
             excludeTitles: titles,
-            area: area
+            area: area,
+            mood: mood
         )
     }
 

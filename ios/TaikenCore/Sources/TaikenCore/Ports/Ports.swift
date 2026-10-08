@@ -120,8 +120,13 @@ public struct CachedProposal: Codable, Sendable, Equatable {
     }
 }
 
+/// Home の小さな状態 (当日の提案と「ひと休み」の終わり) を覚えておく。
+/// 開き直しても、断った直後に提案を押しつけないために「ひと休み」も保存する。
 public protocol ProposalCaching: Sendable {
     func load() -> CachedProposal?
     func save(_ proposal: CachedProposal)
     func clear()
+    /// 「今はやらない」「終えた」のあと、次の提案を控える時刻
+    func loadRestingUntil() -> Date?
+    func saveRestingUntil(_ date: Date?)
 }

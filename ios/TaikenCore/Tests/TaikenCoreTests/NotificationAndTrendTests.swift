@@ -167,6 +167,7 @@ final class HistoryViewModelTests: XCTestCase {
             HistoryEntry(createdAt: referenceDate.addingTimeInterval(-90 * 86_400), title: "古い", theme: nil, invitation: "i", perspective: "p", tags: [], status: .completed),
         ])
         let model = HistoryViewModel(history: repo, calendar: tokyoCalendar, now: { referenceDate })
+        model.days = 30
         model.reload()
         XCTAssertEqual(model.sections.map { $0.entries.map(\.title) }, [["今日"], ["昨日"]])
         XCTAssertEqual(model.trends.first?.tag, "short")

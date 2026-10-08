@@ -84,21 +84,41 @@ public struct NotificationPreferences: Codable, Sendable, Equatable {
     }
 }
 
+// MARK: - アプリの表示に関する設定
+
+/// はじめの案内を見終えたか
+public enum OnboardingKey {
+    public static let completed = "onboarding.completed"
+}
+
+/// 体験中の内容をロック画面 (Live Activity) に置くか。既定はオン
+public enum PresenceKey {
+    public static let enabled = "presence.liveActivityEnabled"
+}
+
 /// UserDefaults を使う小さな保存先 (UserDefaults 自体がスレッドセーフ)
 public final class DefaultsStore: @unchecked Sendable {
     public let defaults: UserDefaults
 
     public init(_ defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        defaults.register(defaults: [PresenceKey.enabled: true])
     }
 
     // MARK: 許可
 
     public func consent() -> ConsentSnapshot { ConsentSnapshot.load(from: defaults) }
 
+    // MARK: 表示
+
+    public var hasCompletedOnboarding: Bool { defaults.bool(forKey: OnboardingKey.completed) }
+
+    public var presenceEnabled: Bool { defaults.bool(forKey: PresenceKey.enabled) }
+
     // MARK: 通知の設定
 
     private static let notificationKey = "notifications.preferences"
+    private static let letterKey = "notifications.dailyLetter"
 
     public func notificationPreferences() -> NotificationPreferences {
         guard let data = defaults.data(forKey: Self.notificationKey),
@@ -108,6 +128,16 @@ public final class DefaultsStore: @unchecked Sendable {
 
     public func saveNotificationPreferences(_ value: NotificationPreferences) {
         if let data = try? JSONEncoder().encode(value.normalized) { defaults.set(data, forKey: Self.notificationKey) }
+    }
+
+    public func dailyLetterPreferences() -> DailyLetterPreferences {
+        guard let data = defaults.data(forKey: Self.letterKey),
+              let value = try? JSONDecoder().decode(DailyLetterPreferences.self, from: data) else { return DailyLetterPreferences() }
+        return value.normalized
+    }
+
+    public func saveDailyLetterPreferences(_ value: DailyLetterPreferences) {
+        if let data = try? JSONEncoder().encode(value.normalized) { defaults.set(data, forKey: Self.letterKey) }
     }
 
     // MARK: インストールID
@@ -124,8 +154,9 @@ public final class DefaultsStore: @unchecked Sendable {
 
     // MARK: 全消去
 
+    /// 端末内のデータを消す。許可・通知・表示の設定は残す (設定はデータではないため)
     public func removeAll(keepingConsent: Bool = true) {
-        for key in [Self.notificationKey, UserDefaultsProposalCache.key, UserDefaultsNotificationLedger.key] {
+        for key in [UserDefaultsProposalCache.key, UserDefaultsProposalCache.restingKey, UserDefaultsNotificationLedger.key] {
             defaults.removeObject(forKey: key)
         }
         if !keepingConsent {
@@ -137,6 +168,7 @@ public final class DefaultsStore: @unchecked Sendable {
 /// 最後の提案を当日中だけ覚えておき、オフラインでも開いた瞬間に表示できるようにする。
 public final class UserDefaultsProposalCache: ProposalCaching, @unchecked Sendable {
     static let key = "home.lastProposal"
+    static let restingKey = "home.restingUntil"
     private let defaults: UserDefaults
 
     public init(defaults: UserDefaults = .standard) {
@@ -153,6 +185,19 @@ public final class UserDefaultsProposalCache: ProposalCaching, @unchecked Sendab
     }
 
     public func clear() { defaults.removeObject(forKey: Self.key) }
+
+    public func loadRestingUntil() -> Date? {
+        let value = defaults.double(forKey: Self.restingKey)
+        return value > 0 ? Date(timeIntervalSince1970: value) : nil
+    }
+
+    public func saveRestingUntil(_ date: Date?) {
+        if let date {
+            defaults.set(date.timeIntervalSince1970, forKey: Self.restingKey)
+        } else {
+            defaults.removeObject(forKey: Self.restingKey)
+        }
+    }
 }
 
 /// 通知を出した時刻を直近分だけ保存する

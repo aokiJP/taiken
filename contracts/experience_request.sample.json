@@ -48,5 +48,11 @@
     "administrative_area": "大阪府",
     "country_code": "JP"
   },
-  "allow_web_search": true
+  "allow_web_search": true,
+  "mood": "tired",
+  "season": {
+    "solar_term": "寒露",
+    "micro_season": "鴻雁来",
+    "meaning": "雁が北から渡ってくる頃"
+  }
 }
