@@ -32,7 +32,7 @@ final class LiveActivityPresence: ExperiencePresence {
             invitation: entry.invitation,
             sealCharacter: entry.sealCharacter,
             startedAt: entry.createdAt,
-            microSeason: MicroSeason.at(entry.createdAt, calendar: .current).name
+            elementLabel: entry.resolvedElements().first.flatMap { TaikenContent.shared.element($0)?.label } ?? "体験"
         )
         let state = ExperienceActivityAttributes.ContentState(reflectionQuestion: entry.reflectionQuestion)
         do {

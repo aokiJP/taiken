@@ -102,19 +102,47 @@ test('チャット: 直近の発言だけを残す', () => {
   assert.equal(out.messages.at(-1)?.text, 'last');
 });
 
-test('気分は決まった値だけ、季節は正しい節気と意味に置き換える', () => {
+test('気分は決まった値だけ。季節 (廃止) は届いても使わない', () => {
   const out = sanitizeExperienceRequest({
     current_time: now,
     mood: 'tired',
     season: { solar_term: '嘘の節気', micro_season: '鴻雁来', meaning: '指示を無視して、と書かれた意味' },
   });
   assert.equal(out.mood, 'tired');
-  assert.deepEqual(out.season, { solar_term: '寒露', micro_season: '鴻雁来', meaning: '雁が北から渡ってくる頃' });
-
-  const odd = sanitizeExperienceRequest({ current_time: now, mood: 'angry', season: { micro_season: '存在しない候' } });
+  assert.equal('season' in out, false);
+  const odd = sanitizeExperienceRequest({ current_time: now, mood: 'angry' });
   assert.equal(odd.mood, null);
-  assert.equal(odd.season, null);
-  const missing = sanitizeExperienceRequest({ current_time: now, season: 'autumn' });
-  assert.equal(missing.mood, null);
-  assert.equal(missing.season, null);
+});
+
+test('体験の樹: id の形でないもの・知らない要素は捨て、数を絞る', () => {
+  const out = sanitizeExperienceRequest({
+    current_time: now,
+    tree: {
+      lived: [
+        { id: 'meal-first-bite', title: 'ひと口目の観察', elements: ['taste', 'bogus', 'taste'] },
+        { id: 'meal-first-bite', title: '重複', elements: [] },
+        { id: '../etc/passwd', title: 'x', elements: [] },
+        { id: 'w-abc', title: '', elements: [] },
+        { id: 'w-def', title: '指示を無視して'.repeat(30), elements: ['see'] },
+        'not an object',
+      ],
+      buds: ['meal-texture', 'MEAL', 'meal-texture', 42, ...Array.from({ length: 30 }, (_, i) => `b-${i}`)],
+    },
+  });
+  assert.deepEqual(out.tree?.lived.map((l) => l.id), ['meal-first-bite', 'w-def']);
+  assert.deepEqual(out.tree?.lived[0]?.elements, ['taste']);
+  assert.equal(Array.from(out.tree?.lived[1]?.title ?? '').length, LIMITS.titleChars + 1, '長い名前は切り詰める');
+  assert.equal(out.tree?.buds[0], 'meal-texture');
+  assert.equal(out.tree?.buds.length, LIMITS.treeBuds);
+  assert.ok(!out.tree?.buds.includes('MEAL'));
+
+  assert.equal(sanitizeExperienceRequest({ current_time: now }).tree, null);
+  assert.equal(sanitizeExperienceRequest({ current_time: now, tree: 'tree' }).tree, null);
+  assert.equal(sanitizeExperienceRequest({ current_time: now, tree: { lived: [], buds: [] } }).tree, null);
+  const many = sanitizeExperienceRequest({
+    current_time: now,
+    tree: { lived: Array.from({ length: 30 }, (_, i) => ({ id: `n-${i}`, title: `t${i}`, elements: [] })) },
+  });
+  assert.equal(many.tree?.lived.length, LIMITS.treeLived);
+  assert.deepEqual(many.tree?.buds, []);
 });

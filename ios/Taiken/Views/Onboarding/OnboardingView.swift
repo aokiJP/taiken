@@ -1,7 +1,7 @@
 import SwiftUI
 import TaikenCore
 
-/// はじめの案内。三枚だけ: 何のアプリか → AIの立ち位置 → 使う情報はあなたが選ぶ。
+/// はじめの案内。四枚だけ: 何のアプリか → AIの立ち位置 → 体験の樹 → 使う情報はあなたが選ぶ。
 /// 許可は最後のページで、理由と一緒に、オフのままでも進めるように聞く。
 struct OnboardingView: View {
     let dependencies: AppDependencies
@@ -13,20 +13,25 @@ struct OnboardingView: View {
     @State private var isFinishing = false
     @Environment(\.colorScheme) private var colorScheme
 
-    private let pageCount = 3
+    private let pageCount = 4
+    /// 案内の挿絵の樹 (見本の体験帳から組み立てる)
+    private let sampleScene: TreeScene = {
+        let tree = TreeBuilder.build(garden: .empty, entries: HistoryEntry.sampleJournal())
+        return TreeScene.make(tree: tree, layout: TreeLayout.make(tree: tree))
+    }()
 
     var body: some View {
         TimelineView(.everyMinute) { timeline in
             let time = TimeOfDay.at(timeline.date, calendar: .current)
             let palette = time.sky(dark: colorScheme == .dark)
-            let season = MicroSeason.at(timeline.date, calendar: .current)
             ZStack {
                 SkyBackground(time: time)
                 VStack(spacing: 0) {
                     TabView(selection: $page) {
-                        welcome(season: season, palette: palette).tag(0)
+                        welcome(palette: palette).tag(0)
                         stance(palette: palette).tag(1)
-                        permissions(palette: palette).tag(2)
+                        treePage(palette: palette).tag(2)
+                        permissions(palette: palette).tag(3)
                     }
                     .tabViewStyle(.page(indexDisplayMode: .never))
                     footer(palette: palette)
@@ -39,16 +44,11 @@ struct OnboardingView: View {
 
     // MARK: - 1. いつもの一日に
 
-    private func welcome(season: MicroSeason, palette: SkyPalette) -> some View {
+    private func welcome(palette: SkyPalette) -> some View {
         OnboardingPage {
-            VStack(alignment: .leading, spacing: 10) {
-                TanzakuView(text: season.name, size: 30, foreground: palette.onSky, border: palette.onSky.opacity(0.3))
-                Text(season.reading)
-                    .font(.caption)
-                    .foregroundStyle(palette.onSkySecondary)
-            }
-            .inkReveal()
-            .padding(.bottom, 12)
+            SealView(character: "体", size: 52, style: .filled, rotation: -6)
+                .inkReveal()
+                .padding(.bottom, 12)
 
             Text("いつもの一日に、\nまだ見ていない\n体験がある。")
                 .font(.displayTitle)
@@ -57,7 +57,7 @@ struct OnboardingView: View {
                 .inkReveal(delay: 0.2)
                 .accessibilityAddTraits(.isHeader)
 
-            Text("今日は七十二候の「\(season.name)」。\(season.meaning)です。\n体験は特別な場所ではなく、予定や移動や食事の中にあります。")
+            Text("体験は特別な場所ではなく、予定や移動や食事の中にあります。見る、聴く、味わう、休む。いつもしていることが、そのまま入り口です。")
                 .font(Typeface.mincho(16))
                 .lineSpacing(6)
                 .foregroundStyle(palette.onSkySecondary)
@@ -95,7 +95,36 @@ struct OnboardingView: View {
         }
     }
 
-    // MARK: - 3. 使う情報
+    // MARK: - 3. 体験の樹
+
+    private func treePage(palette: SkyPalette) -> some View {
+        OnboardingPage {
+            TreeCanvas(
+                scene: sampleScene, viewport: TreeViewport(), palette: palette, selected: nil, highlighted: nil,
+                time: 0, labels: false
+            )
+            .frame(height: 230)
+            .frame(maxWidth: .infinity)
+            .accessibilityHidden(true)
+
+            Text("やった体験が、\n樹になる。")
+                .font(.displayTitle)
+                .lineSpacing(6)
+                .foregroundStyle(palette.onSky)
+                .accessibilityAddTraits(.isHeader)
+
+            Text("体験は「見る」「聴く」「味わう」など、10の要素の根から伸びています。記した体験は朱の印として灯り、その先に次の芽が出ます。自分で体験を編んだり、響き合った体験どうしを糸で結んだりもできます。")
+                .font(Typeface.mincho(16))
+                .lineSpacing(6)
+                .foregroundStyle(palette.onSkySecondary)
+
+            Text("点数やレベルはありません。どの体験も、いつでも始められます。")
+                .font(.footnote)
+                .foregroundStyle(palette.onSkySecondary)
+        }
+    }
+
+    // MARK: - 4. 使う情報
 
     private func permissions(palette: SkyPalette) -> some View {
         OnboardingPage {
@@ -112,7 +141,7 @@ struct OnboardingView: View {
                     )
                     Divider().overlay(Palette.line)
                     PermissionRow(
-                        title: "朝の便り", detail: "朝に一度だけ。その日の季節のひと言と一緒に", isOn: $morningLetter
+                        title: "朝の便り", detail: "朝に一度だけ。その日の小さな体験のきっかけを", isOn: $morningLetter
                     )
                 }
             }

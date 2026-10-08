@@ -57,6 +57,42 @@ enum TaikenSchemaV2: VersionedSchema {
         var note: String?
         var reflectionQuestion: String?
 
+        init(id: UUID, createdAt: Date, title: String, invitation: String, perspective: String, tags: [String], statusRaw: String) {
+            self.id = id
+            self.createdAt = createdAt
+            self.title = title
+            self.invitation = invitation
+            self.perspective = perspective
+            self.tags = tags
+            self.statusRaw = statusRaw
+        }
+    }
+}
+
+/// v3.0: 体験の樹の上の位置 (nodeID) と要素 (elementsText: "taste,word") を足した。
+/// 任意の項目を足しただけなので、軽量移行で移れる。古い記録は名前と文から樹の上の位置を推し量る
+enum TaikenSchemaV3: VersionedSchema {
+    static let versionIdentifier = Schema.Version(3, 0, 0)
+    static var models: [any PersistentModel.Type] { [ExperienceRecord.self] }
+
+    @Model
+    final class ExperienceRecord {
+        @Attribute(.unique) var id: UUID
+        var createdAt: Date
+        var finishedAt: Date?
+        var title: String
+        var theme: String?
+        var invitation: String
+        var perspective: String
+        var tags: [String]
+        var statusRaw: String
+        var ratingRaw: String?
+        var note: String?
+        var reflectionQuestion: String?
+        var nodeID: String?
+        /// 要素の id をカンマでつないだもの (先頭が主な要素)
+        var elementsText: String?
+
         init(_ entry: HistoryEntry) {
             id = entry.id
             createdAt = entry.createdAt
@@ -70,6 +106,8 @@ enum TaikenSchemaV2: VersionedSchema {
             ratingRaw = entry.rating?.rawValue
             note = entry.note
             reflectionQuestion = entry.reflectionQuestion
+            nodeID = entry.nodeID
+            elementsText = entry.elements.isEmpty ? nil : entry.elements.joined(separator: ",")
         }
 
         /// 変更できる項目だけを反映する
@@ -93,18 +131,23 @@ enum TaikenSchemaV2: VersionedSchema {
                 status: HistoryEntry.Status(rawValue: statusRaw) ?? .completed,
                 rating: ratingRaw.flatMap(Rating.init(rawValue:)),
                 note: note,
-                reflectionQuestion: reflectionQuestion
+                reflectionQuestion: reflectionQuestion,
+                nodeID: nodeID,
+                elements: elementsText.map { $0.split(separator: ",").map(String.init) } ?? []
             )
         }
     }
 }
 
-typealias ExperienceRecord = TaikenSchemaV2.ExperienceRecord
+typealias ExperienceRecord = TaikenSchemaV3.ExperienceRecord
 
 enum TaikenMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] { [TaikenSchemaV1.self, TaikenSchemaV2.self] }
+    static var schemas: [any VersionedSchema.Type] { [TaikenSchemaV1.self, TaikenSchemaV2.self, TaikenSchemaV3.self] }
     static var stages: [MigrationStage] {
-        [.lightweight(fromVersion: TaikenSchemaV1.self, toVersion: TaikenSchemaV2.self)]
+        [
+            .lightweight(fromVersion: TaikenSchemaV1.self, toVersion: TaikenSchemaV2.self),
+            .lightweight(fromVersion: TaikenSchemaV2.self, toVersion: TaikenSchemaV3.self),
+        ]
     }
 }
 
@@ -114,7 +157,7 @@ enum PersistenceFactory {
     /// - iCloud に同期しない
     /// - 保存領域が壊れていてもアプリは起動させる (その場合、体験帳はこの起動中だけ保持)
     static func makeContainer(inMemory: Bool, storeURL: URL? = nil, onFailure: (Error) -> Void = { _ in }) -> ModelContainer {
-        let schema = Schema(versionedSchema: TaikenSchemaV2.self)
+        let schema = Schema(versionedSchema: TaikenSchemaV3.self)
         let configuration: ModelConfiguration
         if let storeURL {
             configuration = ModelConfiguration(schema: schema, url: storeURL, cloudKitDatabase: .none)

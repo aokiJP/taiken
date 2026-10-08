@@ -90,3 +90,20 @@ test('振り返りの問い: 欠けていれば null、長すぎれば切り詰�
   const experience = normalizeExperience({ ...base, reflection_question: '限界まで走れましたか？' });
   assert.equal(findSafetyIssue(experience), '心身への過度な負担');
 });
+
+test('体験の樹の上の位置: ライブラリだと名乗るのは名前が同じときだけ・伸びた先は届いた樹の中だけ', () => {
+  const base = { title: 'ひと口目の観察', perspective: 'p', invitation: 'i', reason: 'r', difficulty: 'low', tags: [] };
+  const library = normalizeExperience({ ...base, node_id: 'meal-first-bite', elements: [] });
+  assert.equal(library.node_id, 'meal-first-bite');
+  assert.deepEqual(library.elements, ['taste'], '要素が無ければライブラリの要素');
+
+  const pretender = normalizeExperience({ ...base, title: '別の体験', node_id: 'meal-first-bite', elements: ['see', 'nope', 'see', 'hear', 'move', 'word'] });
+  assert.equal(pretender.node_id, null);
+  assert.deepEqual(pretender.elements, ['see', 'hear', 'move']);
+
+  const lived = new Set(['root-hear']);
+  assert.equal(normalizeExperience({ ...base, grows_from: 'root-hear' }, { livedIds: lived }).grows_from, 'root-hear');
+  assert.equal(normalizeExperience({ ...base, grows_from: 'root-see' }, { livedIds: lived }).grows_from, null);
+  assert.equal(normalizeExperience({ ...base, grows_from: 'root-hear' }).grows_from, null);
+  assert.equal(normalizeExperience({ ...base, grows_from: '' }, { livedIds: lived }).grows_from, null);
+});

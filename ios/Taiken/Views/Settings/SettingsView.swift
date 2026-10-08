@@ -1,6 +1,7 @@
 import SwiftUI
 import TaikenCore
 import UIKit
+import UniformTypeIdentifiers
 
 /// 設定 (指示書 §19: 情報の種類ごとに許可・拒否できる)。
 /// どのしくみが提案をつくっているか、次に何を渡すのかを、いつでも確かめられるようにする
@@ -20,6 +21,7 @@ struct SettingsView: View {
 
     @State private var confirmsDeletion = false
     @State private var exportData: Data?
+    @State private var vaultFiles: [VaultExporter.File] = []
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
 
@@ -54,14 +56,16 @@ struct SettingsView: View {
             .task {
                 await model.onAppear()
                 exportData = try? dependencies.history.exportJSON()
+                vaultFiles = dependencies.history.vaultFiles()
             }
             .confirmationDialog("体験帳と端末内のデータをすべて削除しますか？", isPresented: $confirmsDeletion, titleVisibility: .visible) {
                 Button("削除", role: .destructive) {
                     dependencies.deleteAllLocalData()
                     exportData = nil
+                    vaultFiles = []
                 }
             } message: {
-                Text("押した印とひとことが、すべて消えます。接続先・情報の許可・通知の設定は残ります。")
+                Text("押した印とひとこと、編んだ体験と結んだ糸が、すべて消えます。接続先・情報の許可・通知の設定は残ります。")
             }
         }
         .presentationBackground(Palette.paper)
@@ -100,7 +104,7 @@ struct SettingsView: View {
         case .onDevice:
             "サーバーに接続しなくても使えます。端末内のAIの出力にも、サーバーと同じ安全確認をかけています。"
         case .library:
-            "サーバーに接続しなくても、七十二候の季節の体験を含む体験ライブラリで使えます。iOS 26 以降の対応機種で Apple Intelligence をオンにすると、端末内のAIが提案をつくります。"
+            "サーバーに接続しなくても、端末内の体験ライブラリ (10の要素の体験の樹) で使えます。iOS 26 以降の対応機種で Apple Intelligence をオンにすると、端末内のAIが提案をつくります。"
         }
     }
 
@@ -130,7 +134,7 @@ struct SettingsView: View {
         } header: {
             Text("提案に使う情報")
         } footer: {
-            Text("予定は今日と明日の時間とタイトルだけを使い、メモ・場所・参加者は読み取りません。地域は市区町村名だけで、座標は使いません。Web検索はサーバー接続時に、天気など外部の情報が本当に必要なときだけ行い、検索語に予定のタイトルや発言は含めません。季節 (七十二候) は日付から計算するので、許可は要りません。会話は保存しません。")
+            Text("予定は今日と明日の時間とタイトルだけを使い、メモ・場所・参加者は読み取りません。地域は市区町村名だけで、座標は使いません。Web検索はサーバー接続時に、天気など外部の情報が本当に必要なときだけ行い、検索語に予定のタイトルや発言は含めません。体験の樹 (灯った体験の名前と要素、その先の芽) は「体験帳と反応を提案に使う」がオンのときだけ使います。会話は保存しません。")
         }
     }
 
@@ -168,7 +172,7 @@ struct SettingsView: View {
         } header: {
             Text("通知")
         } footer: {
-            Text("朝の便りは、決まった時刻に一度だけ、その日の七十二候のひと言と一緒に届きます。その日すでに体験に触れていれば届きません。「ちょうどよい時に知らせる」は、ときどき裏側で状況を確かめ、今がよいタイミングで負担にならないときだけ知らせます。どちらも音は鳴らしません。")
+            Text("朝の便りは、決まった時刻に一度だけ、その日の小さな体験のきっかけとして届きます。その日すでに体験に触れていれば届きません。「ちょうどよい時に知らせる」は、ときどき裏側で状況を確かめ、今がよいタイミングで負担にならないときだけ知らせます。どちらも音は鳴らしません。")
         }
     }
 
@@ -230,6 +234,14 @@ struct SettingsView: View {
 
     private var dataSection: some View {
         Section {
+            if !vaultFiles.isEmpty {
+                ShareLink(
+                    item: TreeVaultExport(files: vaultFiles),
+                    preview: SharePreview("体験の樹（Markdown）", image: Image(systemName: "point.3.connected.trianglepath.dotted"))
+                ) {
+                    Label("体験の樹を書き出す（Markdown）", systemImage: "point.3.connected.trianglepath.dotted")
+                }
+            }
             if let exportData {
                 ShareLink(
                     item: JournalExport(data: exportData),
@@ -243,7 +255,7 @@ struct SettingsView: View {
         } header: {
             Text("端末内のデータ")
         } footer: {
-            Text("体験帳はこの端末の中だけにあります。iCloud にも送りません。サーバーに接続しているときも、サーバーは会話や予定を保存せず、1日の利用量の数字だけを記録します。")
+            Text("体験帳と体験の樹 (編んだ体験・結んだ糸) は、この端末の中だけにあります。iCloud にも送りません。Markdown で書き出すと、体験ごとのページが [[リンク]] でつながったフォルダになり、Obsidian などのノートアプリで樹のまま開けます。サーバーに接続しているときも、サーバーは会話や予定を保存せず、1日の利用量の数字だけを記録します。")
         }
     }
 
@@ -363,5 +375,45 @@ struct ConnectionSettingsView: View {
                 .font(.footnote)
                 .foregroundStyle(Palette.shu)
         }
+    }
+}
+
+// MARK: - 体験の樹の書き出し
+
+/// 体験の樹の Markdown 保管庫。共有するときに初めて、フォルダを書いて zip にまとめる
+struct TreeVaultExport: Transferable {
+    let files: [VaultExporter.File]
+
+    static var transferRepresentation: some TransferRepresentation {
+        FileRepresentation(exportedContentType: .zip) { export in
+            SentTransferredFile(try VaultArchive.make(files: export.files))
+        }
+        .suggestedFileName("taiken-tree.zip")
+    }
+}
+
+enum VaultArchive {
+    /// 一時フォルダに Markdown を書き、iOS のファイル連携 (NSFileCoordinator) で zip にする
+    static func make(files: [VaultExporter.File]) throws -> URL {
+        let manager = FileManager.default
+        let base = manager.temporaryDirectory.appendingPathComponent("vault-\(UUID().uuidString)", isDirectory: true)
+        let folder = base.appendingPathComponent(VaultExporter.folderName, isDirectory: true)
+        try manager.createDirectory(at: base, withIntermediateDirectories: true)
+        try VaultExporter.write(files, to: folder)
+
+        let destination = base.appendingPathComponent("taiken-tree.zip")
+        var coordinationError: NSError?
+        var copyError: Error?
+        NSFileCoordinator().coordinate(readingItemAt: folder, options: .forUploading, error: &coordinationError) { zipped in
+            do {
+                try manager.copyItem(at: zipped, to: destination)
+            } catch {
+                copyError = error
+            }
+        }
+        try? manager.removeItem(at: folder)
+        if let coordinationError { throw coordinationError }
+        if let copyError { throw copyError }
+        return destination
     }
 }

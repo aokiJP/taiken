@@ -1,6 +1,6 @@
 {
   "name": "taiken-backend",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "private": true,
   "description": "体験生成AI Backend (iOS → Backend → AI API)",
   "type": "module",

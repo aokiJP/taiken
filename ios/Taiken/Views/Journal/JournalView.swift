@@ -3,24 +3,25 @@ import TaikenCore
 import UniformTypeIdentifiers
 
 /// 体験帳 (指示書 §15, §16)。数を競わせない: 連続記録も「今日もやろう」も出さない。
-/// 代わりに、七十二候の輪に印が灯っていく様子と、月の暦に押された印を見せる。
+/// いつ何をしたかを、月の暦に押された印と、日ごとの記録で見る。
+/// 体験どうしのつながりは、体験の樹で見る (記録からも樹へ渡れる)。
 struct JournalView: View {
     let model: HistoryViewModel
     let goHome: @MainActor () -> Void
+    /// 体験の樹をひらく (体験の id があれば、そこを中心に)
+    let openTree: @MainActor (String?) -> Void
 
     @State private var exportData: Data?
     @State private var pendingDeletion: HistoryEntry?
     @Namespace private var zoom
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var today: MicroSeason { MicroSeason.at(Date(), calendar: .current) }
-
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
                 VStack(alignment: .leading, spacing: 26) {
                     header
-                    ringSection
+                    ElementsTouched(touched: model.stats.elements) { openTree(nil) }
                     MonthCalendar(model: model) { day in
                         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.4)) {
                             proxy.scrollTo(day, anchor: .top)
@@ -64,9 +65,11 @@ struct JournalView: View {
             }
         }
         .navigationDestination(for: HistoryEntry.self) { entry in
-            EntryDetailView(entry: entry, season: model.microSeason(of: entry)) {
-                delete(entry)
-            }
+            EntryDetailView(
+                entry: entry,
+                openTree: { openTree(model.nodeID(of: entry)) },
+                onDelete: { delete(entry) }
+            )
             .navigationTransition(.zoom(sourceID: entry.id, in: zoom))
         }
         .onAppear { reload() }
@@ -91,37 +94,12 @@ struct JournalView: View {
                 .font(.displayTitle)
                 .foregroundStyle(Palette.ink)
                 .accessibilityAddTraits(.isHeader)
-            Text("記した体験 \(model.stats.lived) ・ 今月 \(model.stats.thisMonth) ・ この一年で出会った候 \(model.stats.microSeasons.count) / 72")
+            Text("記した体験 \(model.stats.lived) ・ 今月 \(model.stats.thisMonth)")
                 .font(.footnote)
                 .monospacedDigit()
                 .foregroundStyle(Palette.ink2)
         }
         .padding(.top, 4)
-    }
-
-    private var ringSection: some View {
-        VStack(spacing: 12) {
-            ZStack {
-                SeasonRing(lived: model.stats.microSeasons, current: today.index)
-                VStack(spacing: 2) {
-                    Text("\(model.stats.microSeasons.count)")
-                        .font(Typeface.mincho(34, bold: true, relativeTo: .largeTitle))
-                        .monospacedDigit()
-                        .foregroundStyle(Palette.ink)
-                        .contentTransition(.numericText())
-                    Text("候")
-                        .font(.caption)
-                        .foregroundStyle(Palette.ink3)
-                }
-                .accessibilityHidden(true)
-            }
-            .frame(maxWidth: 300)
-            Text("体験を記した候が、朱で灯ります。\n点は今日の候（\(today.name)）。")
-                .font(.caption)
-                .foregroundStyle(Palette.ink3)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
     }
 
     // MARK: - 記録
@@ -148,7 +126,7 @@ struct JournalView: View {
             LazyVStack(alignment: .leading, spacing: 22) {
                 ForEach(model.sections) { section in
                     VStack(alignment: .leading, spacing: 10) {
-                        DayHeader(day: section.day, season: MicroSeason.at(section.day, calendar: .current))
+                        DayHeader(day: section.day)
                         ForEach(section.entries) { entry in
                             NavigationLink(value: entry) {
                                 EntryRow(entry: entry)
@@ -342,20 +320,68 @@ private struct TrendsBox: View {
 
 private struct DayHeader: View {
     let day: Date
-    let season: MicroSeason
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(day.formatted(.dateTime.month(.wide).day().weekday(.abbreviated)))
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(Palette.ink2)
-            Spacer()
-            Text("\(season.name)の頃")
-                .font(Typeface.mincho(13, relativeTo: .footnote))
-                .foregroundStyle(Palette.ink3)
+        Text(day.formatted(.dateTime.month(.wide).day().weekday(.wide)))
+            .font(.footnote.weight(.semibold))
+            .foregroundStyle(Palette.ink2)
+            .accessibilityAddTraits(.isHeader)
+    }
+}
+
+// MARK: - 触れた要素
+
+/// 10の要素のうち、記した体験のある要素に朱の印。数や割合は出さない。押すと体験の樹がひらく
+private struct ElementsTouched: View {
+    let touched: Set<String>
+    let openTree: @MainActor () -> Void
+
+    var body: some View {
+        Button(action: openTree) {
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    MiniHead("触れた要素")
+                    Spacer()
+                    HStack(spacing: 4) {
+                        Text("体験の樹をひらく")
+                        Image(systemName: "chevron.right")
+                            .font(.caption2.weight(.semibold))
+                    }
+                    .font(.caption)
+                    .foregroundStyle(Palette.ink2)
+                }
+                HStack(spacing: 0) {
+                    ForEach(TaikenContent.shared.elements) { element in
+                        VStack(spacing: 5) {
+                            SealView(
+                                character: element.glyph, size: 26,
+                                style: touched.contains(element.id) ? .outlined : .ghost, rotation: 0
+                            )
+                            Text(element.label)
+                                .font(.system(size: 9))
+                                .foregroundStyle(touched.contains(element.id) ? Palette.ink2 : Palette.ink3)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                        }
+                        .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            .padding(16)
+            .background(Palette.wash, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         }
-        .accessibilityElement(children: .combine)
-        .accessibilityAddTraits(.isHeader)
+        .buttonStyle(.plain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityText)
+        .accessibilityHint("体験の樹をひらきます")
+        .accessibilityAddTraits(.isButton)
+        .accessibilityIdentifier("journal.tree")
+    }
+
+    private var accessibilityText: String {
+        let names = TaikenContent.shared.elements.filter { touched.contains($0.id) }.map(\.label)
+        return names.isEmpty ? "触れた要素は、まだありません" : "触れた要素: \(names.joined(separator: "、"))"
     }
 }
 
@@ -422,6 +448,6 @@ struct JournalExport: Transferable {
 
 #Preview {
     NavigationStack {
-        JournalView(model: AppDependencies.preview().history, goHome: {})
+        JournalView(model: AppDependencies.preview().history, goHome: {}, openTree: { _ in })
     }
 }

@@ -50,9 +50,28 @@
   },
   "allow_web_search": true,
   "mood": "tired",
-  "season": {
-    "solar_term": "寒露",
-    "micro_season": "鴻雁来",
-    "meaning": "雁が北から渡ってくる頃"
+  "tree": {
+    "lived": [
+      {
+        "id": "meal-first-bite",
+        "title": "ひと口目の観察",
+        "elements": [
+          "taste"
+        ]
+      },
+      {
+        "id": "commute-sounds",
+        "title": "三つの音",
+        "elements": [
+          "hear",
+          "move"
+        ]
+      }
+    ],
+    "buds": [
+      "meal-texture",
+      "taste-last-bite",
+      "hear-own-steps"
+    ]
   }
 }

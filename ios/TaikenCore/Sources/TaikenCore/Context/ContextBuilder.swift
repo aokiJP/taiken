@@ -52,7 +52,8 @@ public struct ContextBuilder: Sendable {
         feedback: [FeedbackSignal],
         excludeTitles: [String],
         area: Area? = nil,
-        mood: Mood? = nil
+        mood: Mood? = nil,
+        tree: TreeContext? = nil
     ) -> ExperienceRequest {
         ExperienceRequest(
             currentTime: APICoding.timestamp(now, timeZone: timeZone),
@@ -67,8 +68,8 @@ public struct ContextBuilder: Sendable {
             allowWebSearch: consent.allowWebSearch,
             // ユーザーがその場で選んだ気分は、提案のための明示的な入力なので許可の対象外
             mood: mood,
-            // 七十二候は日付から決まり、current_time 以上の情報を含まない
-            season: MicroSeason.at(now, calendar: calendar).context
+            // 体験の樹は体験帳から計算するので、体験帳を使う許可があるときだけ
+            tree: consent.useHistory ? tree.flatMap { $0.isEmpty ? nil : $0 } : nil
         )
     }
 
@@ -126,6 +127,8 @@ public final class ContextAssembler {
     private let builder: ContextBuilder
     private let consent: @MainActor () -> ConsentSnapshot
     private let now: @Sendable () -> Date
+    /// 体験の樹のいま (アプリ側で TreeSource をつなぐ。無ければ送らない)
+    public var treeContext: @MainActor () -> TreeContext? = { nil }
 
     public init(
         calendarProvider: any CalendarProviding,
@@ -174,7 +177,8 @@ public final class ContextAssembler {
             feedback: PreferenceTrends.signals(from: entries, now: date),
             excludeTitles: titles,
             area: area,
-            mood: mood
+            mood: mood,
+            tree: permissions.useHistory ? treeContext() : nil
         )
     }
 

@@ -27,12 +27,24 @@ struct OpenTodayIntent: AppIntent {
 
 struct OpenJournalIntent: AppIntent {
     static let title: LocalizedStringResource = "体験帳をひらく"
-    static let description = IntentDescription("これまでに記した体験と、七十二候の輪をひらきます。")
+    static let description = IntentDescription("これまでに記した体験と、月の暦をひらきます。")
     static let openAppWhenRun = true
 
     @MainActor
     func perform() async throws -> some IntentResult {
         PendingRoute.shared.url = DeepLink.journal.url
+        return .result()
+    }
+}
+
+struct OpenTreeIntent: AppIntent {
+    static let title: LocalizedStringResource = "体験の樹をひらく"
+    static let description = IntentDescription("灯った体験と、その先の芽が見える体験の樹をひらきます。")
+    static let openAppWhenRun = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        PendingRoute.shared.url = DeepLink.tree.url
         return .result()
     }
 }
@@ -63,6 +75,12 @@ struct TaikenShortcuts: AppShortcutsProvider {
             phrases: ["\(.applicationName)の体験帳をひらく"],
             shortTitle: "体験帳",
             systemImageName: "book.closed"
+        )
+        AppShortcut(
+            intent: OpenTreeIntent(),
+            phrases: ["\(.applicationName)の体験の樹をひらく"],
+            shortTitle: "体験の樹",
+            systemImageName: "circle.hexagongrid"
         )
         AppShortcut(
             intent: TalkIntent(),

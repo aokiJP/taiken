@@ -1,7 +1,18 @@
 #!/usr/bin/env python3
 """体験ライブラリの選び方の基準実装 (仕様)。
-iOS (LibrarySelector.swift) と Backend (library.ts) はこれと同じ結果を返すことを、
-contracts/selection_cases.json で検証する。"""
+iOS (LibrarySelector.swift)・Backend (library.ts)・Web 版 (docs/prototype/taiken.html) はこれと同じ結果を返すことを、
+contracts/selection_cases.json で検証する。
+
+点数のつけ方
+- 予定や発言から読んだ場面 (テーマ) に合う: +4。特定の場面向けの体験で、その場面が見当たらない: -2
+- 気分に合う: +2.5
+- 朝・夜の時間帯に合う: +1.5
+- 体験の樹の「芽」(灯った体験からつながっている、まだやっていない体験): +1.5
+- 最近の反応の傾向: タグごとに +weight (響いた) / -1.5×weight (合わなかった)
+- 最近の体験: -3。疲れぎみで手間のかかる体験: -2
+- 日ごとに決まる小さなゆらぎ (0〜0.9)
+時間帯の合わない体験と、今回は出さない体験 (別の視点で見たもの) は候補から外す。
+"""
 import datetime as dt
 import json
 import sys
@@ -43,7 +54,6 @@ def detect_mood(content, texts):
 def select(content, case):
     day = day_number(case["date"])
     tod = case["time_of_day"]
-    term = case["solar_term"]
     texts_event = [case["event_title"]] if case.get("event_title") else []
     messages = case.get("messages", [])
     detected = detect_themes(content, texts_event) | detect_themes(content, messages)
@@ -52,11 +62,10 @@ def select(content, case):
     feedback = case.get("feedback", [])
     recent = set(case.get("recent_titles", []))
     exclude = set(case.get("exclude_titles", []))
+    buds = set(case.get("buds", []))
 
     def eligible(e, use_exclude=True):
         if use_exclude and e["title"] in exclude:
-            return False
-        if e["solar_terms"] and term not in e["solar_terms"]:
             return False
         if e["times"] and tod not in e["times"]:
             return False
@@ -70,9 +79,9 @@ def select(content, case):
             s -= 2.0
         if mood and mood in e["moods"]:
             s += 2.5
-        if e["solar_terms"]:
-            s += 3.0
         if time_theme and time_theme in e["themes"]:
+            s += 1.5
+        if e["id"] in buds:
             s += 1.5
         for tag in e["tags"]:
             for f in feedback:
@@ -100,52 +109,66 @@ def select(content, case):
     return best["id"]
 
 
+ROOTS = "__ROOTS__"
+FIRST = "__FIRST__"
+
 CASES = [
-    {"name": "予定も気分も無い寒露の夕方は、季節の体験", "date": "2026-10-08", "time_of_day": "evening", "solar_term": 16},
-    {"name": "勉強の予定があれば勉強の体験", "date": "2026-10-08", "time_of_day": "evening", "solar_term": 16, "event_title": "数学の課題"},
-    {"name": "勉強の予定 + 疲れぎみなら軽いもの", "date": "2026-10-08", "time_of_day": "evening", "solar_term": 16, "event_title": "数学の課題", "mood": "tired"},
-    {"name": "朝 + 気分転換", "date": "2026-10-09", "time_of_day": "morning", "solar_term": 16, "mood": "refresh"},
-    {"name": "夜は夜の体験 (昼向きの季節の体験は出さない)", "date": "2026-10-08", "time_of_day": "night", "solar_term": 16},
-    {"name": "深夜", "date": "2026-10-08", "time_of_day": "lateNight", "solar_term": 16},
-    {"name": "別の提案: 見た体験は除く", "date": "2026-10-08", "time_of_day": "evening", "solar_term": 16, "exclude_titles": ["渡っていくもの"]},
-    {"name": "最近やった体験は後ろに回す", "date": "2026-10-08", "time_of_day": "evening", "solar_term": 16, "recent_titles": ["渡っていくもの"]},
-    {"name": "発言から気分と予定の種類を読む", "date": "2026-10-08", "time_of_day": "daytime", "solar_term": 16, "messages": ["これから会議。ちょっと疲れた"]},
-    {"name": "反応の傾向を使う (季節の体験が出ない昼)", "date": "2026-12-23", "time_of_day": "daytime", "solar_term": 21, "mood": "bored",
+    {"name": "予定も気分も無い夕方", "date": "2026-10-08", "time_of_day": "evening"},
+    {"name": "勉強の予定があれば勉強の体験", "date": "2026-10-08", "time_of_day": "evening", "event_title": "数学の課題"},
+    {"name": "勉強の予定 + 疲れぎみなら軽いもの", "date": "2026-10-08", "time_of_day": "evening", "event_title": "数学の課題", "mood": "tired"},
+    {"name": "朝 + 気分転換", "date": "2026-10-09", "time_of_day": "morning", "mood": "refresh"},
+    {"name": "夜は夜の体験", "date": "2026-10-08", "time_of_day": "night"},
+    {"name": "深夜", "date": "2026-10-08", "time_of_day": "lateNight"},
+    {"name": "別の提案: 見た体験は除く", "date": "2026-10-08", "time_of_day": "evening", "exclude_titles": [FIRST]},
+    {"name": "最近やった体験は後ろに回す", "date": "2026-10-08", "time_of_day": "evening", "recent_titles": [FIRST]},
+    {"name": "発言から気分と予定の種類を読む", "date": "2026-10-08", "time_of_day": "daytime", "messages": ["これから会議。ちょっと疲れた"]},
+    {"name": "反応の傾向を使う", "date": "2026-12-23", "time_of_day": "daytime", "mood": "bored",
      "feedback": [{"tag": "social", "rating": "negative", "weight": 1.0}, {"tag": "creative", "rating": "positive", "weight": 0.8}]},
-    {"name": "移動の予定 + 季節", "date": "2026-10-10", "time_of_day": "morning", "solar_term": 16, "event_title": "通学"},
-    {"name": "冬至の夜", "date": "2026-12-22", "time_of_day": "night", "solar_term": 21},
-    {"name": "立春の昼 + 集中したい", "date": "2027-02-05", "time_of_day": "daytime", "solar_term": 0, "mood": "focus"},
-    {"name": "全部除外されたら除外を外して選ぶ", "date": "2026-10-08", "time_of_day": "lateNight", "solar_term": 16,
-     "exclude_titles": ["__ALL_LATE_NIGHT__"]},
+    {"name": "移動の予定", "date": "2026-10-10", "time_of_day": "morning", "event_title": "通学"},
+    {"name": "はじめての人は、根 (いちばん小さなかたち) が芽になる", "date": "2026-10-08", "time_of_day": "daytime", "buds": [ROOTS]},
+    {"name": "灯った体験の先の芽を少し優先する", "date": "2026-10-08", "time_of_day": "daytime",
+     "buds": ["meal-texture", "taste-last-bite", "taste-water", "meal-screen-down"]},
+    {"name": "芽よりも、予定に合う体験を優先する", "date": "2026-10-08", "time_of_day": "evening", "event_title": "数学の課題",
+     "buds": ["hear-far", "touch-wind"]},
+    {"name": "芽 + 気分", "date": "2026-10-11", "time_of_day": "daytime", "mood": "tired",
+     "buds": ["pause-breath", "rest-nothing", "pause-waiting", "pause-one-thing", "smell-breath"]},
+    {"name": "全部除外されたら除外を外して選ぶ", "date": "2026-10-08", "time_of_day": "lateNight", "exclude_titles": ["__ALL_LATE_NIGHT__"]},
 ]
 
 
 def main(content_path, out_path):
     content = json.load(open(content_path, encoding="utf-8"))
+    roots = [el["root"] for el in content["elements"]]
     out = []
+    first_title = None
     for case in CASES:
         case = dict(case)
         if case.get("exclude_titles") == ["__ALL_LATE_NIGHT__"]:
-            case["exclude_titles"] = [e["title"] for e in content["experiences"]
-                                      if (not e["times"] or "lateNight" in e["times"])
-                                      and (not e["solar_terms"] or 16 in e["solar_terms"])]
+            case["exclude_titles"] = [e["title"] for e in content["experiences"] if not e["times"] or "lateNight" in e["times"]]
+        if first_title:
+            for key in ("exclude_titles", "recent_titles"):
+                case[key] = [first_title if t == FIRST else t for t in case.get(key, [])]
+        if case.get("buds") == [ROOTS]:
+            case["buds"] = roots
         full = {
             "name": case["name"],
             "date": case["date"],
             "time_of_day": case["time_of_day"],
-            "solar_term": case["solar_term"],
             "event_title": case.get("event_title"),
             "messages": case.get("messages", []),
             "mood": case.get("mood"),
             "feedback": case.get("feedback", []),
             "recent_titles": case.get("recent_titles", []),
             "exclude_titles": case.get("exclude_titles", []),
+            "buds": case.get("buds", []),
         }
         full["expected"] = select(content, full)
+        if first_title is None:
+            first_title = next(e["title"] for e in content["experiences"] if e["id"] == full["expected"])
         out.append(full)
         print(f"{full['expected']:22s} ← {full['name']}")
     with open(out_path, "w", encoding="utf-8") as f:
-        json.dump({"description": "体験ライブラリの選び方のテストケース。iOS と Backend が同じ結果を返すことを確かめる。", "cases": out},
+        json.dump({"description": "体験ライブラリの選び方のテストケース。iOS・Backend・Web 版が同じ結果を返すことを確かめる。", "cases": out},
                   f, ensure_ascii=False, indent=2)
         f.write("\n")
 

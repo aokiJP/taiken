@@ -2,7 +2,7 @@ import SwiftUI
 import TaikenCore
 import WidgetKit
 
-/// 今日の体験。アプリを開かなくても、今日の誘いかけと七十二候を眺められる。
+/// 今日の体験。アプリを開かなくても、今日の誘いかけを眺められる。
 /// アプリが App Group に置いた状態を読むだけで、ウィジェットからは何も送らない
 struct TodayWidget: Widget {
     static let kind = "TodayWidget"
@@ -12,7 +12,7 @@ struct TodayWidget: Widget {
             TodayWidgetView(entry: entry)
         }
         .configurationDisplayName("今日の体験")
-        .description("今日の誘いかけと、七十二候。体験中は、その体験を。")
+        .description("今日の誘いかけ。体験中は、その体験を。")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular, .accessoryInline])
         .contentMarginsDisabled()
     }
@@ -39,7 +39,7 @@ struct TodayProvider: TimelineProvider {
         let snapshot = Self.current(now: now, calendar: calendar)
         let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now.addingTimeInterval(86_400)
 
-        // 空の色が変わる時刻ごとに描き直す。日付が変わったら読み直す (七十二候と提案が変わるため)
+        // 空の色が変わる時刻ごとに描き直す。日付が変わったら読み直す (日付と提案が変わるため)
         var dates = [now]
         var cursor = now
         while true {
@@ -51,9 +51,9 @@ struct TodayProvider: TimelineProvider {
         completion(Timeline(entries: dates.map { TodayEntry(date: $0, snapshot: snapshot) }, policy: .after(tomorrow)))
     }
 
-    /// App Group に置かれた状態。無いとき・古いときは、今日の季節だけを出す
+    /// App Group に置かれた状態。無いとき・古いときは、日付とひとことだけを出す
     static func current(now: Date, calendar: Calendar = .current) -> WidgetSnapshot {
-        let empty = WidgetSnapshot(kind: .empty, season: MicroSeason.at(now, calendar: calendar), updatedAt: now)
+        let empty = WidgetSnapshot(kind: .empty, updatedAt: now)
         guard let stored = AppGroup.widgetStore?.load() else { return empty }
         switch stored.kind {
         case .active:
@@ -111,9 +111,13 @@ struct TodayWidgetView: View {
 
     // MARK: 小
 
+    private var hasExperience: Bool {
+        snapshot.invitation != nil && (snapshot.kind == .proposal || snapshot.kind == .active)
+    }
+
     @ViewBuilder
     private var small: some View {
-        if let invitation = snapshot.invitation, snapshot.kind == .proposal || snapshot.kind == .active {
+        if let invitation = snapshot.invitation, hasExperience {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top) {
                     Text(eyebrow)
@@ -139,24 +143,26 @@ struct TodayWidgetView: View {
                 }
             }
         } else {
-            HStack(alignment: .top, spacing: 10) {
-                TanzakuView(text: snapshot.microSeason, size: 17, foreground: palette.onSky, border: palette.onSky.opacity(0.28))
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text(snapshot.solarTerm)
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .top) {
+                    Text(dateLine)
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(palette.onSkySecondary)
+                        .lineLimit(1)
                     Spacer(minLength: 4)
-                    Text(snapshot.microSeasonMeaning)
-                        .font(Typeface.fixedMincho(13, bold: false))
-                        .foregroundStyle(palette.onSky)
-                        .multilineTextAlignment(.trailing)
-                        .lineLimit(4)
-                    Text(snapshot.kind == .resting ? "今はひと休み" : "今日の体験をひらく")
-                        .font(.system(size: 10))
-                        .foregroundStyle(palette.onSkySecondary)
-                        .padding(.top, 4)
+                    SealView(character: "体", size: 26, style: .outlined, color: palette.onSky.opacity(0.7))
                 }
-                .frame(maxWidth: .infinity, alignment: .trailing)
+                Spacer(minLength: 6)
+                Text(restLine)
+                    .font(Typeface.fixedMincho(15, bold: false))
+                    .lineSpacing(3)
+                    .foregroundStyle(palette.onSky)
+                    .lineLimit(4)
+                    .minimumScaleFactor(0.85)
+                Text(snapshot.kind == .resting ? "今はひと休み" : "今日の体験をひらく")
+                    .font(.system(size: 10))
+                    .foregroundStyle(palette.onSkySecondary)
+                    .padding(.top, 6)
             }
         }
     }
@@ -165,19 +171,25 @@ struct TodayWidgetView: View {
 
     private var medium: some View {
         HStack(alignment: .top, spacing: 16) {
-            TanzakuView(text: snapshot.microSeason, size: 18, foreground: palette.onSky, border: palette.onSky.opacity(0.28))
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .center, spacing: 8) {
-                    Text(eyebrow)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(snapshot.kind == .active ? Palette.shu : palette.onSkySecondary)
-                    Spacer(minLength: 4)
-                    if let seal = snapshot.sealCharacter, snapshot.kind != .empty {
-                        SealView(character: seal, size: 28, style: snapshot.kind == .active ? .filled : .outlined)
-                    }
+            VStack(spacing: 6) {
+                SealView(
+                    character: hasExperience ? (snapshot.sealCharacter ?? "体") : "体", size: 46,
+                    style: snapshot.kind == .active ? .filled : .outlined,
+                    color: hasExperience ? Palette.shu : palette.onSky.opacity(0.7)
+                )
+                if let label = snapshot.elementLabel, hasExperience {
+                    Text(label)
+                        .font(Typeface.fixedMincho(11))
+                        .foregroundStyle(palette.onSkySecondary)
                 }
+            }
+            VStack(alignment: .leading, spacing: 0) {
+                Text(hasExperience ? eyebrow : dateLine)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(snapshot.kind == .active ? Palette.shu : palette.onSkySecondary)
+                    .lineLimit(1)
                 Spacer(minLength: 6)
-                if let invitation = snapshot.invitation, snapshot.kind == .proposal || snapshot.kind == .active {
+                if let invitation = snapshot.invitation, hasExperience {
                     Text(invitation)
                         .font(Typeface.fixedMincho(15, bold: false))
                         .lineSpacing(4)
@@ -191,7 +203,7 @@ struct TodayWidgetView: View {
                             .padding(.top, 6)
                     }
                 } else {
-                    Text(snapshot.microSeasonMeaning)
+                    Text(restLine)
                         .font(Typeface.fixedMincho(16, bold: false))
                         .foregroundStyle(palette.onSky)
                         .lineLimit(2)
@@ -201,6 +213,7 @@ struct TodayWidgetView: View {
                         .padding(.top, 6)
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 
@@ -208,16 +221,16 @@ struct TodayWidgetView: View {
 
     private var rectangular: some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(snapshot.kind == .active ? "体験中 · \(snapshot.microSeason)" : "\(snapshot.solarTerm) · \(snapshot.microSeason)")
+            Text(hasExperience ? eyebrow : "体験")
                 .font(.caption2.weight(.semibold))
                 .widgetAccentable()
                 .lineLimit(1)
-            if let invitation = snapshot.invitation, snapshot.kind == .proposal || snapshot.kind == .active {
+            if let invitation = snapshot.invitation, hasExperience {
                 Text(invitation)
                     .font(.caption)
                     .lineLimit(3)
             } else {
-                Text(snapshot.microSeasonMeaning)
+                Text(snapshot.kind == .resting ? "今はひと休み" : "今日、何を体験できるか")
                     .font(.caption)
                     .lineLimit(2)
             }
@@ -227,10 +240,25 @@ struct TodayWidgetView: View {
 
     @ViewBuilder
     private var inline: some View {
-        if let title = snapshot.title, snapshot.kind == .proposal || snapshot.kind == .active {
-            Text("\(snapshot.microSeason) · \(title)")
+        if let title = snapshot.title, hasExperience {
+            Text(snapshot.kind == .active ? "体験中 · \(title)" : title)
         } else {
-            Text("\(snapshot.solarTerm) · \(snapshot.microSeason)")
+            Text("今日の体験をひらく")
+        }
+    }
+
+    /// 「10月8日 木曜日」
+    private var dateLine: String {
+        entry.date.formatted(.dateTime.month().day().weekday(.wide))
+    }
+
+    /// 提案の無いときのひとこと (時間帯で変える)
+    private var restLine: String {
+        switch TimeOfDay.at(entry.date, calendar: .current) {
+        case .dawn, .morning: "いつもの朝に、まだ見ていない体験がある。"
+        case .daytime: "いつもの昼に、まだ見ていない体験がある。"
+        case .evening: "いつもの夕方に、まだ見ていない体験がある。"
+        case .night, .lateNight: "いつもの夜に、まだ見ていない体験がある。"
         }
     }
 
@@ -242,9 +270,10 @@ struct TodayWidgetView: View {
             }
             return "体験中"
         case .proposal:
-            return "今日の体験 · \(snapshot.microSeason)"
+            if let label = snapshot.elementLabel { return "今日の体験 · \(label)" }
+            return "今日の体験"
         case .resting, .empty:
-            return "\(snapshot.solarTerm) · \(snapshot.microSeason)"
+            return dateLine
         }
     }
 }
@@ -253,7 +282,7 @@ struct TodayWidgetView: View {
     TodayWidget()
 } timeline: {
     TodayEntry(date: Date(), snapshot: .sample())
-    TodayEntry(date: Date(), snapshot: WidgetSnapshot(kind: .empty, season: MicroSeason.entry(48), updatedAt: Date()))
+    TodayEntry(date: Date(), snapshot: WidgetSnapshot(kind: .empty, updatedAt: Date()))
 }
 
 #Preview(as: .systemMedium) {

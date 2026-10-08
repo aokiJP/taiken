@@ -44,7 +44,12 @@
       "new_perspective",
       "short"
     ],
-    "reflection_question": "手が止まったとき、何が引っかかっていましたか？"
+    "reflection_question": "手が止まったとき、何が引っかかっていましたか？",
+    "node_id": "study-stumble",
+    "elements": [
+      "think"
+    ],
+    "grows_from": "study-why"
   },
   "should_notify": false,
   "notification": null,

@@ -57,14 +57,13 @@ public struct WidgetSnapshot: Codable, Sendable, Equatable {
     public var reflectionQuestion: String?
     public var startedAt: Date?
     public var sealCharacter: String?
-    public var solarTerm: String
-    public var microSeason: String
-    public var microSeasonMeaning: String
+    /// 主な要素の名前 (見る・聴く…)
+    public var elementLabel: String?
     public var updatedAt: Date
 
     public init(
         kind: Kind, title: String? = nil, invitation: String? = nil, reflectionQuestion: String? = nil, startedAt: Date? = nil,
-        sealCharacter: String? = nil, season: MicroSeason, updatedAt: Date
+        sealCharacter: String? = nil, elementLabel: String? = nil, updatedAt: Date
     ) {
         self.kind = kind
         self.title = title
@@ -72,9 +71,7 @@ public struct WidgetSnapshot: Codable, Sendable, Equatable {
         self.reflectionQuestion = reflectionQuestion
         self.startedAt = startedAt
         self.sealCharacter = sealCharacter
-        solarTerm = season.solarTerm
-        microSeason = season.name
-        microSeasonMeaning = season.meaning
+        self.elementLabel = elementLabel
         self.updatedAt = updatedAt
     }
 
@@ -90,10 +87,10 @@ public struct WidgetSnapshot: Codable, Sendable, Equatable {
     /// ウィジェットのプレビュー用
     public static func sample(now: Date = Date()) -> WidgetSnapshot {
         WidgetSnapshot(
-            kind: .proposal, title: "渡っていくもの",
-            invitation: "移動の途中で一度だけ空を見上げて、渡っていくものを探してみませんか？",
-            reflectionQuestion: "空には、何が渡っていましたか？", sealCharacter: "観",
-            season: MicroSeason.entry(48), updatedAt: now
+            kind: .proposal, title: "いちばん遠くを見る",
+            invitation: "少し手を止めて、窓の外のいちばん遠くにあるものを眺めてみませんか？",
+            reflectionQuestion: "いちばん遠くに、何が見えましたか？", sealCharacter: "見", elementLabel: "見る",
+            updatedAt: now
         )
     }
 }

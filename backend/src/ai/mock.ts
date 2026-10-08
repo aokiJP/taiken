@@ -8,8 +8,8 @@ import {
   detectThemes,
   fnv1a,
   moodLabel,
+  parentOf,
   reasonFor,
-  solarTermIndex,
   TIME_LABELS,
   timeOfDayOf,
 } from '../content/library.ts';
@@ -51,20 +51,20 @@ export function createMockProvider(): AiProvider {
         .sort((a, b) => Date.parse(a.start) - Date.parse(b.start))[0];
       const hour = localHour(ctx.current_time);
       const tod = timeOfDayOf(hour);
-      const term = solarTermIndex(ctx.season?.solar_term);
 
       const choice = choose({
         day: dayNumberOf(ctx.current_time),
         timeOfDay: tod,
-        solarTerm: term,
         eventTitle: next?.title ?? null,
         messages: ctx.recent_user_messages,
         mood: ctx.mood,
         feedback: ctx.user_feedback,
         recentTitles: ctx.recent_experiences.map((e) => e.title),
         excludeTitles: ctx.exclude_titles,
+        buds: ctx.tree?.buds ?? [],
       });
       const picked = choice.experience;
+      const parent = parentOf(picked, ctx.tree);
 
       const observations: { text: string; basis: string }[] = [];
       const actions: { label: string; basis: string }[] = [];
@@ -79,6 +79,7 @@ export function createMockProvider(): AiProvider {
         observations.push({ text: '疲れや面倒さを口にしていた', basis: 'stated' });
         observations.push({ text: '今日は負担の少ない提案が合うかもしれない', basis: 'inferred' });
       }
+      if (parent) observations.push({ text: `体験帳に「${parent.title}」が記されている`, basis: 'stated' });
 
       const obligation = [...choice.themesFromEvent].find((t) => t in OBLIGATIONS);
       const minutesUntil = next ? (Date.parse(next.start) - now) / 60_000 : Number.POSITIVE_INFINITY;
@@ -103,10 +104,13 @@ export function createMockProvider(): AiProvider {
           title: picked.title,
           perspective: picked.perspective,
           invitation: picked.invitation,
-          reason: reasonFor(choice, next?.title ?? null, next !== undefined, ctx.season?.solar_term ?? null),
+          reason: reasonFor(choice, next?.title ?? null, next !== undefined, parent),
           difficulty: picked.effort,
           tags: picked.tags,
           reflection_question: picked.reflection_question,
+          node_id: picked.id,
+          elements: picked.elements,
+          grows_from: parent?.id ?? null,
         },
         should_notify: goodTiming,
         notification: goodTiming ? { title: 'もうすぐの予定に、ひとつの視点を', body: picked.invitation } : undefined,
@@ -135,13 +139,13 @@ export function createMockProvider(): AiProvider {
       const choice = choose({
         day: dayNumberOf(ctx.current_time),
         timeOfDay: timeOfDayOf(localHour(ctx.current_time)),
-        solarTerm: null,
         eventTitle: themes.size === 0 ? (next?.title ?? null) : null,
         messages: [last],
         mood,
         feedback: [],
         recentTitles: [],
         excludeTitles: ctx.current_experience ? [ctx.current_experience.title] : [],
+        buds: [],
       });
       const picked = choice.experience;
       return {
@@ -157,6 +161,9 @@ export function createMockProvider(): AiProvider {
           difficulty: picked.effort,
           tags: picked.tags,
           reflection_question: picked.reflection_question,
+          node_id: picked.id,
+          elements: picked.elements,
+          grows_from: null,
         },
       };
     },

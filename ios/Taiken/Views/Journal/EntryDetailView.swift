@@ -1,10 +1,11 @@
 import SwiftUI
 import TaikenCore
 
-/// 体験帳の1ページ。押した印と、その日の候と、残したひとこと
+/// 体験帳の1ページ。押した印と、その時間と、残したひとこと。樹の上の場所へも渡れる
 struct EntryDetailView: View {
     let entry: HistoryEntry
-    let season: MicroSeason
+    /// 体験の樹で、この体験の場所をひらく
+    let openTree: @MainActor () -> Void
     let onDelete: @MainActor () -> Void
 
     /// 共有するカードに、ひとことも載せるか (ひとことは「この端末だけ」の約束なので、既定はオフ)
@@ -26,7 +27,7 @@ struct EntryDetailView: View {
                             .foregroundStyle(Palette.ink)
                             .fixedSize(horizontal: false, vertical: true)
                             .accessibilityAddTraits(.isHeader)
-                        Text("\(season.solarTerm)・\(season.name)（\(season.reading)）")
+                        Text(entry.momentLine)
                             .font(Typeface.mincho(14, relativeTo: .subheadline))
                             .foregroundStyle(Palette.ink2)
                     }
@@ -95,6 +96,28 @@ struct EntryDetailView: View {
                         .foregroundStyle(Palette.ink3)
                 }
 
+                Button(action: openTree) {
+                    HStack(spacing: 10) {
+                        ForEach(entry.resolvedElements(), id: \.self) { id in
+                            if let element = TaikenContent.shared.element(id) {
+                                ElementMark(glyph: element.glyph, size: 20)
+                            }
+                        }
+                        Text("体験の樹で、この体験の場所を見る")
+                            .font(.callout)
+                            .foregroundStyle(Palette.ink)
+                        Spacer(minLength: 0)
+                        Image(systemName: "chevron.right")
+                            .font(.footnote)
+                            .foregroundStyle(Palette.ink3)
+                    }
+                    .padding(14)
+                    .background(Palette.wash, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+                    .contentShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("entry.tree")
+
                 if entry.status == .completed {
                     shareSection
                 }
@@ -126,7 +149,7 @@ struct EntryDetailView: View {
     private var shareSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             MiniHead("印のカード")
-            StampCard(entry: entry, season: season, includeNote: includeNote)
+            StampCard(entry: entry, includeNote: includeNote)
                 .scaleEffect(0.86, anchor: .topLeading)
                 .frame(width: StampCard.size.width * 0.86, height: StampCard.size.height * 0.86, alignment: .topLeading)
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -152,7 +175,7 @@ struct EntryDetailView: View {
 
     @MainActor
     private func renderCard() -> Image? {
-        let renderer = ImageRenderer(content: StampCard(entry: entry, season: season, includeNote: includeNote))
+        let renderer = ImageRenderer(content: StampCard(entry: entry, includeNote: includeNote))
         renderer.scale = 3
         guard let image = renderer.uiImage else { return nil }
         return Image(uiImage: image)
@@ -164,7 +187,6 @@ struct StampCard: View {
     static let size = CGSize(width: 360, height: 450)
 
     let entry: HistoryEntry
-    let season: MicroSeason
     let includeNote: Bool
 
     var body: some View {
@@ -178,7 +200,7 @@ struct StampCard: View {
                             .font(.system(size: 11, weight: .medium))
                             .tracking(1)
                             .foregroundStyle(Palette.ink3)
-                        Text("\(season.solarTerm)・\(season.name)")
+                        Text(entry.elementLine)
                             .font(Typeface.fixedMincho(14))
                             .foregroundStyle(Palette.ink2)
                     }
@@ -220,8 +242,21 @@ struct StampCard: View {
     }
 }
 
+extension HistoryEntry {
+    /// 「夕方に始めた体験」
+    var momentLine: String {
+        "\(TimeOfDay.at(createdAt, calendar: .current).label)に始めた体験"
+    }
+
+    /// 「見る · 休む の体験」(共有カードに添える)
+    var elementLine: String {
+        let labels = resolvedElements().compactMap { TaikenContent.shared.element($0)?.label }
+        return labels.isEmpty ? "体験帳より" : "\(labels.joined(separator: " · ")) の体験"
+    }
+}
+
 #Preview {
     NavigationStack {
-        EntryDetailView(entry: HistoryEntry.sampleJournal()[1], season: MicroSeason.entry(48), onDelete: {})
+        EntryDetailView(entry: HistoryEntry.sampleJournal()[1], openTree: {}, onDelete: {})
     }
 }

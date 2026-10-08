@@ -9,7 +9,7 @@ import { sanitizeChatRequest, sanitizeExperienceRequest } from '../src/engine/sa
 import { normalizeExperienceResult } from '../src/engine/schema.ts';
 import { ConcurrencyGate } from '../src/support/concurrency.ts';
 import { CircuitBreaker } from '../src/support/resilience.ts';
-import { fixture, makeBudget, makeEngine, signal } from './helpers.ts';
+import { contractErrors, fixture, makeBudget, makeEngine, signal } from './helpers.ts';
 
 const mock = createMockProvider();
 const ctx = () => sanitizeExperienceRequest(fixture('experience_request.sample.json'));
@@ -215,15 +215,33 @@ test('モック: 選んだ気分で体験と理由が変わり、気分は「本
   assert.ok(out.experience.reflection_question?.endsWith('？'));
 });
 
-test('モック: 予定も気分も無い寒露の夕方は、季節の体験を選ぶ', async () => {
+test('モック: 予定も気分も無い夕方は、いつもの時間の中から選び、樹の上の位置を返す', async () => {
+  const engine = await makeEngine({ provider: mock });
+  const out = await engine.generateExperience(sanitizeExperienceRequest({ current_time: '2026-10-08T18:10:00+09:00' }), { signal: signal() });
+  assert.equal(out.experience.node_id, 'hear-far');
+  assert.deepEqual(out.experience.elements, ['hear']);
+  assert.equal(out.experience.grows_from, null);
+  assert.equal(out.experience.reason, '特別な予定がなくても、いつもの時間の中に体験は見つけられます。');
+  assert.equal(out.situation.summary, '目立った予定は見当たらない夕方。');
+});
+
+test('モック: 灯った体験の先の芽から選び、どこから伸びたかを返す', async () => {
   const engine = await makeEngine({ provider: mock });
   const out = await engine.generateExperience(
-    sanitizeExperienceRequest({ current_time: '2026-10-08T18:10:00+09:00', season: { micro_season: '鴻雁来' } }),
+    sanitizeExperienceRequest({
+      current_time: '2026-10-08T13:00:00+09:00',
+      tree: {
+        lived: [{ id: 'meal-first-bite', title: 'ひと口目の観察', elements: ['taste'] }],
+        buds: ['meal-texture', 'taste-last-bite', 'taste-water', 'meal-screen-down'],
+      },
+    }),
     { signal: signal() },
   );
-  assert.equal(out.experience.title, '渡っていくもの');
-  assert.equal(out.experience.reason, '今は「寒露」の頃。季節の小さな変化に目を向ける提案です。');
-  assert.equal(out.situation.summary, '目立った予定は見当たらない夕方。');
+  assert.equal(out.experience.node_id, 'taste-water');
+  assert.equal(out.experience.grows_from, 'meal-first-bite');
+  assert.equal(out.experience.reason, '前に記した「ひと口目の観察」の先にある体験です。');
+  assert.ok(out.situation.observations.some((o) => o.text === '体験帳に「ひと口目の観察」が記されている'));
+  assert.deepEqual(contractErrors('ExperienceResponse', out), []);
 });
 
 test('モック: 予定の内容が分からないときは推測しない / 勉強の予定は義務の可能性として扱う', async () => {

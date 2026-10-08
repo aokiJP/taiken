@@ -114,9 +114,38 @@ final class AppDependenciesTests: XCTestCase {
         XCTAssertEqual(deps.engineState.engine, .library)
         await deps.home.refresh()
         XCTAssertEqual(deps.home.proposal?.source, .local)
+        XCTAssertNotNil(deps.home.proposalLineage, "提案には、樹の上の位置が添えられる")
         deps.deleteAllLocalData()
         XCTAssertNil(deps.home.proposal)
         XCTAssertTrue(deps.history.isEmpty)
+        XCTAssertTrue(deps.trees.garden.isEmpty, "編んだ体験と結びも消える")
+        XCTAssertTrue(deps.tree.tree.litNodes.isEmpty)
+    }
+
+    func testSeededTreeHasWovenNodeAndTie() throws {
+        let deps = AppDependencies.preview()
+        let woven = deps.tree.tree.nodes.first { $0.kind == .woven }
+        XCTAssertEqual(woven?.title, "湯気のゆくえ")
+        XCTAssertEqual(woven?.parentID, "root-see")
+        XCTAssertEqual(deps.tree.tied(to: "rest-far").map(\.node.id), ["meal-first-bite"])
+        XCTAssertFalse(deps.tree.tree.litNodes.isEmpty, "見本の体験帳で、樹に灯りがある")
+        XCTAssertFalse(deps.history.vaultFiles().isEmpty)
+
+        // 樹から体験を始めると、ホームの「体験中」になり、ホームへ戻る
+        deps.router.openTree(focus: "rest-far")
+        XCTAssertEqual(deps.router.path.count, 1)
+        deps.tree.start(try XCTUnwrap(deps.tree.node("taste-water")))
+        XCTAssertEqual(deps.home.activeEntry?.nodeID, "taste-water")
+        XCTAssertTrue(deps.router.path.isEmpty)
+    }
+
+    func testMarkdownVaultArchive() throws {
+        let deps = AppDependencies.preview()
+        let url = try VaultArchive.make(files: deps.history.vaultFiles())
+        defer { try? FileManager.default.removeItem(at: url.deletingLastPathComponent()) }
+        let data = try Data(contentsOf: url)
+        XCTAssertGreaterThan(data.count, 1000)
+        XCTAssertEqual(Array(data.prefix(2)), [0x50, 0x4B], "zip のはじまり (PK)")
     }
 
     func testDeepLinksRouteOnlyAfterOnboarding() {
@@ -128,6 +157,8 @@ final class AppDependenciesTests: XCTestCase {
         deps.defaults.defaults.set(true, forKey: OnboardingKey.completed)
         deps.open(DeepLink.journal.url)
         XCTAssertEqual(deps.router.path.count, 1)
+        deps.open(DeepLink.tree.url)
+        XCTAssertEqual(deps.router.path.count, 1, "体験の樹は、ホームの上に開く")
         deps.open(DeepLink.talk.url)
         XCTAssertTrue(deps.router.path.isEmpty)
         XCTAssertEqual(deps.router.sheet, .chat)
@@ -139,17 +170,17 @@ final class AppDependenciesTests: XCTestCase {
     }
 
     func testDeepLinkRoundTrip() {
-        for link in [DeepLink.today, .journal, .talk] {
+        for link in [DeepLink.today, .journal, .tree, .talk] {
             XCTAssertEqual(DeepLink(url: link.url), link)
         }
         XCTAssertNil(DeepLink(url: URL(string: "taiken://unknown")!))
     }
 }
 
-/// v1 (問いの無い体験帳) から v2 への移行で、記録が失われないこと
+/// 古い体験帳 (v1: 問いの無い体験帳・v2: 樹の位置の無い体験帳) から v3 への移行で、記録が失われないこと
 @MainActor
 final class SchemaMigrationTests: XCTestCase {
-    func testV1StoreOpensWithV2WithoutLosingEntries() throws {
+    func testV1StoreOpensWithV3WithoutLosingEntries() throws {
         let directory = FileManager.default.temporaryDirectory.appendingPathComponent("migration-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: directory) }
@@ -180,12 +211,57 @@ final class SchemaMigrationTests: XCTestCase {
         XCTAssertEqual(entry.note, "思ったより甘かった")
         XCTAssertNil(entry.reflectionQuestion)
 
-        // v2 では問いも保存できる
+        // 問いも保存できる
         let next = HistoryEntry(
-            createdAt: Date(), title: "渡っていくもの", theme: nil, invitation: "i", perspective: "p",
-            tags: ["observation"], status: .active, reflectionQuestion: "空には、何が渡っていましたか？"
+            createdAt: Date(), title: "いちばん遠くを見る", theme: nil, invitation: "i", perspective: "p",
+            tags: ["observation"], status: .active, reflectionQuestion: "いちばん遠くに、何が見えましたか？"
         )
         try repo.add(next)
-        XCTAssertEqual(repo.entry(id: next.id)?.reflectionQuestion, "空には、何が渡っていましたか？")
+        XCTAssertEqual(repo.entry(id: next.id)?.reflectionQuestion, "いちばん遠くに、何が見えましたか？")
+    }
+
+    func testV2StoreOpensWithV3AndFindsItsPlaceOnTheTree() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("migration-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let url = directory.appendingPathComponent("taiken.store")
+        let id = UUID()
+        let library = try XCTUnwrap(TaikenContent.shared.experience("meal-first-bite"))
+
+        do {
+            let schema = Schema(versionedSchema: TaikenSchemaV2.self)
+            let container = try ModelContainer(for: schema, configurations: ModelConfiguration(schema: schema, url: url))
+            let record = TaikenSchemaV2.ExperienceRecord(
+                id: id, createdAt: Date(timeIntervalSince1970: 1_790_000_000), title: library.title,
+                invitation: library.invitation, perspective: library.perspective, tags: library.tags, statusRaw: "completed"
+            )
+            record.ratingRaw = "positive"
+            record.reflectionQuestion = library.reflectionQuestion
+            container.mainContext.insert(record)
+            try container.mainContext.save()
+        }
+
+        var failure: Error?
+        let container = PersistenceFactory.makeContainer(inMemory: false, storeURL: url) { failure = $0 }
+        XCTAssertNil(failure)
+        let repo = SwiftDataHistoryRepository(container: container)
+        let entry = try XCTUnwrap(repo.entry(id: id))
+        XCTAssertEqual(entry.title, library.title)
+        XCTAssertEqual(entry.reflectionQuestion, library.reflectionQuestion)
+        XCTAssertNil(entry.nodeID, "古い記録には樹の位置が無い")
+
+        // 名前から、樹の上の位置が見つかる
+        let tree = TreeBuilder.build(garden: .empty, entries: repo.entries(since: nil, limit: nil))
+        XCTAssertEqual(tree.nodeID(of: entry), "meal-first-bite")
+        XCTAssertEqual(tree.state(of: "meal-first-bite"), .lit)
+
+        // v3 では樹の位置と要素も保存できる
+        let next = HistoryEntry(
+            createdAt: Date(), title: "湯気のゆくえ", theme: nil, invitation: "i", perspective: "p", tags: ["observation"],
+            status: .active, nodeID: "w-abc", elements: ["see", "pause"]
+        )
+        try repo.add(next)
+        XCTAssertEqual(repo.entry(id: next.id)?.nodeID, "w-abc")
+        XCTAssertEqual(repo.entry(id: next.id)?.elements, ["see", "pause"])
     }
 }

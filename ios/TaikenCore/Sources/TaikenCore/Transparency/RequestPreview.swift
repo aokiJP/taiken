@@ -15,9 +15,6 @@ public enum RequestPreview {
         var sections: [Section] = [
             Section(title: "時刻", items: ["\(dateText(request.currentTime)) (\(request.timeZone))"]),
         ]
-        if let season = request.season {
-            sections.append(Section(title: "季節", items: ["\(season.solarTerm)・\(season.microSeason) — \(season.meaning)"]))
-        }
         sections.append(Section(title: "いまの気分", items: [request.mood?.label ?? "選んでいません"]))
         sections.append(Section(
             title: "予定",
@@ -35,6 +32,7 @@ public enum RequestPreview {
             title: "反応の傾向",
             items: request.userFeedback.isEmpty ? [notSent] : request.userFeedback.map(feedbackLine)
         ))
+        sections.append(Section(title: "体験の樹", items: treeLines(request.tree)))
         sections.append(Section(title: "おおよその地域", items: [areaLine(request.area)]))
         sections.append(Section(title: "Web検索", items: [request.allowWebSearch ? "必要なときだけ使ってよい" : "使わない"]))
         if !request.excludeTitles.isEmpty {
@@ -83,6 +81,22 @@ public enum RequestPreview {
     static func feedbackLine(_ signal: FeedbackSignal) -> String {
         let direction = signal.rating == .positive ? "良い反応が多め" : signal.rating == .negative ? "合わないことが多め" : "半々"
         return "\(ExperienceTag.label(signal.tag)): \(direction) (強さ \(String(format: "%.2f", signal.weight)))"
+    }
+
+    static func treeLines(_ tree: TreeContext?, content: TaikenContent = .shared) -> [String] {
+        guard let tree, !tree.isEmpty else { return [notSent] }
+        var lines: [String] = []
+        if !tree.lived.isEmpty {
+            let titles = tree.lived.prefix(5).map(\.title)
+            let more = tree.lived.count > 5 ? " ほか\(tree.lived.count - 5)" : ""
+            lines.append("灯った体験: \(titles.joined(separator: "、"))\(more)")
+        }
+        if !tree.buds.isEmpty {
+            let titles = tree.buds.prefix(5).map { content.experience($0)?.title ?? $0 }
+            let more = tree.buds.count > 5 ? " ほか\(tree.buds.count - 5)" : ""
+            lines.append("芽: \(titles.joined(separator: "、"))\(more)")
+        }
+        return lines
     }
 
     static func areaLine(_ area: Area?) -> String {

@@ -66,20 +66,34 @@ public enum Mood: String, Codable, Sendable, CaseIterable, Identifiable {
     }
 }
 
-/// 七十二候。日付から決まる情報なので、許可なしで送ってよい (current_time 以上のことは分からない)
-public struct SeasonContext: Codable, Hashable, Sendable {
-    /// 二十四節気 (例: 寒露)
-    public let solarTerm: String
-    /// 七十二候 (例: 鴻雁来)
-    public let microSeason: String
-    /// 意味 (例: 雁が北から渡ってくる頃)
-    public let meaning: String
+/// 体験の樹のいま (体験帳から計算する。「体験帳と反応を提案に使う」を許可しているときだけ送る)。
+/// 提案を、灯った体験の先へ自然に伸ばすために使う
+public struct TreeContext: Codable, Hashable, Sendable {
+    /// 灯った体験 (最近のものから)
+    public struct LivedNode: Codable, Hashable, Sendable {
+        /// ライブラリの体験の id、または自分で編んだ・見つけた体験の id
+        public let id: String
+        public let title: String
+        /// 要素の id (先頭が主な要素)
+        public let elements: [String]
 
-    public init(solarTerm: String, microSeason: String, meaning: String) {
-        self.solarTerm = solarTerm
-        self.microSeason = microSeason
-        self.meaning = meaning
+        public init(id: String, title: String, elements: [String]) {
+            self.id = id
+            self.title = title
+            self.elements = elements
+        }
     }
+
+    public let lived: [LivedNode]
+    /// 芽 (灯った体験からつながっている、まだやっていない体験の id)
+    public let buds: [String]
+
+    public init(lived: [LivedNode], buds: [String]) {
+        self.lived = lived
+        self.buds = buds
+    }
+
+    public var isEmpty: Bool { lived.isEmpty && buds.isEmpty }
 }
 
 public enum FallbackReason: String, Codable, Sendable {
@@ -150,10 +164,17 @@ public struct Experience: Codable, Hashable, Sendable {
     public let tags: [String]
     /// 体験のあとに思い返すための問い。古いBackendの応答には無い
     public let reflectionQuestion: String?
+    /// 体験ライブラリから選んだときの体験の id (AIが新しく作った体験は nil)
+    public let nodeID: String?
+    /// 要素の id (先頭が主な要素)。古い応答には無い
+    public let elements: [String]
+    /// この体験が伸びている、灯った体験の id (体験の樹の上での親)
+    public let growsFrom: String?
 
     public init(
         title: String, perspective: String, invitation: String, reason: String,
-        difficulty: Difficulty, tags: [String], reflectionQuestion: String? = nil
+        difficulty: Difficulty, tags: [String], reflectionQuestion: String? = nil,
+        nodeID: String? = nil, elements: [String] = [], growsFrom: String? = nil
     ) {
         self.title = title
         self.perspective = perspective
@@ -162,10 +183,15 @@ public struct Experience: Codable, Hashable, Sendable {
         self.difficulty = difficulty
         self.tags = tags
         self.reflectionQuestion = reflectionQuestion
+        self.nodeID = nodeID
+        self.elements = elements
+        self.growsFrom = growsFrom
     }
 
     enum CodingKeys: String, CodingKey {
-        case title, perspective, invitation, reason, difficulty, tags, reflectionQuestion
+        case title, perspective, invitation, reason, difficulty, tags, reflectionQuestion, elements, growsFrom
+        // convertFromSnakeCase で node_id は nodeId になる
+        case nodeID = "nodeId"
     }
 
     public init(from decoder: any Decoder) throws {
@@ -178,6 +204,25 @@ public struct Experience: Codable, Hashable, Sendable {
         tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
         let question = try c.decodeIfPresent(String.self, forKey: .reflectionQuestion)?.trimmingCharacters(in: .whitespacesAndNewlines)
         reflectionQuestion = question?.isEmpty == false ? question : nil
+        nodeID = Self.cleanID(try c.decodeIfPresent(String.self, forKey: .nodeID))
+        elements = (try? c.decodeIfPresent([String].self, forKey: .elements)) ?? []
+        growsFrom = Self.cleanID(try c.decodeIfPresent(String.self, forKey: .growsFrom))
+    }
+
+    /// id として使える形 (英小文字・数字・ハイフン) だけを受け取る
+    static func cleanID(_ value: String?) -> String? {
+        guard let value, !value.isEmpty, value.count <= 64,
+              value.unicodeScalars.allSatisfy({ ("a"..."z").contains($0) || ("0"..."9").contains($0) || $0 == "-" })
+        else { return nil }
+        return value
+    }
+
+    /// 同じ体験を、樹の上の位置だけ変えて返す
+    public func placed(nodeID: String?, elements: [String], growsFrom: String?) -> Experience {
+        Experience(
+            title: title, perspective: perspective, invitation: invitation, reason: reason, difficulty: difficulty,
+            tags: tags, reflectionQuestion: reflectionQuestion, nodeID: nodeID, elements: elements, growsFrom: growsFrom
+        )
     }
 }
 
@@ -295,13 +340,13 @@ public struct ExperienceRequest: Codable, Sendable, Equatable {
     public let allowWebSearch: Bool
     /// ユーザーがその場で選んだ気分 (選んでいなければキーごと送らない)
     public let mood: Mood?
-    /// 七十二候 (日付から決まる)
-    public let season: SeasonContext?
+    /// 体験の樹のいま (体験帳を使う許可があるときだけ。無ければキーごと送らない)
+    public let tree: TreeContext?
 
     public init(
         currentTime: String, timeZone: String, locale: String, calendarContext: [CalendarItem],
         recentUserMessages: [String], recentExperiences: [ExperienceRef], userFeedback: [FeedbackSignal],
-        excludeTitles: [String], area: Area?, allowWebSearch: Bool, mood: Mood? = nil, season: SeasonContext? = nil
+        excludeTitles: [String], area: Area?, allowWebSearch: Bool, mood: Mood? = nil, tree: TreeContext? = nil
     ) {
         self.currentTime = currentTime
         self.timeZone = timeZone
@@ -314,14 +359,14 @@ public struct ExperienceRequest: Codable, Sendable, Equatable {
         self.area = area
         self.allowWebSearch = allowWebSearch
         self.mood = mood
-        self.season = season
+        self.tree = tree
     }
 
     public func excluding(_ titles: [String]) -> ExperienceRequest {
         ExperienceRequest(
             currentTime: currentTime, timeZone: timeZone, locale: locale, calendarContext: calendarContext,
             recentUserMessages: recentUserMessages, recentExperiences: recentExperiences, userFeedback: userFeedback,
-            excludeTitles: titles, area: area, allowWebSearch: allowWebSearch, mood: mood, season: season
+            excludeTitles: titles, area: area, allowWebSearch: allowWebSearch, mood: mood, tree: tree
         )
     }
 }

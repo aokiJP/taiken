@@ -3,15 +3,17 @@ import TaikenCore
 
 /// 指示書 §6, §21: 「今日何をするか」ではなく「今日、何を体験できるか」を中心に置く。
 /// 地はいまの空。真ん中に、その時いちばん大事なカードがひとつだけある。
+/// 見出しの横には小さな体験の樹。提案のカードには、その体験が樹のどこにあるか (枝) を添える。
 struct HomeView: View {
     let model: HomeViewModel
+    let tree: TreeViewModel
     let engine: ProposalEngine
     let openChat: @MainActor () -> Void
     let openJournal: @MainActor () -> Void
+    /// 体験の樹をひらく (体験の id があれば、そこを中心に)
+    let openTree: @MainActor (String?) -> Void
     let openSettings: @MainActor () -> Void
     let previewRequest: @MainActor () async -> ExperienceRequest
-    /// この一年で体験を記した七十二候 (季節の輪に灯す)
-    let livedSeasons: @MainActor () -> Set<Int>
 
     @State private var sheet: HomeSheet?
     /// 振り返りのシートが閉じきってから印を押す (押す瞬間を見てもらうため)
@@ -20,7 +22,7 @@ struct HomeView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     enum HomeSheet: String, Identifiable {
-        case insight, reflection, season
+        case insight, reflection
         var id: String { rawValue }
     }
 
@@ -37,8 +39,13 @@ struct HomeView: View {
                 SkyBackground(time: time)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
-                        SeasonHeader(date: timeline.date, time: time, season: model.season, palette: palette) {
-                            sheet = .season
+                        HomeHeader(
+                            date: timeline.date,
+                            time: time,
+                            palette: palette,
+                            scene: TreeScene.make(tree: tree.tree, layout: tree.layout)
+                        ) {
+                            openTree(nil)
                         }
                         if let notice = model.notice {
                             NoticeLine(notice: notice, palette: palette)
@@ -81,6 +88,8 @@ struct HomeView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task { await model.refresh() }
         .task(id: model.restingUntil) { await wakeWhenRestEnds() }
+        // 記した・始めた・編んだあとは、小さな樹も描き直す
+        .onChange(of: model.treeRevision) { tree.reload() }
         .sheet(item: $sheet, onDismiss: { applyPendingRecord() }) { item in
             switch item {
             case .insight:
@@ -91,8 +100,6 @@ struct HomeView: View {
                         pendingRecord = PendingRecord(rating: rating, note: note)
                     }
                 }
-            case .season:
-                SeasonSheet(season: model.season, loadLived: livedSeasons)
             }
         }
         // 触覚: 気分を選ぶ (軽く)、体験を始める (確かに)、印を押す (重く)
@@ -114,7 +121,9 @@ struct HomeView: View {
                 if let proposal = model.proposal {
                     ProposalCard(
                         response: proposal,
+                        lineage: model.proposalLineage,
                         isLoading: model.isLoading,
+                        openBranch: openTree,
                         tryIt: model.tryIt,
                         another: { Task { await model.showAnother() } },
                         notNow: model.notNow,
@@ -130,6 +139,8 @@ struct HomeView: View {
                 if let entry = model.activeEntry {
                     ActiveCard(
                         entry: entry,
+                        lineage: model.activeLineage,
+                        openBranch: openTree,
                         finish: { sheet = .reflection },
                         abandon: model.abandonActive,
                         presenceChanged: model.presenceSettingChanged(enabled:)
@@ -140,9 +151,11 @@ struct HomeView: View {
                 if let entry = model.completedEntry {
                     CompletedCard(
                         entry: entry,
-                        season: MicroSeason.at(entry.createdAt, calendar: .current),
+                        growth: model.completedGrowth,
+                        nodeID: tree.tree.nodeID(of: entry) ?? entry.nodeID,
                         another: { Task { await model.wakeUp() } },
-                        openJournal: openJournal
+                        openJournal: openJournal,
+                        openTree: openTree
                     )
                     .transition(.opacity)
                 }
@@ -187,14 +200,14 @@ struct HomeView: View {
     }
 }
 
-// MARK: - 見出し: 日付と、七十二候の短冊
+// MARK: - 見出し: 日付とあいさつと、小さな体験の樹
 
-struct SeasonHeader: View {
+struct HomeHeader: View {
     let date: Date
     let time: TimeOfDay
-    let season: MicroSeason
     let palette: SkyPalette
-    let openSeason: @MainActor () -> Void
+    let scene: TreeScene
+    let openTree: @MainActor () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -208,22 +221,19 @@ struct SeasonHeader: View {
                     .lineSpacing(4)
                     .foregroundStyle(palette.onSky)
                     .accessibilityAddTraits(.isHeader)
-                HStack(spacing: 8) {
-                    Text("\(season.solarTerm)・\(season.positionLabel)")
-                        .font(.footnote.weight(.semibold))
-                    Text(season.meaning)
-                        .font(.footnote)
-                        .foregroundStyle(palette.onSkySecondary)
-                }
-                .foregroundStyle(palette.onSky)
-                .padding(.top, 2)
             }
             Spacer(minLength: 8)
-            Button(action: openSeason) {
-                TanzakuView(text: season.name, size: 21, foreground: palette.onSky, border: palette.onSky.opacity(0.26))
+            Button(action: openTree) {
+                VStack(spacing: 5) {
+                    MiniTreeBadge(scene: scene, palette: palette, size: 58)
+                    Text("体験の樹")
+                        .font(.caption2)
+                        .foregroundStyle(palette.onSkySecondary)
+                }
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("七十二候 \(season.name)（\(season.reading)）について")
+            .accessibilityLabel("体験の樹をひらく")
+            .accessibilityIdentifier("home.tree")
         }
         .padding(.horizontal, 4)
     }
@@ -391,8 +401,8 @@ struct TalkButton: View {
     NavigationStack {
         let deps = AppDependencies.preview()
         HomeView(
-            model: deps.home, engine: .library, openChat: {}, openJournal: {}, openSettings: {},
-            previewRequest: { await deps.previewRequest() }, livedSeasons: { deps.history.stats.microSeasons }
+            model: deps.home, tree: deps.tree, engine: .library, openChat: {}, openJournal: {}, openTree: { _ in },
+            openSettings: {}, previewRequest: { await deps.previewRequest() }
         )
     }
 }

@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Taiken Backend API",
-    "version": "2.0.0",
-    "description": "体験生成AIのBackend。iOSアプリだけが呼ぶ前提の非公開API。キーは snake_case。このファイルが契約の正であり、Backend と iOS (TaikenCore) の両方のテストがフィクスチャと実際の出力をこのスキーマで検証する。2.0.0 で体験の reflection_question、リクエストの mood と season を追加 (いずれも後方互換)。"
+    "version": "3.0.0",
+    "description": "体験生成AIのBackend。iOSアプリだけが呼ぶ前提の非公開API。キーは snake_case。このファイルが契約の正であり、Backend と iOS (TaikenCore) の両方のテストがフィクスチャと実際の出力をこのスキーマで検証する。3.0.0 で体験の node_id・elements・grows_from と、リクエストの tree (体験の樹のいま) を追加し、季節 (season) を廃止 (送られても無視する)。"
   },
   "servers": [{ "url": "http://localhost:8787" }],
   "security": [{ "bearer": [] }],
@@ -101,15 +101,43 @@
         "type": "string",
         "enum": ["tired", "bored", "focus", "refresh"]
       },
-      "Season": {
-        "description": "七十二候。日付から決まる情報で、current_time 以上のことは含まない",
+      "Element": {
+        "description": "体験の要素。see=見る / hear=聴く / smell=嗅ぐ / taste=味わう / touch=触れる / move=動く / pause=休む / think=考える / word=言葉にする / people=人と",
+        "type": "string",
+        "enum": ["see", "hear", "smell", "taste", "touch", "move", "pause", "think", "word", "people"]
+      },
+      "NodeId": {
+        "description": "体験の樹の上の体験の id。体験ライブラリの id (例: meal-first-bite)、または端末で編んだ・見つけた体験の id (例: w-1a2b3c4d5e6f)",
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
+      },
+      "TreeContext": {
+        "description": "体験の樹のいま。体験帳から端末で計算し、ユーザーが「体験帳と反応を提案に使う」を許可しているときだけ送る",
         "type": "object",
         "additionalProperties": false,
-        "required": ["solar_term", "micro_season", "meaning"],
+        "required": ["lived", "buds"],
         "properties": {
-          "solar_term": { "type": "string", "description": "二十四節気 (例: 寒露)" },
-          "micro_season": { "type": "string", "description": "七十二候 (例: 鴻雁来)" },
-          "meaning": { "type": "string", "description": "七十二候の意味 (例: 雁が北から渡ってくる頃)" }
+          "lived": {
+            "type": "array",
+            "maxItems": 12,
+            "description": "灯った体験 (最近記したものから)",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["id", "title", "elements"],
+              "properties": {
+                "id": { "$ref": "#/components/schemas/NodeId" },
+                "title": { "type": "string" },
+                "elements": { "type": "array", "items": { "$ref": "#/components/schemas/Element" } }
+              }
+            }
+          },
+          "buds": {
+            "type": "array",
+            "maxItems": 16,
+            "description": "芽 (灯った体験からつながっている、まだやっていない体験の id)",
+            "items": { "$ref": "#/components/schemas/NodeId" }
+          }
         }
       },
       "FallbackReason": {
@@ -129,7 +157,18 @@
       "Experience": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["title", "perspective", "invitation", "reason", "difficulty", "tags", "reflection_question"],
+        "required": [
+          "title",
+          "perspective",
+          "invitation",
+          "reason",
+          "difficulty",
+          "tags",
+          "reflection_question",
+          "node_id",
+          "elements",
+          "grows_from"
+        ],
         "properties": {
           "title": { "type": "string" },
           "perspective": { "type": "string" },
@@ -140,6 +179,20 @@
           "reflection_question": {
             "type": ["string", "null"],
             "description": "体験のあとに思い返すための短い問い。評価や反省を迫らない。古いBackendには無いため、iOS は欠けていても読める"
+          },
+          "node_id": {
+            "anyOf": [{ "$ref": "#/components/schemas/NodeId" }, { "type": "null" }],
+            "description": "体験ライブラリから選んだときの体験の id。AIが新しく作った体験は null"
+          },
+          "elements": {
+            "type": "array",
+            "maxItems": 3,
+            "items": { "$ref": "#/components/schemas/Element" },
+            "description": "体験の要素 (先頭が主な要素)。古いBackendには無いため、iOS は欠けていても読める"
+          },
+          "grows_from": {
+            "anyOf": [{ "$ref": "#/components/schemas/NodeId" }, { "type": "null" }],
+            "description": "この体験が伸びている、灯った体験の id (リクエストの tree.lived にあるものだけ)"
           }
         }
       },
@@ -208,7 +261,10 @@
             "anyOf": [{ "$ref": "#/components/schemas/Mood" }, { "type": "null" }],
             "description": "ユーザーがその場で選んだ気分。選んでいなければ省略"
           },
-          "season": { "anyOf": [{ "$ref": "#/components/schemas/Season" }, { "type": "null" }] }
+          "tree": {
+            "anyOf": [{ "$ref": "#/components/schemas/TreeContext" }, { "type": "null" }],
+            "description": "体験の樹のいま。送らないときは省略"
+          }
         }
       },
       "Situation": {

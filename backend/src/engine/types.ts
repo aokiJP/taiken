@@ -43,11 +43,15 @@ export interface Area {
   country_code: string | null;
 }
 
-/** 七十二候。日付から決まる情報 */
-export interface SeasonContext {
-  solar_term: string;
-  micro_season: string;
-  meaning: string;
+/** 体験の要素 */
+export type Element = 'see' | 'hear' | 'smell' | 'taste' | 'touch' | 'move' | 'pause' | 'think' | 'word' | 'people';
+
+/** 体験の樹のいま (iOS が体験帳から計算する。体験帳を使う許可があるときだけ届く) */
+export interface TreeContext {
+  /** 灯った体験 (最近のものから) */
+  lived: { id: string; title: string; elements: Element[] }[];
+  /** 芽 (灯った体験からつながっている、まだやっていない体験の id) */
+  buds: string[];
 }
 
 interface BaseContext {
@@ -65,7 +69,7 @@ export interface ExperienceContext extends BaseContext {
   area: Area | null;
   allow_web_search: boolean;
   mood: Mood | null;
-  season: SeasonContext | null;
+  tree: TreeContext | null;
 }
 
 export interface ChatTurn {
@@ -93,6 +97,12 @@ export interface Experience {
   tags: string[];
   /** 体験のあとに思い返すための問い */
   reflection_question: string | null;
+  /** 体験ライブラリから選んだときの id (AIが新しく作った体験は null) */
+  node_id: string | null;
+  /** 要素 (先頭が主な要素) */
+  elements: Element[];
+  /** この体験が伸びている、灯った体験の id (tree.lived にあるものだけ) */
+  grows_from: string | null;
 }
 
 export interface Reference {

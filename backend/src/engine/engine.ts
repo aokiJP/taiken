@@ -141,7 +141,8 @@ export function createEngine(deps: EngineDependencies): Engine {
   async function produceExperience(provider: AiProvider, ctx: ExperienceContext, options: RequestOptions, withResearch: boolean) {
     const found = withResearch ? await research(ctx, options) : null;
     const raw = await provider.generateExperience(ctx, found, callOptions(options.signal));
-    const result = normalizeExperienceResult(raw, provider.name === 'mock' ? 'mock' : 'ai');
+    const livedIds = new Set(ctx.tree?.lived.map((l) => l.id) ?? []);
+    const result = normalizeExperienceResult(raw, provider.name === 'mock' ? 'mock' : 'ai', { livedIds });
     const issue = findSafetyIssue(result.experience);
     if (issue) throw new UnsafeOutputError(issue);
     return { ...result, references: found?.references ?? [] };

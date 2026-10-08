@@ -37,7 +37,7 @@ enum ProposalEngine: Equatable, Sendable {
         switch self {
         case .server: "予定や気分を、自分で用意したサーバー経由でAIに渡して提案をつくります。"
         case .onDevice: "この iPhone の中のAIが提案をつくります。予定や会話は端末の外に出ません。"
-        case .library: "七十二候の季節の体験を含む体験ライブラリから、予定・気分・時間帯に合うものを選びます。何も外へ送りません。"
+        case .library: "体験ライブラリから、予定・気分・時間帯と、あなたの体験の樹の芽に合うものを選びます。何も外へ送りません。"
         }
     }
 
@@ -70,6 +70,8 @@ final class AppRouter {
 
     enum Destination: Hashable {
         case journal
+        /// 体験の樹。focus があれば、その体験を中心に見せる
+        case tree(focus: String?)
     }
 
     var sheet: Sheet?
@@ -80,6 +82,13 @@ final class AppRouter {
         sheet = nil
         path = NavigationPath()
         path.append(Destination.journal)
+    }
+
+    /// 体験の樹をひらく (体験帳や記録の上からでも、いま見ている画面に重ねる)
+    func openTree(focus: String? = nil, fromHome: Bool = true) {
+        sheet = nil
+        if fromHome { path = NavigationPath() }
+        path.append(Destination.tree(focus: focus))
     }
 
     /// 通知・ウィジェットから開いたとき: ホームに戻す
@@ -102,6 +111,8 @@ final class AppDependencies {
     let chat: ChatViewModel
     let history: HistoryViewModel
     let settings: SettingsViewModel
+    let tree: TreeViewModel
+    let trees: TreeSource
 
     private let repository: any HistoryRepository
     private let memory = ConversationMemory()
@@ -121,6 +132,7 @@ final class AppDependencies {
         letters: (any LetterScheduling)? = nil,
         presence: (any ExperiencePresence)? = nil,
         widgets: (any WidgetPublishing)? = nil,
+        garden: (any GardenStore)? = nil,
         useOnDeviceAI: Bool = true,
         diagnostics: any Diagnostics = OSLogDiagnostics()
     ) {
@@ -167,6 +179,11 @@ final class AppDependencies {
         let letterScheduler = letters ?? UserNotificationLetterScheduler()
         self.letters = letterScheduler
 
+        // 自分の樹 (編んだ体験・見つけた体験・結び)。体験帳と同じく、アプリ自身の領域にだけ置く
+        let gardenStore: any GardenStore = garden ?? (inMemory ? InMemoryGardenStore() : FileGardenStore.applicationSupport())
+        let trees = TreeSource(history: repository, store: gardenStore)
+        self.trees = trees
+
         let assembler = ContextAssembler(
             calendarProvider: calendar,
             locationProvider: location,
@@ -174,6 +191,7 @@ final class AppDependencies {
             memory: memory,
             consent: { defaults.consent() }
         )
+        assembler.treeContext = { trees.context() }
         self.assembler = assembler
 
         let presenceAdapter: any ExperiencePresence = presence ?? Self.makePresence()
@@ -186,13 +204,23 @@ final class AppDependencies {
             presence: presenceAdapter,
             widgets: widgets ?? AppGroupWidgetPublisher(store: AppGroup.widgetStore),
             presenceEnabled: { defaults.presenceEnabled },
+            trees: trees,
             diagnostics: diagnostics
         )
         self.home = home
         chat = ChatViewModel(service: service, assembler: assembler, history: repository, diagnostics: diagnostics) { [weak home] experience in
             home?.adopt(experience)
         }
-        history = HistoryViewModel(history: repository)
+        history = HistoryViewModel(history: repository, trees: trees)
+        let router = self.router
+        tree = TreeViewModel(
+            source: trees,
+            onStart: { [weak home] node in
+                home?.begin(node)
+                router.returnHome()
+            },
+            onChange: { [weak home] in home?.treeDidChange() }
+        )
         background = BackgroundCoordinator(
             service: service,
             assembler: assembler,
@@ -270,12 +298,15 @@ final class AppDependencies {
         rescheduleLetters()
     }
 
-    /// ウィジェット・ショートカットから開かれた (taiken://today, taiken://journal, taiken://talk)
+    /// ウィジェット・ショートカットから開かれた (taiken://today, taiken://journal, taiken://tree, taiken://talk)
     func open(_ url: URL) {
         guard url.scheme == DeepLink.scheme, defaults.hasCompletedOnboarding else { return }
         switch DeepLink(url: url) {
         case .journal:
             router.openJournal()
+        case .tree:
+            tree.reload()
+            router.openTree()
         case .talk:
             router.returnHome()
             router.sheet = .chat
@@ -296,6 +327,7 @@ final class AppDependencies {
     func deleteAllLocalData() {
         do {
             try repository.deleteAll()
+            try trees.reset()
         } catch {
             diagnostics.record("data.delete_failed")
         }
@@ -305,6 +337,7 @@ final class AppDependencies {
         chat.reset()
         home.resetAfterDataDeletion()
         history.reload()
+        tree.reload()
         scheduleBackgroundRefresh()
         rescheduleLetters()
     }
@@ -332,8 +365,7 @@ final class AppDependencies {
                 useOnDeviceAI: false
             )
             if arguments.contains("-UITestSeedJournal") {
-                for entry in HistoryEntry.sampleJournal() { try? deps.repository.add(entry) }
-                deps.history.reload()
+                deps.seedSamples()
             }
             return deps
         }
@@ -356,14 +388,29 @@ final class AppDependencies {
             letters: RecordingLetterScheduler(),
             presence: NoPresence(),
             widgets: RecordingWidgetPublisher(),
+            garden: InMemoryGardenStore(),
             useOnDeviceAI: false,
             diagnostics: NoopDiagnostics()
         )
-        if journal {
-            for entry in HistoryEntry.sampleJournal() { try? deps.repository.add(entry) }
-            deps.history.reload()
-        }
+        if journal { deps.seedSamples() }
         return deps
+    }
+
+    /// 見本の体験帳と、自分の樹 (編んだ体験と結び)。プレビューと UI テストで使う
+    func seedSamples() {
+        for entry in HistoryEntry.sampleJournal() { try? repository.add(entry) }
+        _ = try? trees.weave(WeaveDraft(
+            title: "湯気のゆくえ",
+            invitation: "温かい飲み物の湯気が、どこまで昇って消えるか見届けてみませんか？",
+            perspective: "飲み物の時間を、湯気を見送る時間として過ごす。",
+            reflectionQuestion: "湯気は、どこで見えなくなりましたか？",
+            elements: ["see", "pause"],
+            growsFrom: "root-see"
+        ))
+        _ = try? trees.tie("meal-first-bite", "rest-far", note: "どちらも、思ったより長く見ていた")
+        history.reload()
+        tree.reload()
+        home.treeDidChange()
     }
 }
 

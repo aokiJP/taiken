@@ -178,13 +178,25 @@ func experienceRequest(
     messages: [String] = [],
     mood: Mood? = nil,
     exclude: [String] = [],
-    recent: [ExperienceRef] = []
+    recent: [ExperienceRef] = [],
+    tree: TreeContext? = nil
 ) -> ExperienceRequest {
     ExperienceRequest(
         currentTime: APICoding.timestamp(date, timeZone: tokyo), timeZone: "Asia/Tokyo", locale: "ja-JP",
         calendarContext: items, recentUserMessages: messages, recentExperiences: recent, userFeedback: [],
-        excludeTitles: exclude, area: nil, allowWebSearch: false, mood: mood,
-        season: MicroSeason.at(date, calendar: tokyoCalendar).context
+        excludeTitles: exclude, area: nil, allowWebSearch: false, mood: mood, tree: tree
+    )
+}
+
+/// ライブラリの体験を記した記録 (体験の樹のテスト用)
+func livedEntry(_ id: String, daysAgo: Int = 1, status: HistoryEntry.Status = .completed, rating: Rating = .positive, note: String? = nil) -> HistoryEntry {
+    let item = TaikenContent.shared.experience(id)!
+    let date = referenceDate.addingTimeInterval(-Double(daysAgo) * 86_400)
+    return HistoryEntry(
+        createdAt: date, finishedAt: status == .completed ? date.addingTimeInterval(1800) : nil, title: item.title, theme: nil,
+        invitation: item.invitation, perspective: item.perspective, tags: item.tags, status: status,
+        rating: status == .completed ? rating : nil, note: note, reflectionQuestion: item.reflectionQuestion,
+        nodeID: item.id, elements: item.elements
     )
 }
 

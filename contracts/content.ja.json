@@ -1,464 +1,188 @@
 {
-  "version": 1,
+  "version": 2,
   "language": "ja",
-  "solar_terms": [
-    {
-      "name": "立春",
-      "reading": "りっしゅん"
-    },
-    {
-      "name": "雨水",
-      "reading": "うすい"
-    },
-    {
-      "name": "啓蟄",
-      "reading": "けいちつ"
-    },
-    {
-      "name": "春分",
-      "reading": "しゅんぶん"
-    },
-    {
-      "name": "清明",
-      "reading": "せいめい"
-    },
-    {
-      "name": "穀雨",
-      "reading": "こくう"
-    },
-    {
-      "name": "立夏",
-      "reading": "りっか"
-    },
-    {
-      "name": "小満",
-      "reading": "しょうまん"
-    },
-    {
-      "name": "芒種",
-      "reading": "ぼうしゅ"
-    },
-    {
-      "name": "夏至",
-      "reading": "げし"
-    },
-    {
-      "name": "小暑",
-      "reading": "しょうしょ"
-    },
-    {
-      "name": "大暑",
-      "reading": "たいしょ"
-    },
-    {
-      "name": "立秋",
-      "reading": "りっしゅう"
-    },
-    {
-      "name": "処暑",
-      "reading": "しょしょ"
-    },
-    {
-      "name": "白露",
-      "reading": "はくろ"
-    },
-    {
-      "name": "秋分",
-      "reading": "しゅうぶん"
-    },
-    {
-      "name": "寒露",
-      "reading": "かんろ"
-    },
-    {
-      "name": "霜降",
-      "reading": "そうこう"
-    },
-    {
-      "name": "立冬",
-      "reading": "りっとう"
-    },
-    {
-      "name": "小雪",
-      "reading": "しょうせつ"
-    },
-    {
-      "name": "大雪",
-      "reading": "たいせつ"
-    },
-    {
-      "name": "冬至",
-      "reading": "とうじ"
-    },
-    {
-      "name": "小寒",
-      "reading": "しょうかん"
-    },
-    {
-      "name": "大寒",
-      "reading": "だいかん"
-    }
-  ],
-  "micro_seasons": [
-    {
-      "name": "東風解凍",
-      "reading": "はるかぜこおりをとく",
-      "meaning": "春の風が、川や湖の氷を解かし始める頃"
-    },
-    {
-      "name": "黄鶯睍睆",
-      "reading": "うぐいすなく",
-      "meaning": "山里で鶯が鳴き始める頃"
-    },
-    {
-      "name": "魚上氷",
-      "reading": "うおこおりをいずる",
-      "meaning": "割れた氷の間から、魚が跳ねる頃"
-    },
-    {
-      "name": "土脉潤起",
-      "reading": "つちのしょううるおいおこる",
-      "meaning": "雨が降って、土がしっとりと潤い始める頃"
-    },
-    {
-      "name": "霞始靆",
-      "reading": "かすみはじめてたなびく",
-      "meaning": "霞がたなびき始める頃"
-    },
-    {
-      "name": "草木萌動",
-      "reading": "そうもくめばえいずる",
-      "meaning": "草木が芽吹き始める頃"
-    },
-    {
-      "name": "蟄虫啓戸",
-      "reading": "すごもりむしとをひらく",
-      "meaning": "冬ごもりの虫が、土から出てくる頃"
-    },
-    {
-      "name": "桃始笑",
-      "reading": "ももはじめてさく",
-      "meaning": "桃の花が咲き始める頃"
-    },
-    {
-      "name": "菜虫化蝶",
-      "reading": "なむしちょうとなる",
-      "meaning": "青虫が羽化して、紋白蝶になる頃"
-    },
-    {
-      "name": "雀始巣",
-      "reading": "すずめはじめてすくう",
-      "meaning": "雀が巣を作り始める頃"
-    },
-    {
-      "name": "桜始開",
-      "reading": "さくらはじめてひらく",
-      "meaning": "桜の花が咲き始める頃"
-    },
-    {
-      "name": "雷乃発声",
-      "reading": "かみなりすなわちこえをはっす",
-      "meaning": "遠くで雷の音がし始める頃"
-    },
-    {
-      "name": "玄鳥至",
-      "reading": "つばめきたる",
-      "meaning": "燕が南からやってくる頃"
-    },
-    {
-      "name": "鴻雁北",
-      "reading": "こうがんかえる",
-      "meaning": "雁が北へ帰っていく頃"
-    },
-    {
-      "name": "虹始見",
-      "reading": "にじはじめてあらわる",
-      "meaning": "雨のあとに、虹が出始める頃"
-    },
-    {
-      "name": "葭始生",
-      "reading": "あしはじめてしょうず",
-      "meaning": "水辺の葦が芽吹き始める頃"
-    },
-    {
-      "name": "霜止出苗",
-      "reading": "しもやみてなえいずる",
-      "meaning": "霜が終わり、稲の苗が育つ頃"
-    },
-    {
-      "name": "牡丹華",
-      "reading": "ぼたんはなさく",
-      "meaning": "牡丹の花が咲く頃"
-    },
-    {
-      "name": "蛙始鳴",
-      "reading": "かわずはじめてなく",
-      "meaning": "蛙が鳴き始める頃"
-    },
-    {
-      "name": "蚯蚓出",
-      "reading": "みみずいずる",
-      "meaning": "みみずが地上に出てくる頃"
-    },
-    {
-      "name": "竹笋生",
-      "reading": "たけのこしょうず",
-      "meaning": "筍が生えてくる頃"
-    },
-    {
-      "name": "蚕起食桑",
-      "reading": "かいこおきてくわをはむ",
-      "meaning": "蚕が桑の葉を盛んに食べ始める頃"
-    },
-    {
-      "name": "紅花栄",
-      "reading": "べにばなさかう",
-      "meaning": "紅花が盛んに咲く頃"
-    },
-    {
-      "name": "麦秋至",
-      "reading": "むぎのときいたる",
-      "meaning": "麦が熟して、収穫の時期を迎える頃"
-    },
-    {
-      "name": "蟷螂生",
-      "reading": "かまきりしょうず",
-      "meaning": "蟷螂が卵からかえる頃"
-    },
-    {
-      "name": "腐草為螢",
-      "reading": "くされたるくさほたるとなる",
-      "meaning": "蛍が飛び交い始める頃"
-    },
-    {
-      "name": "梅子黄",
-      "reading": "うめのみきばむ",
-      "meaning": "梅の実が黄ばんで熟す頃"
-    },
-    {
-      "name": "乃東枯",
-      "reading": "なつかれくさかるる",
-      "meaning": "夏枯草(うつぼぐさ)が枯れていく頃"
-    },
-    {
-      "name": "菖蒲華",
-      "reading": "あやめはなさく",
-      "meaning": "あやめの花が咲く頃"
-    },
-    {
-      "name": "半夏生",
-      "reading": "はんげしょうず",
-      "meaning": "半夏(からすびしゃく)が生える頃"
-    },
-    {
-      "name": "温風至",
-      "reading": "あつかぜいたる",
-      "meaning": "夏の暖かい風が吹いてくる頃"
-    },
-    {
-      "name": "蓮始開",
-      "reading": "はすはじめてひらく",
-      "meaning": "蓮の花が開き始める頃"
-    },
-    {
-      "name": "鷹乃学習",
-      "reading": "たかすなわちわざをならう",
-      "meaning": "鷹の幼鳥が、飛ぶことを覚える頃"
-    },
-    {
-      "name": "桐始結花",
-      "reading": "きりはじめてはなをむすぶ",
-      "meaning": "桐の実がなり始める頃"
-    },
-    {
-      "name": "土潤溽暑",
-      "reading": "つちうるおうてむしあつし",
-      "meaning": "土がしめって、蒸し暑くなる頃"
-    },
-    {
-      "name": "大雨時行",
-      "reading": "たいうときどきふる",
-      "meaning": "時として大雨が降る頃"
-    },
-    {
-      "name": "涼風至",
-      "reading": "すずかぜいたる",
-      "meaning": "涼しい風が立ち始める頃"
-    },
-    {
-      "name": "寒蝉鳴",
-      "reading": "ひぐらしなく",
-      "meaning": "ひぐらしが鳴き始める頃"
-    },
-    {
-      "name": "蒙霧升降",
-      "reading": "ふかききりまとう",
-      "meaning": "深い霧が立ちこめる頃"
-    },
-    {
-      "name": "綿柎開",
-      "reading": "わたのはなしべひらく",
-      "meaning": "綿を包むがくが開く頃"
-    },
-    {
-      "name": "天地始粛",
-      "reading": "てんちはじめてさむし",
-      "meaning": "ようやく暑さがおさまる頃"
-    },
-    {
-      "name": "禾乃登",
-      "reading": "こくものすなわちみのる",
-      "meaning": "稲が実る頃"
-    },
-    {
-      "name": "草露白",
-      "reading": "くさのつゆしろし",
-      "meaning": "草に降りた露が、白く光る頃"
-    },
-    {
-      "name": "鶺鴒鳴",
-      "reading": "せきれいなく",
-      "meaning": "せきれいが鳴き始める頃"
-    },
-    {
-      "name": "玄鳥去",
-      "reading": "つばめさる",
-      "meaning": "燕が南へ帰っていく頃"
-    },
-    {
-      "name": "雷乃収声",
-      "reading": "かみなりすなわちこえをおさむ",
-      "meaning": "雷が鳴らなくなる頃"
-    },
-    {
-      "name": "蟄虫坏戸",
-      "reading": "むしかくれてとをふさぐ",
-      "meaning": "虫が土の中に隠れ、入り口をふさぐ頃"
-    },
-    {
-      "name": "水始涸",
-      "reading": "みずはじめてかるる",
-      "meaning": "田の水を落とし、稲刈りに備える頃"
-    },
-    {
-      "name": "鴻雁来",
-      "reading": "こうがんきたる",
-      "meaning": "雁が北から渡ってくる頃"
-    },
-    {
-      "name": "菊花開",
-      "reading": "きくのはなひらく",
-      "meaning": "菊の花が咲く頃"
-    },
-    {
-      "name": "蟋蟀在戸",
-      "reading": "きりぎりすとにあり",
-      "meaning": "戸口で秋の虫が鳴く頃"
-    },
-    {
-      "name": "霜始降",
-      "reading": "しもはじめてふる",
-      "meaning": "霜が降り始める頃"
-    },
-    {
-      "name": "霎時施",
-      "reading": "こさめときどきふる",
-      "meaning": "小雨がしとしと降る頃"
-    },
-    {
-      "name": "楓蔦黄",
-      "reading": "もみじつたきばむ",
-      "meaning": "楓や蔦が色づく頃"
-    },
-    {
-      "name": "山茶始開",
-      "reading": "つばきはじめてひらく",
-      "meaning": "山茶花が咲き始める頃"
-    },
-    {
-      "name": "地始凍",
-      "reading": "ちはじめてこおる",
-      "meaning": "大地が凍り始める頃"
-    },
-    {
-      "name": "金盞香",
-      "reading": "きんせんかさく",
-      "meaning": "水仙の花が咲く頃"
-    },
-    {
-      "name": "虹蔵不見",
-      "reading": "にじかくれてみえず",
-      "meaning": "虹を見かけなくなる頃"
-    },
-    {
-      "name": "朔風払葉",
-      "reading": "きたかぜこのはをはらう",
-      "meaning": "北風が木の葉を吹き払う頃"
-    },
-    {
-      "name": "橘始黄",
-      "reading": "たちばなはじめてきばむ",
-      "meaning": "橘の実が黄色く色づき始める頃"
-    },
-    {
-      "name": "閉塞成冬",
-      "reading": "そらさむくふゆとなる",
-      "meaning": "空が重く閉ざされ、冬となる頃"
-    },
-    {
-      "name": "熊蟄穴",
-      "reading": "くまあなにこもる",
-      "meaning": "熊が冬ごもりのために穴に入る頃"
-    },
-    {
-      "name": "鱖魚群",
-      "reading": "さけのうおむらがる",
-      "meaning": "鮭が群がって川を上る頃"
-    },
-    {
-      "name": "乃東生",
-      "reading": "なつかれくさしょうず",
-      "meaning": "夏枯草が芽を出す頃"
-    },
-    {
-      "name": "麋角解",
-      "reading": "さわしかのつのおつる",
-      "meaning": "大鹿の角が抜け落ちる頃"
-    },
-    {
-      "name": "雪下出麦",
-      "reading": "ゆきわたりてむぎのびる",
-      "meaning": "雪の下で麦が芽を出す頃"
-    },
-    {
-      "name": "芹乃栄",
-      "reading": "せりすなわちさかう",
-      "meaning": "芹がよく育つ頃"
-    },
-    {
-      "name": "水泉動",
-      "reading": "しみずあたたかをふくむ",
-      "meaning": "地中で凍った泉が動き始める頃"
-    },
-    {
-      "name": "雉始雊",
-      "reading": "きじはじめてなく",
-      "meaning": "雄の雉が鳴き始める頃"
-    },
-    {
-      "name": "款冬華",
-      "reading": "ふきのはなさく",
-      "meaning": "蕗の薹が顔を出す頃"
-    },
-    {
-      "name": "水沢腹堅",
-      "reading": "さわみずこおりつめる",
-      "meaning": "沢の水が厚く凍る頃"
-    },
-    {
-      "name": "鶏始乳",
-      "reading": "にわとりはじめてとやにつく",
-      "meaning": "鶏が卵を産み始める頃"
+  "elements": [
+    {
+      "id": "see",
+      "glyph": "見",
+      "label": "見る",
+      "hint": "光や色、形、遠くのものに目を向ける",
+      "root": "root-see",
+      "keywords": [
+        "見",
+        "眺め",
+        "目に",
+        "光",
+        "色",
+        "景色",
+        "空",
+        "影",
+        "形",
+        "写真",
+        "遠く",
+        "棚"
+      ]
+    },
+    {
+      "id": "hear",
+      "glyph": "聴",
+      "label": "聴く",
+      "hint": "音や声、静けさに耳を澄ます",
+      "root": "root-hear",
+      "keywords": [
+        "音",
+        "聞",
+        "聴",
+        "声",
+        "耳",
+        "静か",
+        "響",
+        "曲"
+      ]
+    },
+    {
+      "id": "smell",
+      "glyph": "香",
+      "label": "嗅ぐ",
+      "hint": "匂いや香りの移り変わりに気づく",
+      "root": "daily-scent",
+      "keywords": [
+        "匂",
+        "におい",
+        "香",
+        "かおり",
+        "嗅"
+      ]
+    },
+    {
+      "id": "taste",
+      "glyph": "味",
+      "label": "味わう",
+      "hint": "味や食感をたしかめる",
+      "root": "meal-first-bite",
+      "keywords": [
+        "味",
+        "食べ",
+        "食事",
+        "ひと口",
+        "一口",
+        "飲",
+        "食感",
+        "料理"
+      ]
+    },
+    {
+      "id": "touch",
+      "glyph": "触",
+      "label": "触れる",
+      "hint": "温度や手ざわり、手の動きを感じる",
+      "root": "root-touch",
+      "keywords": [
+        "手",
+        "触",
+        "温度",
+        "温か",
+        "冷た",
+        "肌",
+        "指",
+        "感触",
+        "手ざわり",
+        "風"
+      ]
+    },
+    {
+      "id": "move",
+      "glyph": "動",
+      "label": "動く",
+      "hint": "歩く、体を動かす、場所を変える",
+      "root": "root-move",
+      "keywords": [
+        "歩",
+        "足",
+        "体を動か",
+        "走",
+        "階段",
+        "道",
+        "移動",
+        "伸び",
+        "姿勢",
+        "散歩"
+      ]
+    },
+    {
+      "id": "pause",
+      "glyph": "休",
+      "label": "休む",
+      "hint": "手を止めて、間をつくる",
+      "root": "rest-pause",
+      "keywords": [
+        "止め",
+        "止ま",
+        "休",
+        "何もしない",
+        "呼吸",
+        "息",
+        "ゆっくり",
+        "待",
+        "すき間",
+        "眠る"
+      ]
+    },
+    {
+      "id": "think",
+      "glyph": "考",
+      "label": "考える",
+      "hint": "「なぜ」を持つ、ふり返る",
+      "root": "root-think",
+      "keywords": [
+        "なぜ",
+        "問",
+        "考",
+        "理由",
+        "ふり返",
+        "振り返",
+        "思い出",
+        "分か",
+        "探偵"
+      ]
+    },
+    {
+      "id": "word",
+      "glyph": "言",
+      "label": "言葉にする",
+      "hint": "書く、名づける、たとえる",
+      "root": "root-word",
+      "keywords": [
+        "書",
+        "言葉",
+        "一言",
+        "ひと言",
+        "一行",
+        "題名",
+        "たとえ",
+        "名前をつけ",
+        "メモ"
+      ]
+    },
+    {
+      "id": "people",
+      "glyph": "人",
+      "label": "人と",
+      "hint": "誰かと話す、聞く、気づく",
+      "root": "root-meet",
+      "keywords": [
+        "人",
+        "相手",
+        "誰か",
+        "会話",
+        "話す",
+        "友",
+        "家族",
+        "伝え",
+        "メッセージ",
+        "あいさつ",
+        "名前で呼"
+      ]
     }
   ],
   "themes": [
@@ -622,7 +346,7 @@
     },
     {
       "id": "outdoors",
-      "label": "外の季節",
+      "label": "外",
       "keywords": []
     },
     {
@@ -689,155 +413,47 @@
   ],
   "experiences": [
     {
-      "id": "study-stumble",
-      "title": "つまずきの観察",
-      "perspective": "課題を「終わらせる作業」ではなく、自分がどこで手を止めるかを観察する時間として捉える。",
-      "invitation": "今日の勉強で、いちばん手が止まった瞬間をひとつだけ覚えておいてみませんか？",
-      "reflection_question": "手が止まったとき、何が引っかかっていましたか？",
+      "id": "root-see",
+      "title": "目に留まるもの",
+      "perspective": "目に入るものを流すのではなく、ひとつを選んで見る時間にする。",
+      "invitation": "いま目に入るものの中からひとつだけ選んで、少し長く眺めてみませんか？",
+      "reflection_question": "長く見て、何に気づきましたか？",
       "tags": [
-        "new_perspective",
         "observation",
+        "sensory",
         "short"
       ],
       "themes": [
-        "study"
+        "general"
       ],
       "moods": [
         "tired",
-        "focus"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "study-yesterday",
-      "title": "昨日の自分への問い",
-      "perspective": "量をこなす時間ではなく、昨日の自分には分からなかったことをひとつ見つける時間として捉える。",
-      "invitation": "今日は「昨日の自分なら分からなかったこと」をひとつ探すつもりで取り組んでみませんか？",
-      "reflection_question": "昨日より、何が分かるようになっていましたか？",
-      "tags": [
-        "question",
-        "reflection"
-      ],
-      "themes": [
-        "study"
-      ],
-      "moods": [
-        "focus",
-        "bored"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "study-explain",
-      "title": "一言で説明するなら",
-      "perspective": "覚えるための勉強ではなく、誰かに伝えるための準備として向き合ってみる。",
-      "invitation": "今日やるところを、あとで誰かに一言で説明するとしたら…と考えながら進めてみませんか？",
-      "reflection_question": "一言にすると、どんな言葉になりましたか？",
-      "tags": [
-        "new_perspective",
-        "question"
-      ],
-      "themes": [
-        "study"
-      ],
-      "moods": [
-        "bored",
-        "focus"
-      ],
-      "times": [],
-      "effort": "medium",
-      "solar_terms": []
-    },
-    {
-      "id": "study-why",
-      "title": "一問だけの探偵",
-      "perspective": "全部を片づけるのではなく、一問を「なぜこの答えになるのか」を探る対象として見る。",
-      "invitation": "今日の中から気になる一問だけ選んで、「なぜ？」を一段深く掘ってみませんか？",
-      "reflection_question": "その「なぜ」の先に、何が見えましたか？",
-      "tags": [
-        "question",
-        "small_challenge",
-        "short"
-      ],
-      "themes": [
-        "study"
-      ],
-      "moods": [
-        "bored",
         "focus",
         "refresh"
       ],
       "times": [],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "study-first-step",
-      "title": "最初のひと区切り",
-      "perspective": "「全部やらなきゃ」ではなく、最初の小さなひと区切りだけに向き合う時間として捉える。",
-      "invitation": "重く感じるときは、最初のひと区切りだけを丁寧にやるつもりで始めてみませんか？",
-      "reflection_question": "始めてみて、気持ちはどう変わりましたか？",
-      "tags": [
-        "small_challenge",
-        "short"
+      "elements": [
+        "see"
       ],
-      "themes": [
-        "study",
-        "work"
-      ],
-      "moods": [
-        "tired"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "work-one-question",
-      "title": "ひとつの問いを持ち込む",
-      "perspective": "予定をこなす場ではなく、ひとつの疑問の答えを探しに行く場として捉える。",
-      "invitation": "この予定に「今日これだけは知りたい」という問いをひとつだけ持って臨んでみませんか？",
-      "reflection_question": "その問いの答えは、見つかりましたか？",
-      "tags": [
-        "question",
-        "new_perspective"
-      ],
-      "themes": [
-        "work"
-      ],
-      "moods": [
-        "focus",
-        "bored"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "work-one-word",
-      "title": "心に残る一言",
-      "perspective": "打ち合わせを情報を受け取る時間ではなく、誰かの言葉に耳を澄ます時間として捉える。",
-      "invitation": "次の打ち合わせで、いちばん心に残った誰かの一言を、ひとつだけ持ち帰ってみませんか？",
-      "reflection_question": "なぜその一言が残ったのだと思いますか？",
-      "tags": [
-        "observation",
-        "social"
-      ],
-      "themes": [
-        "work",
-        "people"
-      ],
-      "moods": [
-        "tired",
-        "bored"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
+      "opens": [
+        {
+          "to": "daily-difference",
+          "kind": "widen"
+        },
+        {
+          "to": "morning-light",
+          "kind": "deepen"
+        },
+        {
+          "to": "commute-color",
+          "kind": "widen"
+        },
+        {
+          "to": "rest-far",
+          "kind": "deepen"
+        }
+      ]
     },
     {
       "id": "work-desk-map",
@@ -860,56 +476,16 @@
       ],
       "times": [],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "work-small-craft",
-      "title": "小さな工夫を見つける",
-      "perspective": "業務のやりとりを、相手のさりげない工夫に気づく機会として捉える。",
-      "invitation": "今日のやりとりの中で、誰かの小さな工夫をひとつ見つけて、短く伝えてみませんか？",
-      "reflection_question": "伝えたとき、相手はどんな様子でしたか？",
-      "tags": [
-        "social",
-        "small_challenge",
-        "short"
+      "elements": [
+        "see",
+        "think"
       ],
-      "themes": [
-        "work",
-        "people"
-      ],
-      "moods": [
-        "bored",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "medium",
-      "solar_terms": []
-    },
-    {
-      "id": "work-one-line",
-      "title": "終わりの一行",
-      "perspective": "一日の作業を「やり残し」で閉じるのではなく、進んだことを確かめて閉じる時間にする。",
-      "invitation": "今日の作業の終わりに、「今日進んだこと」を一行だけ書き留めてみませんか？",
-      "reflection_question": "書いてみて、どんな一日だったと感じましたか？",
-      "tags": [
-        "reflection",
-        "short"
-      ],
-      "themes": [
-        "work",
-        "study"
-      ],
-      "moods": [
-        "tired",
-        "focus"
-      ],
-      "times": [
-        "daytime",
-        "evening",
-        "night"
-      ],
-      "effort": "low",
-      "solar_terms": []
+      "opens": [
+        {
+          "to": "pause-one-thing",
+          "kind": "cross"
+        }
+      ]
     },
     {
       "id": "commute-change",
@@ -931,29 +507,20 @@
       ],
       "times": [],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "commute-sounds",
-      "title": "三つの音",
-      "perspective": "移動中を、景色ではなく音で味わう時間として捉える。",
-      "invitation": "次の移動で、聞こえてくる音を三つだけ聞き分けてみませんか？",
-      "reflection_question": "いちばん意外だった音は何でしたか？",
-      "tags": [
-        "sensory",
-        "observation",
-        "short"
+      "elements": [
+        "see",
+        "move"
       ],
-      "themes": [
-        "commute"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
+      "opens": [
+        {
+          "to": "shop-other-shelf",
+          "kind": "widen"
+        },
+        {
+          "to": "commute-another-way",
+          "kind": "cross"
+        }
+      ]
     },
     {
       "id": "commute-color",
@@ -976,163 +543,20 @@
       ],
       "times": [],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "commute-stories",
-      "title": "すれ違う物語",
-      "perspective": "人の流れを、それぞれの一日が交差する場面として眺める。",
-      "invitation": "移動の途中で、すれ違う誰かの「このあと」を、ひとつだけ想像してみませんか？",
-      "reflection_question": "どんな「このあと」を想像しましたか？",
-      "tags": [
-        "creative",
-        "new_perspective",
-        "short"
+      "elements": [
+        "see",
+        "word"
       ],
-      "themes": [
-        "commute"
-      ],
-      "moods": [
-        "bored"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "commute-another-way",
-      "title": "ひと筋ちがう道",
-      "perspective": "決まった道順を、まだ知らない街の一部に出会う機会として捉える。",
-      "invitation": "時間と安全に余裕があれば、いつもと一本ちがう道を選んでみませんか？",
-      "reflection_question": "ちがう道には、何がありましたか？",
-      "tags": [
-        "small_challenge",
-        "new_perspective"
-      ],
-      "themes": [
-        "commute",
-        "outdoors"
-      ],
-      "moods": [
-        "bored",
-        "refresh"
-      ],
-      "times": [
-        "morning",
-        "daytime",
-        "evening"
-      ],
-      "effort": "medium",
-      "solar_terms": []
-    },
-    {
-      "id": "meal-first-bite",
-      "title": "ひと口目の観察",
-      "perspective": "食事を「済ませるもの」ではなく、味や食感に気づく時間として捉える。",
-      "invitation": "次の食事で、ひと口目にどんな味がしたかを少しだけ意識してみませんか？",
-      "reflection_question": "ひと口目は、どんな味でしたか？",
-      "tags": [
-        "sensory",
-        "short"
-      ],
-      "themes": [
-        "meal"
-      ],
-      "moods": [
-        "tired",
-        "focus",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "meal-journey",
-      "title": "一皿の旅",
-      "perspective": "目の前の一皿を、遠くの土地や誰かの手からつながってきたものとして眺める。",
-      "invitation": "次の食事で、食材のひとつが「どこから来たのか」を想像してみませんか？",
-      "reflection_question": "想像した道のりは、どんなものでしたか？",
-      "tags": [
-        "new_perspective",
-        "reflection",
-        "short"
-      ],
-      "themes": [
-        "meal"
-      ],
-      "moods": [
-        "bored"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "meal-screen-down",
-      "title": "画面を置くひととき",
-      "perspective": "食事の時間を、何かをしながらではなく、食べることだけに使う時間にしてみる。",
-      "invitation": "次の食事の最初の数口だけ、画面を置いて食べることに向き合ってみませんか？",
-      "reflection_question": "画面を置いたら、何に気づきましたか？",
-      "tags": [
-        "sensory",
-        "small_challenge",
-        "short"
-      ],
-      "themes": [
-        "meal"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "meal-new-taste",
-      "title": "知らない一品",
-      "perspective": "いつもの選択を、まだ知らない味に出会うきっかけとして捉える。",
-      "invitation": "次に何かを選ぶとき、ひとつだけ「食べたことのないもの」を選んでみませんか？",
-      "reflection_question": "初めての味は、どうでしたか？",
-      "tags": [
-        "small_challenge",
-        "new_perspective"
-      ],
-      "themes": [
-        "meal",
-        "shopping"
-      ],
-      "moods": [
-        "bored",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "medium",
-      "solar_terms": []
-    },
-    {
-      "id": "meal-texture",
-      "title": "食感をことばに",
-      "perspective": "味ではなく、食感に耳を澄ますように食べてみる。",
-      "invitation": "次の食事で、「ほろっ」「しゃきっ」のように食感をひとつ言葉にしてみませんか？",
-      "reflection_question": "どんな言葉が見つかりましたか？",
-      "tags": [
-        "sensory",
-        "creative",
-        "short"
-      ],
-      "themes": [
-        "meal"
-      ],
-      "moods": [
-        "tired",
-        "bored"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
+      "opens": [
+        {
+          "to": "daily-one-photo",
+          "kind": "deepen"
+        },
+        {
+          "to": "body-scenery",
+          "kind": "widen"
+        }
+      ]
     },
     {
       "id": "house-before-after",
@@ -1154,78 +578,16 @@
       ],
       "times": [],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "house-rhythm",
-      "title": "家事のリズム",
-      "perspective": "くり返しの作業を、音とリズムのある時間として捉える。",
-      "invitation": "次の家事で、手の動きや音にリズムを見つけてみませんか？",
-      "reflection_question": "どんなリズムが見つかりましたか？",
-      "tags": [
-        "sensory",
-        "creative",
-        "short"
+      "elements": [
+        "see",
+        "think"
       ],
-      "themes": [
-        "housework"
-      ],
-      "moods": [
-        "bored",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "house-one-thing",
-      "title": "ひとつと向き合う",
-      "perspective": "片づけを「全部やる」ことではなく、ひとつの物と向き合う時間として捉える。",
-      "invitation": "目に入ったものをひとつだけ手に取って、「今の自分に必要か」を考えてみませんか？",
-      "reflection_question": "その物について、何を思いましたか？",
-      "tags": [
-        "reflection",
-        "small_challenge",
-        "short"
-      ],
-      "themes": [
-        "housework"
-      ],
-      "moods": [
-        "refresh",
-        "focus"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "house-aroma",
-      "title": "香りの変わり目",
-      "perspective": "料理を手順ではなく、香りが移り変わっていく時間として捉える。",
-      "invitation": "次に料理をするとき、香りがふっと変わる瞬間をひとつ見つけてみませんか？",
-      "reflection_question": "どの瞬間に香りが変わりましたか？",
-      "tags": [
-        "sensory",
-        "observation"
-      ],
-      "themes": [
-        "housework",
-        "meal"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [
-        "morning",
-        "daytime",
-        "evening",
-        "night"
-      ],
-      "effort": "low",
-      "solar_terms": []
+      "opens": [
+        {
+          "to": "work-desk-map",
+          "kind": "widen"
+        }
+      ]
     },
     {
       "id": "shop-other-shelf",
@@ -1247,184 +609,16 @@
       ],
       "times": [],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "shop-season",
-      "title": "店先の季節",
-      "perspective": "店先を、季節の移り変わりがいちばん早く現れる場所として眺める。",
-      "invitation": "次の買い物で、「今の季節」を感じるものをひとつ探してみませんか？",
-      "reflection_question": "どんなところに季節を感じましたか？",
-      "tags": [
-        "observation",
-        "sensory",
-        "short"
+      "elements": [
+        "see",
+        "move"
       ],
-      "themes": [
-        "shopping"
-      ],
-      "moods": [
-        "tired",
-        "bored"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "shop-why",
-      "title": "選んだ理由",
-      "perspective": "何気ない選択を、自分の好みを知る手がかりとして捉える。",
-      "invitation": "次に何かを選ぶとき、「なぜこれにしたのか」を一言で言ってみませんか？",
-      "reflection_question": "選んだ理由から、自分について何が分かりましたか？",
-      "tags": [
-        "reflection",
-        "question",
-        "short"
-      ],
-      "themes": [
-        "shopping"
-      ],
-      "moods": [
-        "focus",
-        "bored"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "people-new-question",
-      "title": "まだ聞いていない質問",
-      "perspective": "会話を情報交換ではなく、相手について新しく知る機会として捉える。",
-      "invitation": "次に話す人に、まだ聞いたことのない質問をひとつしてみませんか？",
-      "reflection_question": "相手の答えで、意外だったことは何でしたか？",
-      "tags": [
-        "social",
-        "question"
-      ],
-      "themes": [
-        "people"
-      ],
-      "moods": [
-        "bored",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "medium",
-      "solar_terms": []
-    },
-    {
-      "id": "people-listen",
-      "title": "最後まで聞く",
-      "perspective": "会話を、話す番を待つ時間ではなく、相手の言葉を味わう時間として捉える。",
-      "invitation": "次の会話で、相手の話を最後まで聞いてから話すことを、一度だけ試してみませんか？",
-      "reflection_question": "最後まで聞いてみて、何が違いましたか？",
-      "tags": [
-        "social",
-        "small_challenge"
-      ],
-      "themes": [
-        "people",
-        "work"
-      ],
-      "moods": [
-        "focus",
-        "tired"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "people-words",
-      "title": "その人らしい言葉",
-      "perspective": "身近な人を、まだ知らないところのある人として見てみる。",
-      "invitation": "今日話す誰かの、言葉の選び方にひとつ気づいてみませんか？",
-      "reflection_question": "どんな言葉に、その人らしさを感じましたか？",
-      "tags": [
-        "observation",
-        "social",
-        "short"
-      ],
-      "themes": [
-        "people"
-      ],
-      "moods": [
-        "bored",
-        "tired"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "people-message",
-      "title": "思い出した人へ",
-      "perspective": "ふと浮かぶ誰かを、今日の小さなつながりのきっかけとして捉える。",
-      "invitation": "最近ふと思い出した人に、短いメッセージを送ってみませんか？",
-      "reflection_question": "送ってみて、どんな気持ちになりましたか？",
-      "tags": [
-        "social",
-        "small_challenge",
-        "short"
-      ],
-      "themes": [
-        "people"
-      ],
-      "moods": [
-        "bored",
-        "refresh"
-      ],
-      "times": [
-        "morning",
-        "daytime",
-        "evening",
-        "night"
-      ],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "people-expression",
-      "title": "表情が動く瞬間",
-      "perspective": "会話を言葉だけでなく、表情の動きも含めて受け取る時間として捉える。",
-      "invitation": "次の会話で、相手の表情がふっと変わった瞬間をひとつ覚えておいてみませんか？",
-      "reflection_question": "その瞬間、何が話されていましたか？",
-      "tags": [
-        "observation",
-        "social"
-      ],
-      "themes": [
-        "people"
-      ],
-      "moods": [
-        "focus"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "body-breath",
-      "title": "呼吸の深さ",
-      "perspective": "体を動かす時間を回数や距離ではなく、呼吸の変化を感じる時間として捉える。",
-      "invitation": "次に体を動かすとき、呼吸がいちばん深くなった瞬間に気づいてみませんか？",
-      "reflection_question": "どんなときに呼吸が深くなりましたか？",
-      "tags": [
-        "sensory",
-        "observation"
-      ],
-      "themes": [
-        "body"
-      ],
-      "moods": [
-        "focus",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
+      "opens": [
+        {
+          "to": "meal-new-taste",
+          "kind": "cross"
+        }
+      ]
     },
     {
       "id": "body-scenery",
@@ -1446,50 +640,16 @@
       ],
       "times": [],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "body-after",
-      "title": "終わったあとの体",
-      "perspective": "体を動かしたあとを、体がどう変わったかを確かめる時間として捉える。",
-      "invitation": "体を動かしたあと、どこがいちばん軽く感じるかを確かめてみませんか？",
-      "reflection_question": "どこが変わったと感じましたか？",
-      "tags": [
-        "sensory",
-        "reflection",
-        "short"
+      "elements": [
+        "see",
+        "move"
       ],
-      "themes": [
-        "body"
-      ],
-      "moods": [
-        "tired",
-        "focus"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "rest-pause",
-      "title": "手を止める一瞬",
-      "perspective": "次から次へ進む一日の中に、自分が何を感じているかに気づく間をつくる。",
-      "invitation": "次の切り替わりの前に、今の自分の感覚を一度だけ確かめてみませんか？",
-      "reflection_question": "確かめてみて、どんな感覚がありましたか？",
-      "tags": [
-        "reflection",
-        "short"
-      ],
-      "themes": [
-        "rest"
-      ],
-      "moods": [
-        "tired",
-        "focus"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
+      "opens": [
+        {
+          "to": "move-walk-slow",
+          "kind": "cross"
+        }
+      ]
     },
     {
       "id": "rest-far",
@@ -1516,49 +676,16 @@
         "evening"
       ],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "rest-warm-cup",
-      "title": "温かい一杯",
-      "perspective": "飲み物を、温度と香りを手のひらで感じる時間として味わう。",
-      "invitation": "次に何かを飲むとき、器の温度と香りを、最初のひと口まで感じてみませんか？",
-      "reflection_question": "最初のひと口は、どんな感じでしたか？",
-      "tags": [
-        "sensory",
-        "short"
+      "elements": [
+        "see",
+        "pause"
       ],
-      "themes": [
-        "rest"
-      ],
-      "moods": [
-        "tired"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "rest-nothing",
-      "title": "何もしない時間",
-      "perspective": "休むことを、時間の無駄ではなく、ひとつの体験として捉える。",
-      "invitation": "次のすき間で、何もしない時間を少しだけ過ごしてみませんか？",
-      "reflection_question": "何もしない時間に、何が浮かびましたか？",
-      "tags": [
-        "reflection",
-        "sensory",
-        "short"
-      ],
-      "themes": [
-        "rest"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
+      "opens": [
+        {
+          "to": "body-scenery",
+          "kind": "widen"
+        }
+      ]
     },
     {
       "id": "morning-light",
@@ -1583,80 +710,19 @@
         "morning"
       ],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "morning-word",
-      "title": "今日のひと言",
-      "perspective": "一日の始まりを、予定の確認ではなく、今日の自分に言葉をかける時間にする。",
-      "invitation": "朝のうちに、「今日を表す一言」をひとつ決めてみませんか？",
-      "reflection_question": "一日の終わりに、その一言はどうでしたか？",
-      "tags": [
-        "reflection",
-        "creative",
-        "short"
+      "elements": [
+        "see"
       ],
-      "themes": [
-        "morning"
-      ],
-      "moods": [
-        "focus",
-        "bored"
-      ],
-      "times": [
-        "dawn",
-        "morning"
-      ],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "morning-slow",
-      "title": "ひとつだけゆっくり",
-      "perspective": "急ぎがちな朝の中に、ひとつだけ丁寧にする動作をつくる。",
-      "invitation": "朝の動作の中からひとつだけ選んで、いつもよりゆっくりやってみませんか？",
-      "reflection_question": "ゆっくりやってみて、何に気づきましたか？",
-      "tags": [
-        "sensory",
-        "small_challenge",
-        "short"
-      ],
-      "themes": [
-        "morning"
-      ],
-      "moods": [
-        "tired",
-        "focus"
-      ],
-      "times": [
-        "dawn",
-        "morning"
-      ],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "night-good-thing",
-      "title": "今日の小さなよかった",
-      "perspective": "一日の終わりを、反省ではなく、小さなよかったを拾う時間にする。",
-      "invitation": "寝る前に、今日の小さな「よかった」をひとつだけ思い出してみませんか？",
-      "reflection_question": "どんな「よかった」が浮かびましたか？",
-      "tags": [
-        "reflection",
-        "short"
-      ],
-      "themes": [
-        "night"
-      ],
-      "moods": [
-        "tired"
-      ],
-      "times": [
-        "night",
-        "lateNight"
-      ],
-      "effort": "low",
-      "solar_terms": []
+      "opens": [
+        {
+          "to": "see-shadow",
+          "kind": "deepen"
+        },
+        {
+          "to": "night-sky",
+          "kind": "widen"
+        }
+      ]
     },
     {
       "id": "night-sky",
@@ -1682,57 +748,16 @@
         "night"
       ],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "night-tomorrow",
-      "title": "明日のひとつの楽しみ",
-      "perspective": "明日を予定の並びではなく、小さな楽しみのある一日として思い描く。",
-      "invitation": "寝る前に、明日の小さな楽しみをひとつだけ決めてみませんか？",
-      "reflection_question": "決めた楽しみは、何でしたか？",
-      "tags": [
-        "reflection",
-        "creative",
-        "short"
+      "elements": [
+        "see",
+        "pause"
       ],
-      "themes": [
-        "night"
-      ],
-      "moods": [
-        "tired",
-        "bored"
-      ],
-      "times": [
-        "night",
-        "lateNight"
-      ],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "night-quiet-sound",
-      "title": "いちばん小さな音",
-      "perspective": "静かな時間を、昼には聞こえない音に耳を澄ます時間として捉える。",
-      "invitation": "今夜、部屋の中で聞こえるいちばん小さな音を探してみませんか？",
-      "reflection_question": "いちばん小さな音は、何でしたか？",
-      "tags": [
-        "sensory",
-        "observation",
-        "short"
-      ],
-      "themes": [
-        "night"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [
-        "night",
-        "lateNight"
-      ],
-      "effort": "low",
-      "solar_terms": []
+      "opens": [
+        {
+          "to": "pause-before-sleep",
+          "kind": "cross"
+        }
+      ]
     },
     {
       "id": "daily-difference",
@@ -1755,29 +780,23 @@
         "evening"
       ],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "daily-hands",
-      "title": "手が覚えていること",
-      "perspective": "日常の動作を、手が覚えていることに気づく時間として捉える。",
-      "invitation": "今日、無意識にしている動作をひとつだけ、意識してやってみませんか？",
-      "reflection_question": "意識してみて、何が違いましたか？",
-      "tags": [
-        "sensory",
-        "new_perspective",
-        "short"
+      "elements": [
+        "see"
       ],
-      "themes": [
-        "general"
-      ],
-      "moods": [
-        "focus",
-        "tired"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
+      "opens": [
+        {
+          "to": "commute-change",
+          "kind": "widen"
+        },
+        {
+          "to": "house-before-after",
+          "kind": "deepen"
+        },
+        {
+          "to": "shop-new",
+          "kind": "widen"
+        }
+      ]
     },
     {
       "id": "daily-one-photo",
@@ -1802,7 +821,1121 @@
         "evening"
       ],
       "effort": "low",
-      "solar_terms": []
+      "elements": [
+        "see",
+        "word"
+      ],
+      "opens": [
+        {
+          "to": "word-name-it",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "see-shadow",
+      "title": "影のかたち",
+      "perspective": "影を、光が描いたもうひとつの形として眺める。",
+      "invitation": "今日、いちばん形のおもしろい影をひとつ見つけてみませんか？",
+      "reflection_question": "どんな形の影でしたか？",
+      "tags": [
+        "observation",
+        "creative",
+        "short"
+      ],
+      "themes": [
+        "general",
+        "outdoors"
+      ],
+      "moods": [
+        "bored",
+        "refresh"
+      ],
+      "times": [
+        "morning",
+        "daytime",
+        "evening"
+      ],
+      "effort": "low",
+      "elements": [
+        "see"
+      ],
+      "opens": [
+        {
+          "to": "daily-one-photo",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "shop-new",
+      "title": "店先の新顔",
+      "perspective": "店先を、用事を済ませる場所ではなく、いちばん早く変わっていく場所として眺める。",
+      "invitation": "次の買い物で、この前はなかったものをひとつ見つけてみませんか？",
+      "reflection_question": "何が新しく並んでいましたか？",
+      "tags": [
+        "observation",
+        "short"
+      ],
+      "themes": [
+        "shopping"
+      ],
+      "moods": [
+        "tired",
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "see"
+      ],
+      "opens": [
+        {
+          "to": "shop-other-shelf",
+          "kind": "deepen"
+        },
+        {
+          "to": "shop-why",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "root-hear",
+      "title": "いま聞こえる音",
+      "perspective": "音を背景としてではなく、ひとつずつの出来事として聞く。",
+      "invitation": "少しのあいだ目を閉じて、いま聞こえている音をひとつずつ数えてみませんか？",
+      "reflection_question": "いくつの音が聞こえましたか？",
+      "tags": [
+        "sensory",
+        "observation",
+        "short"
+      ],
+      "themes": [
+        "general",
+        "rest"
+      ],
+      "moods": [
+        "tired",
+        "focus",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "hear"
+      ],
+      "opens": [
+        {
+          "to": "commute-sounds",
+          "kind": "widen"
+        },
+        {
+          "to": "night-quiet-sound",
+          "kind": "deepen"
+        },
+        {
+          "to": "hear-far",
+          "kind": "deepen"
+        },
+        {
+          "to": "hear-music-one",
+          "kind": "widen"
+        },
+        {
+          "to": "hear-voice",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "commute-sounds",
+      "title": "三つの音",
+      "perspective": "移動中を、景色ではなく音で味わう時間として捉える。",
+      "invitation": "次の移動で、聞こえてくる音を三つだけ聞き分けてみませんか？",
+      "reflection_question": "いちばん意外だった音は何でしたか？",
+      "tags": [
+        "sensory",
+        "observation",
+        "short"
+      ],
+      "themes": [
+        "commute"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "hear",
+        "move"
+      ],
+      "opens": [
+        {
+          "to": "hear-own-steps",
+          "kind": "deepen"
+        },
+        {
+          "to": "house-rhythm",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "house-rhythm",
+      "title": "家事のリズム",
+      "perspective": "くり返しの作業を、音とリズムのある時間として捉える。",
+      "invitation": "次の家事で、手の動きや音にリズムを見つけてみませんか？",
+      "reflection_question": "どんなリズムが見つかりましたか？",
+      "tags": [
+        "sensory",
+        "creative",
+        "short"
+      ],
+      "themes": [
+        "housework"
+      ],
+      "moods": [
+        "bored",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "hear",
+        "touch"
+      ],
+      "opens": [
+        {
+          "to": "daily-hands",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "night-quiet-sound",
+      "title": "いちばん小さな音",
+      "perspective": "静かな時間を、昼には聞こえない音に耳を澄ます時間として捉える。",
+      "invitation": "今夜、部屋の中で聞こえるいちばん小さな音を探してみませんか？",
+      "reflection_question": "いちばん小さな音は、何でしたか？",
+      "tags": [
+        "sensory",
+        "observation",
+        "short"
+      ],
+      "themes": [
+        "night"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [
+        "night",
+        "lateNight"
+      ],
+      "effort": "low",
+      "elements": [
+        "hear",
+        "pause"
+      ],
+      "opens": [
+        {
+          "to": "hear-silence",
+          "kind": "deepen"
+        }
+      ]
+    },
+    {
+      "id": "hear-far",
+      "title": "いちばん遠い音",
+      "perspective": "耳を、いまいる場所の外まで届く感覚として使ってみる。",
+      "invitation": "いま聞こえる音の中で、いちばん遠くから届いているものを探してみませんか？",
+      "reflection_question": "その音は、どこから届いていましたか？",
+      "tags": [
+        "sensory",
+        "observation",
+        "short"
+      ],
+      "themes": [
+        "general"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "hear"
+      ],
+      "opens": [
+        {
+          "to": "rest-far",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "hear-voice",
+      "title": "声の表情",
+      "perspective": "話を内容だけでなく、声そのものとして受け取る。",
+      "invitation": "次の会話で、相手の声の高さや速さが変わるところにひとつ気づいてみませんか？",
+      "reflection_question": "声は、どんなときに変わりましたか？",
+      "tags": [
+        "sensory",
+        "social",
+        "observation"
+      ],
+      "themes": [
+        "people",
+        "work"
+      ],
+      "moods": [
+        "focus",
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "hear",
+        "people"
+      ],
+      "opens": [
+        {
+          "to": "work-one-word",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "hear-silence",
+      "title": "音が止むとき",
+      "perspective": "静けさを、音がない時間ではなく、ひとつの音として聞く。",
+      "invitation": "今日のどこかで、まわりの音がふっと止む瞬間に気づいてみませんか？",
+      "reflection_question": "静かになったとき、何を感じましたか？",
+      "tags": [
+        "sensory",
+        "reflection",
+        "short"
+      ],
+      "themes": [
+        "general",
+        "rest"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "hear",
+        "pause"
+      ],
+      "opens": [
+        {
+          "to": "pause-breath",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "hear-own-steps",
+      "title": "自分の足音",
+      "perspective": "歩くことを、自分が音を出していることとして聞いてみる。",
+      "invitation": "次に歩くとき、自分の足音がどんな音か聞いてみませんか？",
+      "reflection_question": "足音は、どんな音でしたか？",
+      "tags": [
+        "sensory",
+        "new_perspective",
+        "short"
+      ],
+      "themes": [
+        "commute",
+        "body"
+      ],
+      "moods": [
+        "bored",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "hear",
+        "move"
+      ],
+      "opens": [
+        {
+          "to": "move-walk-slow",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "hear-music-one",
+      "title": "一曲だけ",
+      "perspective": "音楽を流しておくものではなく、それだけを聴くものとして味わう。",
+      "invitation": "次に音楽を聴くとき、一曲だけ、ほかのことをせずに聴いてみませんか？",
+      "reflection_question": "その一曲の、どこが残りましたか？",
+      "tags": [
+        "sensory",
+        "small_challenge"
+      ],
+      "themes": [
+        "rest",
+        "general"
+      ],
+      "moods": [
+        "tired",
+        "bored",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "hear",
+        "pause"
+      ],
+      "opens": []
+    },
+    {
+      "id": "daily-scent",
+      "title": "今日の匂い",
+      "perspective": "一日を、匂いで記憶してみる。",
+      "invitation": "今日のどこかで、ふと感じた匂いをひとつ覚えておいてみませんか？",
+      "reflection_question": "その匂いは、何を思い出させましたか？",
+      "tags": [
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "general"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "smell"
+      ],
+      "opens": [
+        {
+          "to": "smell-breath",
+          "kind": "widen"
+        },
+        {
+          "to": "house-aroma",
+          "kind": "widen"
+        },
+        {
+          "to": "smell-paper",
+          "kind": "widen"
+        },
+        {
+          "to": "smell-cup",
+          "kind": "deepen"
+        }
+      ]
+    },
+    {
+      "id": "house-aroma",
+      "title": "香りの変わり目",
+      "perspective": "料理を手順ではなく、香りが移り変わっていく時間として捉える。",
+      "invitation": "次に料理をするとき、香りがふっと変わる瞬間をひとつ見つけてみませんか？",
+      "reflection_question": "どの瞬間に香りが変わりましたか？",
+      "tags": [
+        "sensory",
+        "observation"
+      ],
+      "themes": [
+        "housework",
+        "meal"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [
+        "morning",
+        "daytime",
+        "evening",
+        "night"
+      ],
+      "effort": "low",
+      "elements": [
+        "smell",
+        "taste"
+      ],
+      "opens": [
+        {
+          "to": "taste-seasoning",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "smell-breath",
+      "title": "外のひと息",
+      "perspective": "外に出る瞬間を、空気の匂いが切り替わる境目として捉える。",
+      "invitation": "次に外へ出たとき、最初のひと息がどんな匂いか確かめてみませんか？",
+      "reflection_question": "外の空気は、どんな匂いでしたか？",
+      "tags": [
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "commute",
+        "outdoors"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "smell"
+      ],
+      "opens": [
+        {
+          "to": "smell-change",
+          "kind": "deepen"
+        },
+        {
+          "to": "smell-home",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "smell-home",
+      "title": "帰ってきた匂い",
+      "perspective": "いつもの家を、匂いで知る場所として捉え直す。",
+      "invitation": "家に帰ったとき、玄関の匂いを一度だけ確かめてみませんか？",
+      "reflection_question": "家は、どんな匂いがしましたか？",
+      "tags": [
+        "sensory",
+        "new_perspective",
+        "short"
+      ],
+      "themes": [
+        "general"
+      ],
+      "moods": [
+        "tired"
+      ],
+      "times": [
+        "daytime",
+        "evening",
+        "night"
+      ],
+      "effort": "low",
+      "elements": [
+        "smell"
+      ],
+      "opens": [
+        {
+          "to": "smell-nostalgia",
+          "kind": "deepen"
+        }
+      ]
+    },
+    {
+      "id": "smell-nostalgia",
+      "title": "懐かしい匂い",
+      "perspective": "匂いを、記憶をひらく鍵として扱ってみる。",
+      "invitation": "今日のどこかで、懐かしいと感じる匂いをひとつ探してみませんか？",
+      "reflection_question": "なぜ懐かしく感じたのでしょう？",
+      "tags": [
+        "sensory",
+        "reflection"
+      ],
+      "themes": [
+        "general"
+      ],
+      "moods": [
+        "tired",
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "smell",
+        "think"
+      ],
+      "opens": [
+        {
+          "to": "night-good-thing",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "smell-cup",
+      "title": "立ちのぼる香り",
+      "perspective": "飲み物を、口にする前から始まっているものとして味わう。",
+      "invitation": "次に温かい飲み物を用意するとき、立ちのぼる香りを最初に確かめてみませんか？",
+      "reflection_question": "最初に、どんな香りがしましたか？",
+      "tags": [
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "rest",
+        "meal"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "smell",
+        "taste"
+      ],
+      "opens": [
+        {
+          "to": "rest-warm-cup",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "smell-paper",
+      "title": "紙の匂い",
+      "perspective": "読むものを、文字だけでなく匂いのある物としても受け取る。",
+      "invitation": "本やノートを開いたとき、紙の匂いを一度だけ確かめてみませんか？",
+      "reflection_question": "どんな匂いがしましたか？",
+      "tags": [
+        "sensory",
+        "new_perspective",
+        "short"
+      ],
+      "themes": [
+        "study",
+        "work"
+      ],
+      "moods": [
+        "focus",
+        "tired"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "smell",
+        "think"
+      ],
+      "opens": [
+        {
+          "to": "word-letter",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "smell-change",
+      "title": "匂いの境目",
+      "perspective": "いつもの道を、匂いの地図として歩いてみる。",
+      "invitation": "移動の途中で、匂いが切り替わる場所をひとつ見つけてみませんか？",
+      "reflection_question": "どこで匂いが変わりましたか？",
+      "tags": [
+        "sensory",
+        "observation",
+        "short"
+      ],
+      "themes": [
+        "commute",
+        "outdoors"
+      ],
+      "moods": [
+        "bored",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "smell",
+        "move"
+      ],
+      "opens": [
+        {
+          "to": "commute-another-way",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "meal-first-bite",
+      "title": "ひと口目の観察",
+      "perspective": "食事を「済ませるもの」ではなく、味や食感に気づく時間として捉える。",
+      "invitation": "次の食事で、ひと口目にどんな味がしたかを少しだけ意識してみませんか？",
+      "reflection_question": "ひと口目は、どんな味でしたか？",
+      "tags": [
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "meal"
+      ],
+      "moods": [
+        "tired",
+        "focus",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "taste"
+      ],
+      "opens": [
+        {
+          "to": "meal-texture",
+          "kind": "deepen"
+        },
+        {
+          "to": "taste-last-bite",
+          "kind": "deepen"
+        },
+        {
+          "to": "taste-water",
+          "kind": "widen"
+        },
+        {
+          "to": "meal-screen-down",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "meal-journey",
+      "title": "一皿の旅",
+      "perspective": "目の前の一皿を、遠くの土地や誰かの手からつながってきたものとして眺める。",
+      "invitation": "次の食事で、食材のひとつが「どこから来たのか」を想像してみませんか？",
+      "reflection_question": "想像した道のりは、どんなものでしたか？",
+      "tags": [
+        "new_perspective",
+        "reflection",
+        "short"
+      ],
+      "themes": [
+        "meal"
+      ],
+      "moods": [
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "taste",
+        "think"
+      ],
+      "opens": [
+        {
+          "to": "shop-why",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "meal-screen-down",
+      "title": "画面を置くひととき",
+      "perspective": "食事の時間を、何かをしながらではなく、食べることだけに使う時間にしてみる。",
+      "invitation": "次の食事の最初の数口だけ、画面を置いて食べることに向き合ってみませんか？",
+      "reflection_question": "画面を置いたら、何に気づきましたか？",
+      "tags": [
+        "sensory",
+        "small_challenge",
+        "short"
+      ],
+      "themes": [
+        "meal"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "taste",
+        "pause"
+      ],
+      "opens": [
+        {
+          "to": "pause-notification",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "meal-new-taste",
+      "title": "知らない一品",
+      "perspective": "いつもの選択を、まだ知らない味に出会うきっかけとして捉える。",
+      "invitation": "次に何かを選ぶとき、ひとつだけ「食べたことのないもの」を選んでみませんか？",
+      "reflection_question": "初めての味は、どうでしたか？",
+      "tags": [
+        "small_challenge",
+        "new_perspective"
+      ],
+      "themes": [
+        "meal",
+        "shopping"
+      ],
+      "moods": [
+        "bored",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "medium",
+      "elements": [
+        "taste"
+      ],
+      "opens": [
+        {
+          "to": "taste-share",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "meal-texture",
+      "title": "食感をことばに",
+      "perspective": "味ではなく、食感に耳を澄ますように食べてみる。",
+      "invitation": "次の食事で、「ほろっ」「しゃきっ」のように食感をひとつ言葉にしてみませんか？",
+      "reflection_question": "どんな言葉が見つかりましたか？",
+      "tags": [
+        "sensory",
+        "creative",
+        "short"
+      ],
+      "themes": [
+        "meal"
+      ],
+      "moods": [
+        "tired",
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "taste",
+        "word"
+      ],
+      "opens": [
+        {
+          "to": "taste-seasoning",
+          "kind": "deepen"
+        },
+        {
+          "to": "word-metaphor",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "taste-water",
+      "title": "水の味",
+      "perspective": "味がないと思っているものを、いちばん繊細な味として確かめる。",
+      "invitation": "次に水を飲むとき、水にも味があるか確かめてみませんか？",
+      "reflection_question": "水は、どんな味がしましたか？",
+      "tags": [
+        "sensory",
+        "new_perspective",
+        "short"
+      ],
+      "themes": [
+        "general",
+        "rest"
+      ],
+      "moods": [
+        "tired",
+        "focus",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "taste"
+      ],
+      "opens": [
+        {
+          "to": "smell-cup",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "taste-last-bite",
+      "title": "最後のひと口",
+      "perspective": "食事の終わりを、最初のひと口とくらべる瞬間として味わう。",
+      "invitation": "次の食事で、最後のひと口がどんな味だったか覚えておいてみませんか？",
+      "reflection_question": "最初と最後で、何が違いましたか？",
+      "tags": [
+        "sensory",
+        "reflection",
+        "short"
+      ],
+      "themes": [
+        "meal"
+      ],
+      "moods": [
+        "tired",
+        "focus"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "taste"
+      ],
+      "opens": [
+        {
+          "to": "meal-journey",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "taste-seasoning",
+      "title": "味つけを当てる",
+      "perspective": "食べることを、作り手の工夫を読み解く時間として捉える。",
+      "invitation": "次の食事で、使われている味つけをひとつ当ててみませんか？",
+      "reflection_question": "何の味つけだと思いましたか？",
+      "tags": [
+        "sensory",
+        "question",
+        "short"
+      ],
+      "themes": [
+        "meal"
+      ],
+      "moods": [
+        "bored",
+        "focus"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "taste",
+        "think"
+      ],
+      "opens": [
+        {
+          "to": "meal-new-taste",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "taste-share",
+      "title": "感じ方を言い合う",
+      "perspective": "同じものを食べる時間を、感じ方のちがいを知る時間にする。",
+      "invitation": "誰かと同じものを食べるとき、どんな味がしたか一言ずつ言い合ってみませんか？",
+      "reflection_question": "相手の感じ方は、どうでしたか？",
+      "tags": [
+        "social",
+        "sensory"
+      ],
+      "themes": [
+        "meal",
+        "people"
+      ],
+      "moods": [
+        "bored",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "taste",
+        "people"
+      ],
+      "opens": [
+        {
+          "to": "people-new-question",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "root-touch",
+      "title": "手ざわり",
+      "perspective": "手を、使う道具ではなく、感じるものとして使ってみる。",
+      "invitation": "いま手が触れているものの、温度や手ざわりを確かめてみませんか？",
+      "reflection_question": "どんな手ざわりでしたか？",
+      "tags": [
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "general"
+      ],
+      "moods": [
+        "tired",
+        "focus",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "touch"
+      ],
+      "opens": [
+        {
+          "to": "daily-hands",
+          "kind": "deepen"
+        },
+        {
+          "to": "touch-warmth",
+          "kind": "widen"
+        },
+        {
+          "to": "touch-fabric",
+          "kind": "widen"
+        },
+        {
+          "to": "rest-warm-cup",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "house-one-thing",
+      "title": "ひとつと向き合う",
+      "perspective": "片づけを「全部やる」ことではなく、ひとつの物と向き合う時間として捉える。",
+      "invitation": "目に入ったものをひとつだけ手に取って、「今の自分に必要か」を考えてみませんか？",
+      "reflection_question": "その物について、何を思いましたか？",
+      "tags": [
+        "reflection",
+        "small_challenge",
+        "short"
+      ],
+      "themes": [
+        "housework"
+      ],
+      "moods": [
+        "refresh",
+        "focus"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "touch",
+        "think"
+      ],
+      "opens": [
+        {
+          "to": "house-before-after",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "rest-warm-cup",
+      "title": "温かい一杯",
+      "perspective": "飲み物を、温度と香りを手のひらで感じる時間として味わう。",
+      "invitation": "次に何かを飲むとき、器の温度と香りを、最初のひと口まで感じてみませんか？",
+      "reflection_question": "最初のひと口は、どんな感じでしたか？",
+      "tags": [
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "rest"
+      ],
+      "moods": [
+        "tired"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "touch",
+        "smell",
+        "taste"
+      ],
+      "opens": [
+        {
+          "to": "pause-breath",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "morning-slow",
+      "title": "ひとつだけゆっくり",
+      "perspective": "急ぎがちな朝の中に、ひとつだけ丁寧にする動作をつくる。",
+      "invitation": "朝の動作の中からひとつだけ選んで、いつもよりゆっくりやってみませんか？",
+      "reflection_question": "ゆっくりやってみて、何に気づきましたか？",
+      "tags": [
+        "sensory",
+        "small_challenge",
+        "short"
+      ],
+      "themes": [
+        "morning"
+      ],
+      "moods": [
+        "tired",
+        "focus"
+      ],
+      "times": [
+        "dawn",
+        "morning"
+      ],
+      "effort": "low",
+      "elements": [
+        "touch",
+        "pause"
+      ],
+      "opens": [
+        {
+          "to": "pause-one-thing",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "daily-hands",
+      "title": "手が覚えていること",
+      "perspective": "日常の動作を、手が覚えていることに気づく時間として捉える。",
+      "invitation": "今日、無意識にしている動作をひとつだけ、意識してやってみませんか？",
+      "reflection_question": "意識してみて、何が違いましたか？",
+      "tags": [
+        "sensory",
+        "new_perspective",
+        "short"
+      ],
+      "themes": [
+        "general"
+      ],
+      "moods": [
+        "focus",
+        "tired"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "touch"
+      ],
+      "opens": [
+        {
+          "to": "daily-other-hand",
+          "kind": "deepen"
+        },
+        {
+          "to": "morning-slow",
+          "kind": "deepen"
+        },
+        {
+          "to": "house-one-thing",
+          "kind": "widen"
+        }
+      ]
     },
     {
       "id": "daily-other-hand",
@@ -1823,7 +1956,916 @@
       ],
       "times": [],
       "effort": "low",
-      "solar_terms": []
+      "elements": [
+        "touch",
+        "move"
+      ],
+      "opens": [
+        {
+          "to": "word-letter",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "touch-warmth",
+      "title": "手のひらの温度",
+      "perspective": "温かさを、手で見つけるものとして捉える。",
+      "invitation": "今日、手のひらで「温かい」と感じるものをひとつ見つけてみませんか？",
+      "reflection_question": "何がいちばん温かかったですか？",
+      "tags": [
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "general"
+      ],
+      "moods": [
+        "tired"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "touch"
+      ],
+      "opens": [
+        {
+          "to": "touch-wind",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "touch-wind",
+      "title": "風の向き",
+      "perspective": "風を、肌で読むものとして感じてみる。",
+      "invitation": "肌に風を感じたら、どこから吹いてきたのか確かめてみませんか？",
+      "reflection_question": "風は、どこから吹いていましたか？",
+      "tags": [
+        "sensory",
+        "observation",
+        "short"
+      ],
+      "themes": [
+        "outdoors",
+        "commute"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "touch"
+      ],
+      "opens": [
+        {
+          "to": "smell-breath",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "touch-fabric",
+      "title": "服の手ざわり",
+      "perspective": "身につけているものを、肌が一日じゅう触れているものとして見直す。",
+      "invitation": "今日着ているものの中で、いちばん好きな手ざわりを探してみませんか？",
+      "reflection_question": "どこの手ざわりが好きでしたか？",
+      "tags": [
+        "sensory",
+        "new_perspective",
+        "short"
+      ],
+      "themes": [
+        "general",
+        "morning"
+      ],
+      "moods": [
+        "tired",
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "touch"
+      ],
+      "opens": [
+        {
+          "to": "touch-feet",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "touch-feet",
+      "title": "足もとの感触",
+      "perspective": "床を、ただ平らな面ではなく、手ざわりのあるものとして感じる。",
+      "invitation": "次に裸足になったとき、床の感触を足の裏で確かめてみませんか？",
+      "reflection_question": "床は、どんな感触でしたか？",
+      "tags": [
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "general",
+        "night"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "touch",
+        "move"
+      ],
+      "opens": [
+        {
+          "to": "move-walk-slow",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "root-move",
+      "title": "足の裏",
+      "perspective": "歩くことを、移動の手段ではなく、体の感覚として味わう。",
+      "invitation": "次に歩くとき、足の裏がどこから地面に着くか感じてみませんか？",
+      "reflection_question": "どこから着いていましたか？",
+      "tags": [
+        "sensory",
+        "new_perspective",
+        "short"
+      ],
+      "themes": [
+        "commute",
+        "body",
+        "general"
+      ],
+      "moods": [
+        "tired",
+        "focus",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "move"
+      ],
+      "opens": [
+        {
+          "to": "move-walk-slow",
+          "kind": "deepen"
+        },
+        {
+          "to": "move-stretch",
+          "kind": "widen"
+        },
+        {
+          "to": "body-breath",
+          "kind": "widen"
+        },
+        {
+          "to": "commute-another-way",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "commute-another-way",
+      "title": "ひと筋ちがう道",
+      "perspective": "決まった道順を、まだ知らない街の一部に出会う機会として捉える。",
+      "invitation": "時間と安全に余裕があれば、いつもと一本ちがう道を選んでみませんか？",
+      "reflection_question": "ちがう道には、何がありましたか？",
+      "tags": [
+        "small_challenge",
+        "new_perspective"
+      ],
+      "themes": [
+        "commute",
+        "outdoors"
+      ],
+      "moods": [
+        "bored",
+        "refresh"
+      ],
+      "times": [
+        "morning",
+        "daytime",
+        "evening"
+      ],
+      "effort": "medium",
+      "elements": [
+        "move",
+        "see"
+      ],
+      "opens": [
+        {
+          "to": "body-scenery",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "body-breath",
+      "title": "呼吸の深さ",
+      "perspective": "体を動かす時間を回数や距離ではなく、呼吸の変化を感じる時間として捉える。",
+      "invitation": "次に体を動かすとき、呼吸がいちばん深くなった瞬間に気づいてみませんか？",
+      "reflection_question": "どんなときに呼吸が深くなりましたか？",
+      "tags": [
+        "sensory",
+        "observation"
+      ],
+      "themes": [
+        "body"
+      ],
+      "moods": [
+        "focus",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "move",
+        "pause"
+      ],
+      "opens": [
+        {
+          "to": "body-after",
+          "kind": "deepen"
+        }
+      ]
+    },
+    {
+      "id": "body-after",
+      "title": "終わったあとの体",
+      "perspective": "体を動かしたあとを、体がどう変わったかを確かめる時間として捉える。",
+      "invitation": "体を動かしたあと、どこがいちばん軽く感じるかを確かめてみませんか？",
+      "reflection_question": "どこが変わったと感じましたか？",
+      "tags": [
+        "sensory",
+        "reflection",
+        "short"
+      ],
+      "themes": [
+        "body"
+      ],
+      "moods": [
+        "tired",
+        "focus"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "move",
+        "touch"
+      ],
+      "opens": [
+        {
+          "to": "touch-feet",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "move-walk-slow",
+      "title": "少しゆっくり歩く",
+      "perspective": "歩く速さを変えて、見えるものの変わり方を確かめる。",
+      "invitation": "安全な場所で、いつもより少しだけゆっくり歩いてみませんか？",
+      "reflection_question": "ゆっくり歩いて、何が見えましたか？",
+      "tags": [
+        "small_challenge",
+        "sensory"
+      ],
+      "themes": [
+        "commute",
+        "outdoors",
+        "body"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "move",
+        "see"
+      ],
+      "opens": [
+        {
+          "to": "move-stairs",
+          "kind": "deepen"
+        }
+      ]
+    },
+    {
+      "id": "move-stairs",
+      "title": "一段ずつ",
+      "perspective": "階段を、急いで通る場所ではなく、体の動きを確かめる場所にする。",
+      "invitation": "次に階段を使うとき、手すりのそばで、一段ずつ足の運びを感じてみませんか？",
+      "reflection_question": "上りと下りで、何が違いましたか？",
+      "tags": [
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "commute",
+        "body"
+      ],
+      "moods": [
+        "focus",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "move"
+      ],
+      "opens": [
+        {
+          "to": "body-after",
+          "kind": "deepen"
+        }
+      ]
+    },
+    {
+      "id": "move-stretch",
+      "title": "伸びたい方向",
+      "perspective": "体をほぐすことを、決まった体操ではなく、体に聞くこととして捉える。",
+      "invitation": "少しだけ立ち上がって、体がいちばん気持ちよく伸びる方向を探してみませんか？",
+      "reflection_question": "どの方向に伸びましたか？",
+      "tags": [
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "body",
+        "rest",
+        "work"
+      ],
+      "moods": [
+        "tired",
+        "focus",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "move"
+      ],
+      "opens": [
+        {
+          "to": "move-posture",
+          "kind": "deepen"
+        }
+      ]
+    },
+    {
+      "id": "move-posture",
+      "title": "いまの姿勢",
+      "perspective": "座っている時間を、体の声を聞く時間として捉える。",
+      "invitation": "いまの姿勢に気づいて、楽な形にひとつだけ直してみませんか？",
+      "reflection_question": "どこを直しましたか？",
+      "tags": [
+        "sensory",
+        "reflection",
+        "short"
+      ],
+      "themes": [
+        "work",
+        "study",
+        "rest"
+      ],
+      "moods": [
+        "tired",
+        "focus"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "move",
+        "pause"
+      ],
+      "opens": [
+        {
+          "to": "pause-breath",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "rest-pause",
+      "title": "手を止める一瞬",
+      "perspective": "次から次へ進む一日の中に、自分が何を感じているかに気づく間をつくる。",
+      "invitation": "次の切り替わりの前に、今の自分の感覚を一度だけ確かめてみませんか？",
+      "reflection_question": "確かめてみて、どんな感覚がありましたか？",
+      "tags": [
+        "reflection",
+        "short"
+      ],
+      "themes": [
+        "rest"
+      ],
+      "moods": [
+        "tired",
+        "focus"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "pause"
+      ],
+      "opens": [
+        {
+          "to": "pause-breath",
+          "kind": "deepen"
+        },
+        {
+          "to": "rest-nothing",
+          "kind": "deepen"
+        },
+        {
+          "to": "pause-waiting",
+          "kind": "widen"
+        },
+        {
+          "to": "pause-one-thing",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "rest-nothing",
+      "title": "何もしない時間",
+      "perspective": "休むことを、時間の無駄ではなく、ひとつの体験として捉える。",
+      "invitation": "次のすき間で、何もしない時間を少しだけ過ごしてみませんか？",
+      "reflection_question": "何もしない時間に、何が浮かびましたか？",
+      "tags": [
+        "reflection",
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "rest"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "pause"
+      ],
+      "opens": [
+        {
+          "to": "pause-notification",
+          "kind": "widen"
+        },
+        {
+          "to": "pause-before-sleep",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "pause-breath",
+      "title": "三つの息",
+      "perspective": "呼吸を、無意識のものから、自分で選べるものに戻してみる。",
+      "invitation": "次のすき間で、ゆっくり息を三回だけ吐いてみませんか？",
+      "reflection_question": "三回吐いたあと、何が変わりましたか？",
+      "tags": [
+        "sensory",
+        "short"
+      ],
+      "themes": [
+        "rest",
+        "general"
+      ],
+      "moods": [
+        "tired",
+        "focus",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "pause",
+        "move"
+      ],
+      "opens": [
+        {
+          "to": "body-breath",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "pause-notification",
+      "title": "通知を置く",
+      "perspective": "つながり続ける時間の中に、自分だけの間をつくる。",
+      "invitation": "少しのあいだ通知を見ずに、目の前のことだけに向き合ってみませんか？",
+      "reflection_question": "通知を置いて、何に気づきましたか？",
+      "tags": [
+        "small_challenge",
+        "reflection"
+      ],
+      "themes": [
+        "general",
+        "rest"
+      ],
+      "moods": [
+        "focus",
+        "tired"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "pause"
+      ],
+      "opens": []
+    },
+    {
+      "id": "pause-before-sleep",
+      "title": "眠る前の暗さ",
+      "perspective": "眠る前の時間を、一日をゆっくり閉じる時間にする。",
+      "invitation": "眠る前に明かりをひとつ落として、少しだけ暗さを味わってみませんか？",
+      "reflection_question": "暗さの中で、何を感じましたか？",
+      "tags": [
+        "sensory",
+        "reflection",
+        "short"
+      ],
+      "themes": [
+        "night",
+        "rest"
+      ],
+      "moods": [
+        "tired",
+        "refresh"
+      ],
+      "times": [
+        "night",
+        "lateNight"
+      ],
+      "effort": "low",
+      "elements": [
+        "pause"
+      ],
+      "opens": [
+        {
+          "to": "night-good-thing",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "pause-waiting",
+      "title": "待つあいだ",
+      "perspective": "待ち時間を、埋めるものではなく、ぽっかり空いた余白として過ごす。",
+      "invitation": "次に何かを待つとき、画面を見ずに、まわりを眺めてみませんか？",
+      "reflection_question": "待つあいだ、何が目に入りましたか？",
+      "tags": [
+        "observation",
+        "small_challenge",
+        "short"
+      ],
+      "themes": [
+        "commute",
+        "general"
+      ],
+      "moods": [
+        "tired",
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "pause",
+        "see"
+      ],
+      "opens": [
+        {
+          "to": "rest-far",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "pause-one-thing",
+      "title": "ひとつずつ",
+      "perspective": "同時にこなすことを、ひとつずつ味わうことに置きかえる。",
+      "invitation": "並行していることを、少しのあいだひとつだけに絞ってみませんか？",
+      "reflection_question": "ひとつに絞って、どうでしたか？",
+      "tags": [
+        "small_challenge",
+        "reflection"
+      ],
+      "themes": [
+        "work",
+        "study",
+        "housework"
+      ],
+      "moods": [
+        "focus",
+        "tired"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "pause",
+        "think"
+      ],
+      "opens": [
+        {
+          "to": "study-first-step",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "root-think",
+      "title": "なぜを持ち歩く",
+      "perspective": "疑問を、片づけるものではなく、持ち歩けるものとして扱う。",
+      "invitation": "今日いちばん「なぜだろう」と思ったことを、ひとつだけ覚えておいてみませんか？",
+      "reflection_question": "どんな「なぜ」を持ち帰りましたか？",
+      "tags": [
+        "question",
+        "observation",
+        "short"
+      ],
+      "themes": [
+        "general"
+      ],
+      "moods": [
+        "bored",
+        "focus"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "think"
+      ],
+      "opens": [
+        {
+          "to": "study-why",
+          "kind": "deepen"
+        },
+        {
+          "to": "shop-why",
+          "kind": "widen"
+        },
+        {
+          "to": "night-good-thing",
+          "kind": "widen"
+        },
+        {
+          "to": "daily-nameless",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "study-stumble",
+      "title": "つまずきの観察",
+      "perspective": "課題を「終わらせる作業」ではなく、自分がどこで手を止めるかを観察する時間として捉える。",
+      "invitation": "今日の勉強で、いちばん手が止まった瞬間をひとつだけ覚えておいてみませんか？",
+      "reflection_question": "手が止まったとき、何が引っかかっていましたか？",
+      "tags": [
+        "new_perspective",
+        "observation",
+        "short"
+      ],
+      "themes": [
+        "study"
+      ],
+      "moods": [
+        "tired",
+        "focus"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "think"
+      ],
+      "opens": [
+        {
+          "to": "study-first-step",
+          "kind": "widen"
+        },
+        {
+          "to": "study-yesterday",
+          "kind": "deepen"
+        }
+      ]
+    },
+    {
+      "id": "study-yesterday",
+      "title": "昨日の自分への問い",
+      "perspective": "量をこなす時間ではなく、昨日の自分には分からなかったことをひとつ見つける時間として捉える。",
+      "invitation": "今日は「昨日の自分なら分からなかったこと」をひとつ探すつもりで取り組んでみませんか？",
+      "reflection_question": "昨日より、何が分かるようになっていましたか？",
+      "tags": [
+        "question",
+        "reflection"
+      ],
+      "themes": [
+        "study"
+      ],
+      "moods": [
+        "focus",
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "think"
+      ],
+      "opens": []
+    },
+    {
+      "id": "study-why",
+      "title": "一問だけの探偵",
+      "perspective": "全部を片づけるのではなく、一問を「なぜこの答えになるのか」を探る対象として見る。",
+      "invitation": "今日の中から気になる一問だけ選んで、「なぜ？」を一段深く掘ってみませんか？",
+      "reflection_question": "その「なぜ」の先に、何が見えましたか？",
+      "tags": [
+        "question",
+        "small_challenge",
+        "short"
+      ],
+      "themes": [
+        "study"
+      ],
+      "moods": [
+        "bored",
+        "focus",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "think"
+      ],
+      "opens": [
+        {
+          "to": "work-one-question",
+          "kind": "widen"
+        },
+        {
+          "to": "study-stumble",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "study-first-step",
+      "title": "最初のひと区切り",
+      "perspective": "「全部やらなきゃ」ではなく、最初の小さなひと区切りだけに向き合う時間として捉える。",
+      "invitation": "重く感じるときは、最初のひと区切りだけを丁寧にやるつもりで始めてみませんか？",
+      "reflection_question": "始めてみて、気持ちはどう変わりましたか？",
+      "tags": [
+        "small_challenge",
+        "short"
+      ],
+      "themes": [
+        "study",
+        "work"
+      ],
+      "moods": [
+        "tired"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "think",
+        "move"
+      ],
+      "opens": []
+    },
+    {
+      "id": "work-one-question",
+      "title": "ひとつの問いを持ち込む",
+      "perspective": "予定をこなす場ではなく、ひとつの疑問の答えを探しに行く場として捉える。",
+      "invitation": "この予定に「今日これだけは知りたい」という問いをひとつだけ持って臨んでみませんか？",
+      "reflection_question": "その問いの答えは、見つかりましたか？",
+      "tags": [
+        "question",
+        "new_perspective"
+      ],
+      "themes": [
+        "work"
+      ],
+      "moods": [
+        "focus",
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "think",
+        "people"
+      ],
+      "opens": [
+        {
+          "to": "people-new-question",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "shop-why",
+      "title": "選んだ理由",
+      "perspective": "何気ない選択を、自分の好みを知る手がかりとして捉える。",
+      "invitation": "次に何かを選ぶとき、「なぜこれにしたのか」を一言で言ってみませんか？",
+      "reflection_question": "選んだ理由から、自分について何が分かりましたか？",
+      "tags": [
+        "reflection",
+        "question",
+        "short"
+      ],
+      "themes": [
+        "shopping"
+      ],
+      "moods": [
+        "focus",
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "think"
+      ],
+      "opens": [
+        {
+          "to": "house-one-thing",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "night-good-thing",
+      "title": "今日の小さなよかった",
+      "perspective": "一日の終わりを、反省ではなく、小さなよかったを拾う時間にする。",
+      "invitation": "寝る前に、今日の小さな「よかった」をひとつだけ思い出してみませんか？",
+      "reflection_question": "どんな「よかった」が浮かびましたか？",
+      "tags": [
+        "reflection",
+        "short"
+      ],
+      "themes": [
+        "night"
+      ],
+      "moods": [
+        "tired"
+      ],
+      "times": [
+        "night",
+        "lateNight"
+      ],
+      "effort": "low",
+      "elements": [
+        "think",
+        "word"
+      ],
+      "opens": [
+        {
+          "to": "night-tomorrow",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "night-tomorrow",
+      "title": "明日のひとつの楽しみ",
+      "perspective": "明日を予定の並びではなく、小さな楽しみのある一日として思い描く。",
+      "invitation": "寝る前に、明日の小さな楽しみをひとつだけ決めてみませんか？",
+      "reflection_question": "決めた楽しみは、何でしたか？",
+      "tags": [
+        "reflection",
+        "creative",
+        "short"
+      ],
+      "themes": [
+        "night"
+      ],
+      "moods": [
+        "tired",
+        "bored"
+      ],
+      "times": [
+        "night",
+        "lateNight"
+      ],
+      "effort": "low",
+      "elements": [
+        "think",
+        "word"
+      ],
+      "opens": []
     },
     {
       "id": "daily-nameless",
@@ -1849,630 +2891,98 @@
         "evening"
       ],
       "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "daily-scent",
-      "title": "今日の匂い",
-      "perspective": "一日を、匂いで記憶してみる。",
-      "invitation": "今日のどこかで、ふと感じた匂いをひとつ覚えておいてみませんか？",
-      "reflection_question": "その匂いは、何を思い出させましたか？",
-      "tags": [
-        "sensory",
-        "short"
+      "elements": [
+        "think",
+        "see"
       ],
-      "themes": [
-        "general"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": []
-    },
-    {
-      "id": "season-risshun",
-      "title": "春のきざし",
-      "perspective": "まだ寒い日々を、春の気配を探す期間として捉える。",
-      "invitation": "今日、寒さの中にある「春のきざし」をひとつ探してみませんか？",
-      "reflection_question": "どこに春のきざしがありましたか？",
-      "tags": [
-        "observation",
-        "sensory"
-      ],
-      "themes": [
-        "outdoors"
-      ],
-      "moods": [
-        "bored",
-        "refresh",
-        "tired"
-      ],
-      "times": [
-        "morning",
-        "daytime",
-        "evening"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        0
+      "opens": [
+        {
+          "to": "word-name-it",
+          "kind": "cross"
+        }
       ]
     },
     {
-      "id": "season-usui",
-      "title": "土と雨のにおい",
-      "perspective": "雪が雨に変わる頃の、足もとの変化に気づく。",
-      "invitation": "外に出たとき、土や雨のにおいを一度だけ確かめてみませんか？",
-      "reflection_question": "どんなにおいがしましたか？",
+      "id": "root-word",
+      "title": "いまを一行で",
+      "perspective": "書くことを、記録ではなく、いまに気づくための道具として使う。",
+      "invitation": "いまの気分や様子を、一行だけ書き留めてみませんか？",
+      "reflection_question": "書いてみて、何に気づきましたか？",
       "tags": [
-        "sensory",
-        "short"
-      ],
-      "themes": [
-        "outdoors"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [
-        "morning",
-        "daytime",
-        "evening"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        1
-      ]
-    },
-    {
-      "id": "season-keichitsu",
-      "title": "動き出したもの",
-      "perspective": "虫が土から出てくる頃。冬のあいだ止まっていたものの動きに目を向ける。",
-      "invitation": "今日、冬のあいだ止まっていて、また動き出したものをひとつ見つけてみませんか？",
-      "reflection_question": "何が動き出していましたか？",
-      "tags": [
-        "observation",
-        "new_perspective"
-      ],
-      "themes": [
-        "outdoors",
-        "general"
-      ],
-      "moods": [
-        "bored",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": [
-        2
-      ]
-    },
-    {
-      "id": "season-shunbun",
-      "title": "日の長さ",
-      "perspective": "昼と夜がほぼ同じ長さになる頃。光の長さそのものを味わう。",
-      "invitation": "今日は、日が沈む時刻を少しだけ気にしてみませんか？",
-      "reflection_question": "日の長さに、何を感じましたか？",
-      "tags": [
-        "observation",
+        "creative",
         "reflection",
         "short"
       ],
       "themes": [
-        "outdoors"
+        "general"
       ],
       "moods": [
         "tired",
         "focus",
-        "refresh"
-      ],
-      "times": [
-        "daytime",
-        "evening"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        3
-      ]
-    },
-    {
-      "id": "season-seimei",
-      "title": "花の名前",
-      "perspective": "万物が清らかで明るい頃。見かけた花を、名前のある存在として知る。",
-      "invitation": "今日見かけた花をひとつ、名前を調べてみませんか？",
-      "reflection_question": "その花の名前は何でしたか？",
-      "tags": [
-        "observation",
-        "question",
-        "short"
-      ],
-      "themes": [
-        "outdoors"
-      ],
-      "moods": [
-        "bored",
-        "refresh"
-      ],
-      "times": [
-        "morning",
-        "daytime",
-        "evening"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        4
-      ]
-    },
-    {
-      "id": "season-kokuu",
-      "title": "雨のあとの景色",
-      "perspective": "穀物をうるおす春の雨。雨上がりを、景色が洗われた時間として眺める。",
-      "invitation": "雨が上がったあと、景色が少し変わって見えるところを探してみませんか？",
-      "reflection_question": "雨のあと、何が違って見えましたか？",
-      "tags": [
-        "observation",
-        "sensory"
-      ],
-      "themes": [
-        "outdoors"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": [
-        5
-      ]
-    },
-    {
-      "id": "season-rikka",
-      "title": "三つの緑",
-      "perspective": "夏の始まり。緑が深まっていく季節を、色のちがいで味わう。",
-      "invitation": "今日、ちがう緑を三つ見つけてみませんか？",
-      "reflection_question": "いちばん好きな緑は、どれでしたか？",
-      "tags": [
-        "observation",
-        "sensory"
-      ],
-      "themes": [
-        "outdoors"
-      ],
-      "moods": [
-        "bored",
-        "refresh"
-      ],
-      "times": [
-        "morning",
-        "daytime",
-        "evening"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        6
-      ]
-    },
-    {
-      "id": "season-shoman",
-      "title": "育っているもの",
-      "perspective": "草木が育ち、満ちていく頃。少しずつ大きくなるものに目を向ける。",
-      "invitation": "草木でも自分のことでも、今少しずつ育っているものをひとつ見つけてみませんか？",
-      "reflection_question": "何が育っていましたか？",
-      "tags": [
-        "reflection",
-        "observation"
-      ],
-      "themes": [
-        "general"
-      ],
-      "moods": [
-        "focus",
-        "tired"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": [
-        7
-      ]
-    },
-    {
-      "id": "season-boshu",
-      "title": "雨音の場所",
-      "perspective": "梅雨の始まり。雨の日を、音を味わう日として捉える。",
-      "invitation": "雨の日には、雨音がいちばん心地よく聞こえる場所を探してみませんか？",
-      "reflection_question": "どこで聞く雨音がよかったですか？",
-      "tags": [
-        "sensory"
-      ],
-      "themes": [
-        "general"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": [
-        8
-      ]
-    },
-    {
-      "id": "season-geshi",
-      "title": "長い夕方",
-      "perspective": "一年で昼がいちばん長い頃。夕方の光の長さを味わう。",
-      "invitation": "今日、夕方の光がいつまで残っているか、少しだけ気にしてみませんか？",
-      "reflection_question": "長い夕方に、何をしていましたか？",
-      "tags": [
-        "observation",
-        "reflection"
-      ],
-      "themes": [
-        "outdoors"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [
-        "daytime",
-        "evening"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        9
-      ]
-    },
-    {
-      "id": "season-shousho",
-      "title": "風の通り道",
-      "perspective": "暑さが本格的になる頃。涼しさを、自分で見つけるものとして捉える。",
-      "invitation": "今日、いちばん涼しい風が通る場所を見つけてみませんか？",
-      "reflection_question": "どこに風の通り道がありましたか？",
-      "tags": [
-        "sensory",
-        "observation"
-      ],
-      "themes": [
-        "general"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": [
-        10
-      ]
-    },
-    {
-      "id": "season-taisho",
-      "title": "夏の音",
-      "perspective": "暑さがいちばん厳しい頃。夏を、音で感じる季節として捉える。",
-      "invitation": "涼しい場所から、「夏らしい音」をひとつ聞き分けてみませんか？",
-      "reflection_question": "どんな夏の音が聞こえましたか？",
-      "tags": [
-        "sensory",
-        "short"
-      ],
-      "themes": [
-        "general"
-      ],
-      "moods": [
-        "tired",
         "bored"
       ],
       "times": [],
       "effort": "low",
-      "solar_terms": [
-        11
+      "elements": [
+        "word"
+      ],
+      "opens": [
+        {
+          "to": "morning-word",
+          "kind": "widen"
+        },
+        {
+          "to": "work-one-line",
+          "kind": "widen"
+        },
+        {
+          "to": "word-name-it",
+          "kind": "deepen"
+        },
+        {
+          "to": "word-letter",
+          "kind": "widen"
+        }
       ]
     },
     {
-      "id": "season-risshu",
-      "title": "秋の気配",
-      "perspective": "暦の上では秋。まだ暑い中に、次の季節の兆しを探す。",
-      "invitation": "暑さの中に、ほんの少しの「秋の気配」を探してみませんか？",
-      "reflection_question": "どこに秋の気配を感じましたか？",
+      "id": "study-explain",
+      "title": "一言で説明するなら",
+      "perspective": "覚えるための勉強ではなく、誰かに伝えるための準備として向き合ってみる。",
+      "invitation": "今日やるところを、あとで誰かに一言で説明するとしたら…と考えながら進めてみませんか？",
+      "reflection_question": "一言にすると、どんな言葉になりましたか？",
       "tags": [
-        "observation",
-        "sensory"
-      ],
-      "themes": [
-        "general"
-      ],
-      "moods": [
-        "bored",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": [
-        12
-      ]
-    },
-    {
-      "id": "season-shosho",
-      "title": "夕暮れの色",
-      "perspective": "暑さがおさまり始める頃。夕暮れを、色が移り変わる時間として眺める。",
-      "invitation": "今日、夕暮れの空の色が変わっていくところを、少しだけ眺めてみませんか？",
-      "reflection_question": "どんな色の変化がありましたか？",
-      "tags": [
-        "sensory",
-        "observation"
-      ],
-      "themes": [
-        "outdoors"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [
-        "daytime",
-        "evening"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        13
-      ]
-    },
-    {
-      "id": "season-hakuro",
-      "title": "朝の露",
-      "perspective": "草に露が光り始める頃。朝の小さな光を探す。",
-      "invitation": "朝、草や窓に光る露を探してみませんか？",
-      "reflection_question": "露は、どんなふうに光っていましたか？",
-      "tags": [
-        "observation",
-        "sensory",
-        "short"
-      ],
-      "themes": [
-        "outdoors",
-        "morning"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [
-        "dawn",
-        "morning"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        14
-      ]
-    },
-    {
-      "id": "season-shubun",
-      "title": "影の長さ",
-      "perspective": "昼と夜が同じ長さになり、ここから夜が長くなる頃。影で季節を知る。",
-      "invitation": "今日、自分の影の長さを少しだけ気にしてみませんか？",
-      "reflection_question": "影を見て、何に気づきましたか？",
-      "tags": [
-        "observation",
         "new_perspective",
-        "short"
+        "question"
       ],
       "themes": [
-        "outdoors"
+        "study"
       ],
       "moods": [
         "bored",
-        "refresh"
-      ],
-      "times": [
-        "morning",
-        "daytime",
-        "evening"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        15
-      ]
-    },
-    {
-      "id": "season-kanro",
-      "title": "渡っていくもの",
-      "perspective": "雁が北から渡ってくる頃。見上げた空を、季節が移動していく場所として眺める。",
-      "invitation": "移動の途中で一度だけ空を見上げて、渡っていくものを探してみませんか？",
-      "reflection_question": "空には、何が渡っていましたか？",
-      "tags": [
-        "observation",
-        "sensory",
-        "short"
-      ],
-      "themes": [
-        "outdoors",
-        "commute"
-      ],
-      "moods": [
-        "tired",
-        "refresh",
-        "bored"
-      ],
-      "times": [
-        "morning",
-        "daytime",
-        "evening"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        16
-      ]
-    },
-    {
-      "id": "season-soko",
-      "title": "色づく葉",
-      "perspective": "楓や蔦が色づく頃。一枚の葉を、季節の移り変わりの記録として見る。",
-      "invitation": "今日、色が変わり始めた葉をひとつ見つけてみませんか？",
-      "reflection_question": "その葉は、どんな色でしたか？",
-      "tags": [
-        "observation",
-        "sensory",
-        "short"
-      ],
-      "themes": [
-        "outdoors"
-      ],
-      "moods": [
-        "bored",
-        "refresh",
-        "tired"
-      ],
-      "times": [
-        "morning",
-        "daytime",
-        "evening"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        17
-      ]
-    },
-    {
-      "id": "season-ritto",
-      "title": "冬のはじまりの空気",
-      "perspective": "冬の始まり。空気の冷たさを、季節が変わった合図として受け取る。",
-      "invitation": "外に出たとき、空気の冷たさや匂いの変化を確かめてみませんか？",
-      "reflection_question": "冬の始まりは、どんな空気でしたか？",
-      "tags": [
-        "sensory",
-        "short"
-      ],
-      "themes": [
-        "outdoors"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
+        "focus"
       ],
       "times": [],
-      "effort": "low",
-      "solar_terms": [
-        18
-      ]
+      "effort": "medium",
+      "elements": [
+        "word",
+        "think"
+      ],
+      "opens": []
     },
     {
-      "id": "season-shosetsu",
-      "title": "手のひらの温度",
-      "perspective": "わずかに雪が降り始める頃。温かさを、手で見つけるものとして捉える。",
-      "invitation": "今日、手のひらで「温かい」と感じるものをひとつ見つけてみませんか？",
-      "reflection_question": "何がいちばん温かかったですか？",
+      "id": "work-one-line",
+      "title": "終わりの一行",
+      "perspective": "一日の作業を「やり残し」で閉じるのではなく、進んだことを確かめて閉じる時間にする。",
+      "invitation": "今日の作業の終わりに、「今日進んだこと」を一行だけ書き留めてみませんか？",
+      "reflection_question": "書いてみて、どんな一日だったと感じましたか？",
       "tags": [
-        "sensory",
+        "reflection",
         "short"
       ],
       "themes": [
-        "general"
-      ],
-      "moods": [
-        "tired"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": [
-        19
-      ]
-    },
-    {
-      "id": "season-taisetsu",
-      "title": "白い息",
-      "perspective": "雪が本格的に降り始める頃。吐く息の白さで、冬を目に見えるものにする。",
-      "invitation": "寒い朝や夜に、自分の吐く息の白さを眺めてみませんか？",
-      "reflection_question": "白い息を見て、何を思いましたか？",
-      "tags": [
-        "sensory",
-        "observation",
-        "short"
-      ],
-      "themes": [
-        "outdoors"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [
-        "dawn",
-        "morning",
-        "evening",
-        "night"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        20
-      ]
-    },
-    {
-      "id": "season-toji",
-      "title": "長い夜の灯り",
-      "perspective": "一年で夜がいちばん長い頃。ここから日が延びていく夜を、ゆっくり過ごす。",
-      "invitation": "今夜は、いちばん長い夜を過ごすつもりで、灯りをひとつ選んでみませんか？",
-      "reflection_question": "選んだ灯りの下で、どう過ごしましたか？",
-      "tags": [
-        "sensory",
-        "reflection"
-      ],
-      "themes": [
-        "night"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [
-        "evening",
-        "night",
-        "lateNight"
-      ],
-      "effort": "low",
-      "solar_terms": [
-        21
-      ]
-    },
-    {
-      "id": "season-shokan",
-      "title": "冬の音",
-      "perspective": "寒の入り。冷たく澄んだ空気の中の、音の聞こえ方に気づく。",
-      "invitation": "冷たい空気の中で、音がどう聞こえるか確かめてみませんか？",
-      "reflection_question": "冬の空気の中の音は、どうでしたか？",
-      "tags": [
-        "sensory"
-      ],
-      "themes": [
-        "outdoors"
-      ],
-      "moods": [
-        "tired",
-        "refresh"
-      ],
-      "times": [],
-      "effort": "low",
-      "solar_terms": [
-        22
-      ]
-    },
-    {
-      "id": "season-daikan",
-      "title": "寒さの底で",
-      "perspective": "寒さがいちばん厳しい頃。ここから春へ向かう、小さな変化を探す。",
-      "invitation": "寒さの中で、少しだけ日が長くなったことに気づいてみませんか？",
-      "reflection_question": "どこで日が長くなったと感じましたか？",
-      "tags": [
-        "observation",
-        "reflection"
-      ],
-      "themes": [
-        "general"
+        "work",
+        "study"
       ],
       "moods": [
         "tired",
@@ -2480,12 +2990,514 @@
       ],
       "times": [
         "daytime",
-        "evening"
+        "evening",
+        "night"
       ],
       "effort": "low",
-      "solar_terms": [
-        23
+      "elements": [
+        "word",
+        "think"
+      ],
+      "opens": [
+        {
+          "to": "study-explain",
+          "kind": "widen"
+        }
       ]
+    },
+    {
+      "id": "commute-stories",
+      "title": "すれ違う物語",
+      "perspective": "人の流れを、それぞれの一日が交差する場面として眺める。",
+      "invitation": "移動の途中で、すれ違う誰かの「このあと」を、ひとつだけ想像してみませんか？",
+      "reflection_question": "どんな「このあと」を想像しましたか？",
+      "tags": [
+        "creative",
+        "new_perspective",
+        "short"
+      ],
+      "themes": [
+        "commute"
+      ],
+      "moods": [
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "word",
+        "people"
+      ],
+      "opens": [
+        {
+          "to": "people-expression",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "morning-word",
+      "title": "今日のひと言",
+      "perspective": "一日の始まりを、予定の確認ではなく、今日の自分に言葉をかける時間にする。",
+      "invitation": "朝のうちに、「今日を表す一言」をひとつ決めてみませんか？",
+      "reflection_question": "一日の終わりに、その一言はどうでしたか？",
+      "tags": [
+        "reflection",
+        "creative",
+        "short"
+      ],
+      "themes": [
+        "morning"
+      ],
+      "moods": [
+        "focus",
+        "bored"
+      ],
+      "times": [
+        "dawn",
+        "morning"
+      ],
+      "effort": "low",
+      "elements": [
+        "word"
+      ],
+      "opens": [
+        {
+          "to": "night-tomorrow",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "word-name-it",
+      "title": "題名をつける",
+      "perspective": "出来事を、題名のあるひとつの話として眺める。",
+      "invitation": "今日あったことのひとつに、短い題名をつけてみませんか？",
+      "reflection_question": "どんな題名になりましたか？",
+      "tags": [
+        "creative",
+        "reflection",
+        "short"
+      ],
+      "themes": [
+        "general",
+        "night"
+      ],
+      "moods": [
+        "bored",
+        "tired"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "word"
+      ],
+      "opens": [
+        {
+          "to": "word-metaphor",
+          "kind": "deepen"
+        },
+        {
+          "to": "commute-stories",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "word-metaphor",
+      "title": "たとえてみる",
+      "perspective": "気分を、そのまま言うのではなく、たとえで表してみる。",
+      "invitation": "いまの気分を天気にたとえるなら何になるか、考えてみませんか？",
+      "reflection_question": "どんな天気でしたか？",
+      "tags": [
+        "creative",
+        "short"
+      ],
+      "themes": [
+        "general"
+      ],
+      "moods": [
+        "bored",
+        "tired"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "word"
+      ],
+      "opens": []
+    },
+    {
+      "id": "word-letter",
+      "title": "手で書く",
+      "perspective": "手で書くことを、速さではなく、文字の手ざわりを味わう時間にする。",
+      "invitation": "今日、何かひとつを手書きで書いてみませんか？",
+      "reflection_question": "手で書いてみて、どうでしたか？",
+      "tags": [
+        "creative",
+        "sensory",
+        "small_challenge"
+      ],
+      "themes": [
+        "study",
+        "work",
+        "general"
+      ],
+      "moods": [
+        "focus",
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "word",
+        "touch"
+      ],
+      "opens": [
+        {
+          "to": "word-thanks",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "word-thanks",
+      "title": "お礼にひとこと",
+      "perspective": "お礼を、決まり文句ではなく、相手に届く言葉にする。",
+      "invitation": "次に誰かにお礼を言うとき、理由をひとこと添えてみませんか？",
+      "reflection_question": "どんな理由を添えましたか？",
+      "tags": [
+        "social",
+        "creative",
+        "short"
+      ],
+      "themes": [
+        "people",
+        "work"
+      ],
+      "moods": [
+        "refresh",
+        "focus"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "word",
+        "people"
+      ],
+      "opens": []
+    },
+    {
+      "id": "root-meet",
+      "title": "その人らしさ",
+      "perspective": "会う人を、用件の相手ではなく、ひとりの人として見てみる。",
+      "invitation": "今日会う誰かの、その人らしいところをひとつ見つけてみませんか？",
+      "reflection_question": "どこが、その人らしかったですか？",
+      "tags": [
+        "social",
+        "observation"
+      ],
+      "themes": [
+        "people"
+      ],
+      "moods": [
+        "bored",
+        "tired",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "people"
+      ],
+      "opens": [
+        {
+          "to": "people-words",
+          "kind": "deepen"
+        },
+        {
+          "to": "people-expression",
+          "kind": "deepen"
+        },
+        {
+          "to": "people-listen",
+          "kind": "widen"
+        },
+        {
+          "to": "meet-greeting",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "work-one-word",
+      "title": "心に残る一言",
+      "perspective": "打ち合わせを情報を受け取る時間ではなく、誰かの言葉に耳を澄ます時間として捉える。",
+      "invitation": "次の打ち合わせで、いちばん心に残った誰かの一言を、ひとつだけ持ち帰ってみませんか？",
+      "reflection_question": "なぜその一言が残ったのだと思いますか？",
+      "tags": [
+        "observation",
+        "social"
+      ],
+      "themes": [
+        "work",
+        "people"
+      ],
+      "moods": [
+        "tired",
+        "bored"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "people",
+        "hear"
+      ],
+      "opens": []
+    },
+    {
+      "id": "work-small-craft",
+      "title": "小さな工夫を見つける",
+      "perspective": "業務のやりとりを、相手のさりげない工夫に気づく機会として捉える。",
+      "invitation": "今日のやりとりの中で、誰かの小さな工夫をひとつ見つけて、短く伝えてみませんか？",
+      "reflection_question": "伝えたとき、相手はどんな様子でしたか？",
+      "tags": [
+        "social",
+        "small_challenge",
+        "short"
+      ],
+      "themes": [
+        "work",
+        "people"
+      ],
+      "moods": [
+        "bored",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "medium",
+      "elements": [
+        "people",
+        "see"
+      ],
+      "opens": []
+    },
+    {
+      "id": "people-new-question",
+      "title": "まだ聞いていない質問",
+      "perspective": "会話を情報交換ではなく、相手について新しく知る機会として捉える。",
+      "invitation": "次に話す人に、まだ聞いたことのない質問をひとつしてみませんか？",
+      "reflection_question": "相手の答えで、意外だったことは何でしたか？",
+      "tags": [
+        "social",
+        "question"
+      ],
+      "themes": [
+        "people"
+      ],
+      "moods": [
+        "bored",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "medium",
+      "elements": [
+        "people",
+        "think"
+      ],
+      "opens": []
+    },
+    {
+      "id": "people-listen",
+      "title": "最後まで聞く",
+      "perspective": "会話を、話す番を待つ時間ではなく、相手の言葉を味わう時間として捉える。",
+      "invitation": "次の会話で、相手の話を最後まで聞いてから話すことを、一度だけ試してみませんか？",
+      "reflection_question": "最後まで聞いてみて、何が違いましたか？",
+      "tags": [
+        "social",
+        "small_challenge"
+      ],
+      "themes": [
+        "people",
+        "work"
+      ],
+      "moods": [
+        "focus",
+        "tired"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "people",
+        "hear"
+      ],
+      "opens": [
+        {
+          "to": "work-one-word",
+          "kind": "deepen"
+        },
+        {
+          "to": "hear-voice",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "people-words",
+      "title": "その人らしい言葉",
+      "perspective": "身近な人を、まだ知らないところのある人として見てみる。",
+      "invitation": "今日話す誰かの、言葉の選び方にひとつ気づいてみませんか？",
+      "reflection_question": "どんな言葉に、その人らしさを感じましたか？",
+      "tags": [
+        "observation",
+        "social",
+        "short"
+      ],
+      "themes": [
+        "people"
+      ],
+      "moods": [
+        "bored",
+        "tired"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "people",
+        "word"
+      ],
+      "opens": [
+        {
+          "to": "people-message",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "people-message",
+      "title": "思い出した人へ",
+      "perspective": "ふと浮かぶ誰かを、今日の小さなつながりのきっかけとして捉える。",
+      "invitation": "最近ふと思い出した人に、短いメッセージを送ってみませんか？",
+      "reflection_question": "送ってみて、どんな気持ちになりましたか？",
+      "tags": [
+        "social",
+        "small_challenge",
+        "short"
+      ],
+      "themes": [
+        "people"
+      ],
+      "moods": [
+        "bored",
+        "refresh"
+      ],
+      "times": [
+        "morning",
+        "daytime",
+        "evening",
+        "night"
+      ],
+      "effort": "low",
+      "elements": [
+        "people",
+        "word"
+      ],
+      "opens": [
+        {
+          "to": "word-thanks",
+          "kind": "cross"
+        }
+      ]
+    },
+    {
+      "id": "people-expression",
+      "title": "表情が動く瞬間",
+      "perspective": "会話を言葉だけでなく、表情の動きも含めて受け取る時間として捉える。",
+      "invitation": "次の会話で、相手の表情がふっと変わった瞬間をひとつ覚えておいてみませんか？",
+      "reflection_question": "その瞬間、何が話されていましたか？",
+      "tags": [
+        "observation",
+        "social"
+      ],
+      "themes": [
+        "people"
+      ],
+      "moods": [
+        "focus"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "people",
+        "see"
+      ],
+      "opens": [
+        {
+          "to": "work-small-craft",
+          "kind": "widen"
+        }
+      ]
+    },
+    {
+      "id": "meet-greeting",
+      "title": "あいさつにひとこと",
+      "perspective": "あいさつを、形式ではなく、小さな会話の入り口にする。",
+      "invitation": "次のあいさつに、ひとことだけ添えてみませんか？",
+      "reflection_question": "どんな返事がありましたか？",
+      "tags": [
+        "social",
+        "small_challenge",
+        "short"
+      ],
+      "themes": [
+        "people",
+        "work"
+      ],
+      "moods": [
+        "bored",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "people"
+      ],
+      "opens": [
+        {
+          "to": "meet-name",
+          "kind": "deepen"
+        },
+        {
+          "to": "people-new-question",
+          "kind": "deepen"
+        }
+      ]
+    },
+    {
+      "id": "meet-name",
+      "title": "名前で呼ぶ",
+      "perspective": "呼びかけを、相手をひとりの人として受け取る合図にする。",
+      "invitation": "今日話す誰かを、一度だけ名前で呼んでみませんか？",
+      "reflection_question": "名前で呼んで、何か変わりましたか？",
+      "tags": [
+        "social",
+        "small_challenge",
+        "short"
+      ],
+      "themes": [
+        "people",
+        "work"
+      ],
+      "moods": [
+        "focus",
+        "refresh"
+      ],
+      "times": [],
+      "effort": "low",
+      "elements": [
+        "people"
+      ],
+      "opens": []
     }
   ]
 }

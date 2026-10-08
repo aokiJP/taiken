@@ -13,13 +13,15 @@ final class ContentTests: XCTestCase {
     func testContentIsWellFormedAndSafe() {
         let content = TaikenContent.shared
         XCTAssertTrue(content.isWellFormed)
-        XCTAssertEqual(content.version, 1)
-        XCTAssertGreaterThanOrEqual(content.experiences.count, 70)
+        XCTAssertEqual(content.version, 2)
+        XCTAssertGreaterThanOrEqual(content.experiences.count, 90)
         XCTAssertEqual(Set(content.experiences.map(\.id)).count, content.experiences.count)
         XCTAssertEqual(Set(content.experiences.map(\.title)).count, content.experiences.count)
 
         let themes = Set(content.themes.map(\.id))
         let times = Set(TimeOfDay.allCases.map(\.rawValue))
+        let elements = Set(content.elements.map(\.id))
+        let ids = Set(content.experiences.map(\.id))
         for item in content.experiences {
             XCTAssertTrue(item.invitation.contains("ませんか？"), "\(item.id): 誘いかけの形にする")
             XCTAssertTrue(item.reflectionQuestion.hasSuffix("？"), item.id)
@@ -31,13 +33,33 @@ final class ContentTests: XCTestCase {
             XCTAssertTrue(item.moods.allSatisfy { Mood(rawValue: $0) != nil }, item.id)
             XCTAssertTrue(Set(item.times).isSubset(of: times), item.id)
             XCTAssertTrue(["low", "medium"].contains(item.effort), item.id)
-            XCTAssertTrue(item.solarTerms.allSatisfy { (0..<24).contains($0) }, item.id)
+            XCTAssertTrue((1...3).contains(item.elements.count), item.id)
+            XCTAssertTrue(Set(item.elements).isSubset(of: elements), item.id)
+            for link in item.opens {
+                XCTAssertTrue(ids.contains(link.to), "\(item.id) → \(link.to)")
+                XCTAssertNotEqual(link.to, item.id)
+            }
+            for word in ["季節", "節気", "七十二候"] {
+                XCTAssertFalse((item.title + item.invitation + item.perspective).contains(word), "\(item.id): 季節の言葉は使わない")
+            }
             let experience = Experience(title: item.title, perspective: item.perspective, invitation: item.invitation, reason: "", difficulty: .low, tags: item.tags, reflectionQuestion: item.reflectionQuestion)
             XCTAssertNil(SafetyCheck.issue(in: experience), "\(item.id) は安全確認に引っかからないこと")
         }
-        // 二十四節気それぞれに、季節の体験がちょうど1つ
-        let seasonal = content.experiences.flatMap(\.solarTerms).sorted()
-        XCTAssertEqual(seasonal, Array(0..<24))
+    }
+
+    /// 10の要素それぞれに、ひと文字の印と根がある
+    func testElementsHaveGlyphsAndRoots() {
+        let content = TaikenContent.shared
+        XCTAssertEqual(content.elements.map(\.glyph), ["見", "聴", "香", "味", "触", "動", "休", "考", "言", "人"])
+        XCTAssertEqual(content.elements.map(\.label), ["見る", "聴く", "嗅ぐ", "味わう", "触れる", "動く", "休む", "考える", "言葉にする", "人と"])
+        for element in content.elements {
+            let root = content.experience(element.root)
+            XCTAssertNotNil(root, element.id)
+            XCTAssertEqual(root?.elements.first, element.id, "根の主な要素は、その要素")
+            XCTAssertTrue(content.isRoot(element.root))
+            XCTAssertFalse(element.keywords.isEmpty)
+            XCTAssertEqual(element.glyph.count, 1)
+        }
     }
 
     func testMoodLabelsMatchApp() {
@@ -49,7 +71,9 @@ final class ContentTests: XCTestCase {
 
     func testMinimalContentKeepsTheAppRunning() {
         XCTAssertTrue(TaikenContent.minimal.isWellFormed)
-        XCTAssertEqual(MicroSeason.entry(10, content: .minimal).name, "今日")
+        let choice = LibrarySelector(content: .minimal).choose(LibrarySelector.Input(day: 1, timeOfDay: .night))
+        XCTAssertEqual(choice.experience.id, "daily-difference", "時間帯が合わなくても、何かは選ぶ")
+        XCTAssertEqual(TreeBuilder.build(content: .minimal, garden: .empty, entries: []).buds, ["daily-difference"])
     }
 }
 
@@ -58,13 +82,13 @@ final class LibrarySelectorTests: XCTestCase {
         let name: String
         let date: String
         let timeOfDay: String
-        let solarTerm: Int
         let eventTitle: String?
         let messages: [String]
         let mood: String?
         let feedback: [FeedbackSignal]
         let recentTitles: [String]
         let excludeTitles: [String]
+        let buds: [String]
         let expected: String
     }
 
@@ -81,13 +105,13 @@ final class LibrarySelectorTests: XCTestCase {
             let input = LibrarySelector.Input(
                 day: dayNumber(item.date),
                 timeOfDay: try XCTUnwrap(TimeOfDay(rawValue: item.timeOfDay)),
-                solarTermIndex: item.solarTerm,
                 eventTitle: item.eventTitle,
                 messages: item.messages,
                 mood: item.mood.flatMap(Mood.init(rawValue:)),
                 feedback: item.feedback,
                 recentTitles: Set(item.recentTitles),
-                excludeTitles: Set(item.excludeTitles)
+                excludeTitles: Set(item.excludeTitles),
+                buds: Set(item.buds)
             )
             XCTAssertEqual(selector.choose(input).experience.id, item.expected, item.name)
         }
@@ -100,7 +124,7 @@ final class LibrarySelectorTests: XCTestCase {
         // 日付はその土地の暦で数える (東京の 0:30 は UTC ではまだ前日)
         XCTAssertEqual(LibrarySelector.dayNumber(of: tokyoDate("2026-10-09", hour: 0, minute: 30), calendar: tokyoCalendar), 20_735)
         XCTAssertEqual(LibrarySelector.dayNumber(of: tokyoDate("2026-10-08", hour: 23, minute: 30), calendar: tokyoCalendar), 20_734)
-        let jitter = LibrarySelector.jitter(id: "season-kanro", day: 20_734)
+        let jitter = LibrarySelector.jitter(id: "rest-far", day: 20_734)
         XCTAssertTrue((0..<0.9).contains(jitter))
     }
 
@@ -115,7 +139,7 @@ final class LibrarySelectorTests: XCTestCase {
 
     func testExcludedOnlyWhenSomethingElseExists() {
         let selector = LibrarySelector()
-        let base = LibrarySelector.Input(day: 20_734, timeOfDay: .evening, solarTermIndex: 16)
+        let base = LibrarySelector.Input(day: 20_734, timeOfDay: .evening)
         let first = selector.choose(base).experience
         var excluded = base
         excluded.excludeTitles = [first.title]
@@ -124,21 +148,35 @@ final class LibrarySelectorTests: XCTestCase {
         XCTAssertEqual(selector.choose(base).experience.id, first.id)
     }
 
-    func testSeasonalExperiencesOnlyInTheirSeason() {
+    /// 手がかりの無い日は、樹の芽から選ぶ。予定や気分に合う体験は、芽より前に出る
+    func testBudsLeadOnlyWhenNothingElseDoes() {
         let selector = LibrarySelector()
-        for term in 0..<24 {
-            let input = LibrarySelector.Input(day: 20_734, timeOfDay: .daytime, solarTermIndex: term)
-            let chosen = selector.choose(input).experience
-            XCTAssertTrue(chosen.solarTerms.isEmpty || chosen.solarTerms.contains(term), "\(term): \(chosen.id)")
+        // 場面を選ばない芽 (食事の場面だけの芽は、食事の予定が無ければ後ろに回る)
+        let buds: Set<String> = ["hear-far", "hear-music-one", "hear-silence", "root-touch", "taste-water"]
+        var picked = Set<String>()
+        for day in 20_700..<20_760 {
+            let quiet = selector.choose(LibrarySelector.Input(day: day, timeOfDay: .daytime, buds: buds))
+            XCTAssertTrue(quiet.isBud, "手がかりが無ければ芽から: \(quiet.experience.id)")
+            picked.insert(quiet.experience.id)
+            let withEvent = selector.choose(LibrarySelector.Input(day: day, timeOfDay: .daytime, eventTitle: "数学の課題", buds: buds))
+            XCTAssertTrue(withEvent.experience.themes.contains("study"), "予定に合う体験が先: \(withEvent.experience.id)")
+            let withMood = selector.choose(LibrarySelector.Input(day: day, timeOfDay: .daytime, mood: .bored, buds: buds))
+            XCTAssertTrue(withMood.experience.moods.contains("bored"), "気分に合う体験が先: \(withMood.experience.id)")
         }
-        let none = selector.choose(LibrarySelector.Input(day: 20_734, timeOfDay: .daytime, solarTermIndex: nil)).experience
-        XCTAssertTrue(none.solarTerms.isEmpty)
+        XCTAssertGreaterThan(picked.count, 2, "芽の中でも、日によって顔ぶれが変わる")
+
+        // 特定の場面向けの芽は、その場面が無ければ後ろに回る
+        let mealBuds: Set<String> = ["meal-texture", "taste-last-bite", "taste-water"]
+        let quiet = selector.choose(LibrarySelector.Input(day: 20_734, timeOfDay: .daytime, buds: mealBuds))
+        XCTAssertEqual(quiet.experience.id, "taste-water")
+        let atMeal = selector.choose(LibrarySelector.Input(day: 20_734, timeOfDay: .daytime, eventTitle: "ランチ", buds: mealBuds))
+        XCTAssertTrue(["meal-texture", "taste-last-bite"].contains(atMeal.experience.id), atMeal.experience.id)
     }
 
     func testRespectsTimeOfDay() {
         let selector = LibrarySelector()
         for day in 20_700..<20_760 {
-            let night = selector.choose(LibrarySelector.Input(day: day, timeOfDay: .lateNight, solarTermIndex: 16)).experience
+            let night = selector.choose(LibrarySelector.Input(day: day, timeOfDay: .lateNight)).experience
             XCTAssertTrue(night.times.isEmpty || night.times.contains("lateNight"), night.id)
         }
     }
@@ -171,12 +209,37 @@ final class LocalExperienceServiceTests: XCTestCase {
         XCTAssertTrue(response.situation.observations.contains { $0.basis == .stated && $0.text.contains("疲れぎみ") })
     }
 
-    func testSeasonalChoiceWhenThereIsNothingElse() async throws {
+    func testPlainEveningWithoutAnything() async throws {
         let response = try await service.generateExperience(experienceRequest())
-        XCTAssertEqual(response.experience.title, "渡っていくもの")
-        XCTAssertEqual(response.experience.reason, "今は「寒露」の頃。季節の小さな変化に目を向ける提案です。")
+        XCTAssertEqual(response.experience.nodeID, "hear-far")
+        XCTAssertEqual(response.experience.reason, "特別な予定がなくても、いつもの時間の中に体験は見つけられます。")
         XCTAssertEqual(response.situation.summary, "目立った予定は見当たらない夕方。")
         XCTAssertEqual(response.confidence, 0.4)
+        XCTAssertEqual(response.experience.elements, ["hear"])
+        XCTAssertNil(response.experience.growsFrom)
+    }
+
+    /// 灯った体験の先の芽から選んだら、どこから伸びたかを正直に書き、樹の上の位置を返す
+    func testGrowsFromTheLivedExperience() async throws {
+        let tree = TreeContext(
+            lived: [TreeContext.LivedNode(id: "meal-first-bite", title: "ひと口目の観察", elements: ["taste"])],
+            buds: ["meal-texture", "taste-last-bite", "taste-water", "meal-screen-down"]
+        )
+        let response = try await service.generateExperience(experienceRequest(at: tokyoDate("2026-10-08", hour: 13), tree: tree))
+        let id = try XCTUnwrap(response.experience.nodeID)
+        XCTAssertTrue(tree.buds.contains(id), id)
+        XCTAssertEqual(response.experience.growsFrom, "meal-first-bite")
+        XCTAssertEqual(response.experience.reason, "前に記した「ひと口目の観察」の先にある体験です。")
+        XCTAssertTrue(response.situation.observations.contains { $0.text == "体験帳に「ひと口目の観察」が記されている" })
+    }
+
+    /// はじめての人には、根 (いちばん小さなかたち) から
+    func testNewcomersStartFromARoot() async throws {
+        let roots = TaikenContent.shared.elements.map(\.root)
+        let response = try await service.generateExperience(experienceRequest(at: tokyoDate("2026-10-08", hour: 13), tree: TreeContext(lived: [], buds: roots)))
+        let id = try XCTUnwrap(response.experience.nodeID)
+        XCTAssertTrue(TaikenContent.shared.isRoot(id), id)
+        XCTAssertTrue(response.experience.reason.hasSuffix("の根にある、いちばん小さなかたちの体験です。"), response.experience.reason)
     }
 
     func testAnotherProposalIsDifferent() async throws {

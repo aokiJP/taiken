@@ -1,18 +1,19 @@
 // iOSから届いた入力を「許可リスト方式」で組み立て直す。
 // 未知のフィールドはAIへ渡さない (プライバシー原則: 送る必要がないものは送らない)。
-import { canonicalSeason } from '../content/library.ts';
+import { ELEMENT_IDS } from '../content/library.ts';
 import type {
   Area,
   CalendarItem,
   ChatContext,
   ChatTurn,
+  Element,
   ExperienceContext,
   ExperienceRef,
   FeedbackSignal,
   Mood,
   Rating,
   Reaction,
-  SeasonContext,
+  TreeContext,
 } from './types.ts';
 
 export class InputError extends Error {
@@ -31,7 +32,12 @@ export const LIMITS = Object.freeze({
   feedback: 20,
   excludeTitles: 10,
   areaChars: 40,
+  treeLived: 12,
+  treeBuds: 16,
 });
+
+/** 体験の樹の上の体験の id (英小文字・数字・ハイフン)。それ以外は捨てる */
+export const NODE_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;
 
 const RATINGS: ReadonlySet<string> = new Set(['positive', 'neutral', 'negative']);
 const REACTIONS: ReadonlySet<string> = new Set(['accepted', 'alternative', 'declined', 'completed']);
@@ -131,11 +137,38 @@ function sanitizeArea(value: unknown): Area | null {
   return area.locality || area.administrative_area || area.country_code ? area : null;
 }
 
-/** 七十二候は名前だけを手がかりに、正しい節気と意味へ置き換える (クライアントの文言をAIへ渡さない) */
-function sanitizeSeason(value: unknown): SeasonContext | null {
+export function sanitizeElements(value: unknown, max = 3): Element[] {
+  const out: Element[] = [];
+  for (const item of list(value)) {
+    if (typeof item === 'string' && ELEMENT_IDS.has(item) && !out.includes(item as Element)) out.push(item as Element);
+    if (out.length >= max) break;
+  }
+  return out;
+}
+
+const nodeId = (value: unknown): string | null => (typeof value === 'string' && NODE_ID.test(value) ? value : null);
+
+/** 体験の樹のいま。id の形でないもの・知らない要素は捨て、名前は短く切る (中身はAIへのデータとしてだけ使う) */
+function sanitizeTree(value: unknown): TreeContext | null {
   if (!isObject(value)) return null;
-  const name = cleanText(value.micro_season, 8);
-  return name ? canonicalSeason(name) : null;
+  const lived: TreeContext['lived'] = [];
+  const seen = new Set<string>();
+  for (const item of list(value.lived)) {
+    if (!isObject(item)) continue;
+    const id = nodeId(item.id);
+    const title = cleanText(item.title, LIMITS.titleChars);
+    if (!id || !title || seen.has(id)) continue;
+    seen.add(id);
+    lived.push({ id, title, elements: sanitizeElements(item.elements) });
+    if (lived.length >= LIMITS.treeLived) break;
+  }
+  const buds: string[] = [];
+  for (const item of list(value.buds)) {
+    const id = nodeId(item);
+    if (id && !buds.includes(id)) buds.push(id);
+    if (buds.length >= LIMITS.treeBuds) break;
+  }
+  return lived.length || buds.length ? { lived, buds } : null;
 }
 
 export function sanitizeExperienceRequest(input: unknown): ExperienceContext {
@@ -162,7 +195,8 @@ export function sanitizeExperienceRequest(input: unknown): ExperienceContext {
     area: sanitizeArea(body.area),
     allow_web_search: body.allow_web_search === true,
     mood: typeof body.mood === 'string' && MOODS.has(body.mood) ? (body.mood as Mood) : null,
-    season: sanitizeSeason(body.season),
+    // 3.0.0 で季節 (season) は廃止。古いアプリから届いても使わない
+    tree: sanitizeTree(body.tree),
   };
 }
 

@@ -27,6 +27,7 @@ enum AppGroup {
 enum DeepLink: Equatable {
     case today
     case journal
+    case tree
     case talk
 
     static let scheme = "taiken"
@@ -36,6 +37,7 @@ enum DeepLink: Equatable {
         switch url.host {
         case "today": self = .today
         case "journal": self = .journal
+        case "tree": self = .tree
         case "talk": self = .talk
         default: return nil
         }
@@ -50,6 +52,7 @@ enum DeepLink: Equatable {
         switch self {
         case .today: "today"
         case .journal: "journal"
+        case .tree: "tree"
         case .talk: "talk"
         }
     }
@@ -67,6 +70,7 @@ struct ExperienceActivityAttributes: ActivityAttributes {
     var invitation: String
     var sealCharacter: String
     var startedAt: Date
-    var microSeason: String
+    /// 主な要素の名前 (見る・聴く…)
+    var elementLabel: String
 }
 #endif

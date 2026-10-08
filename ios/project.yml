@@ -12,7 +12,7 @@ configFiles:
   Release: Config/Release.xcconfig
 settings:
   base:
-    MARKETING_VERSION: "2.0.0"
+    MARKETING_VERSION: "3.0.0"
     CURRENT_PROJECT_VERSION: "1"
     # アプリ層は Swift 5 モード + 並行性チェックは警告として全面有効 (中核パッケージは Swift 6 モード)
     SWIFT_VERSION: "5.0"

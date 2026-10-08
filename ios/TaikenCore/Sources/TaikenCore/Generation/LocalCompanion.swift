@@ -46,7 +46,6 @@ struct LocalCompanion {
         let choice = selector.choose(LibrarySelector.Input(
             day: clock.day,
             timeOfDay: clock.timeOfDay,
-            solarTermIndex: clock.season.solarTermIndex,
             eventTitle: themes.isEmpty ? next?.title : nil,
             messages: [last],
             mood: mood,
@@ -60,7 +59,9 @@ struct LocalCompanion {
             reason: "会話の中で話していたことから、小さく試せる視点を選びました。",
             difficulty: picked.effort == "medium" ? .medium : .low,
             tags: picked.tags,
-            reflectionQuestion: picked.reflectionQuestion
+            reflectionQuestion: picked.reflectionQuestion,
+            nodeID: picked.id,
+            elements: picked.elements
         )
         return ChatResponse(
             reply: Self.ideaReplies[pick % Self.ideaReplies.count],

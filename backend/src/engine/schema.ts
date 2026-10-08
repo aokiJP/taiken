@@ -1,5 +1,7 @@
 // AIに返させるJSONの形 (tool use の input_schema) と、返ってきた値を型安全に正規化する関数。
 // AIの自由文をUIロジックに使わないため、ここを通らないものはiOSへ返さない。
+import { CONTENT, experienceById } from '../content/library.ts';
+import { NODE_ID, sanitizeElements } from './sanitize.ts';
 import type {
   Basis,
   ChatResult,
@@ -56,8 +58,19 @@ const experienceSchema = {
       type: 'string',
       description: '体験のあとに思い返すための短い問い。30字以内で「？」で終える。評価や反省を迫らず、答えが一つに決まらない問い',
     },
+    elements: {
+      type: 'array',
+      items: { type: 'string', enum: CONTENT.elements.map((e) => e.id) },
+      minItems: 1,
+      maxItems: 3,
+      description: 'この体験の要素を1〜3個、主なものから。see=見る hear=聴く smell=嗅ぐ taste=味わう touch=触れる move=動く pause=休む think=考える word=言葉にする people=人と',
+    },
+    grows_from: {
+      type: 'string',
+      description: 'tree.lived の体験から自然に伸ばした提案なら、その id。そうでなければ空文字',
+    },
   },
-  required: ['title', 'perspective', 'invitation', 'reason', 'difficulty', 'tags', 'reflection_question'],
+  required: ['title', 'perspective', 'invitation', 'reason', 'difficulty', 'tags', 'reflection_question', 'elements'],
 } as const;
 
 export interface ToolDefinition {
@@ -171,7 +184,12 @@ function observation(o: unknown): Observation | null {
   return t ? { text: t, basis: basisOf(o.basis) } : null;
 }
 
-export function normalizeExperience(e: unknown): Experience {
+export interface NormalizeOptions {
+  /** grows_from に使ってよい id (リクエストの tree.lived)。無ければ grows_from は付けない */
+  livedIds?: ReadonlySet<string>;
+}
+
+export function normalizeExperience(e: unknown, options: NormalizeOptions = {}): Experience {
   if (!isObject(e)) throw new SchemaError('experience がありません');
   const title = text(e.title, 40);
   const perspective = text(e.perspective);
@@ -179,6 +197,11 @@ export function normalizeExperience(e: unknown): Experience {
   const reason = text(e.reason);
   if (!title || !perspective || !invitation || !reason) throw new SchemaError('experience に空の項目があります');
   const tags = [...new Set(list(e.tags).filter((t): t is string => typeof t === 'string' && TAGS.has(t)))];
+  // ライブラリの体験だと名乗るのは、名前まで同じときだけ (AIの文を別の体験として記録しない)
+  const library = typeof e.node_id === 'string' ? experienceById(e.node_id) : undefined;
+  const nodeId = library && library.title === title ? library.id : null;
+  const parent = typeof e.grows_from === 'string' && NODE_ID.test(e.grows_from) && options.livedIds?.has(e.grows_from) ? e.grows_from : null;
+  const elements = sanitizeElements(e.elements);
   return {
     title,
     perspective,
@@ -188,6 +211,9 @@ export function normalizeExperience(e: unknown): Experience {
     tags: tags.slice(0, 4),
     // 無くても体験としては成り立つので、欠けていれば null (古い出力・モデルの書き漏らしに備える)
     reflection_question: text(e.reflection_question, 80),
+    node_id: nodeId,
+    elements: elements.length ? elements : (library?.elements.slice(0, 3) ?? []),
+    grows_from: parent,
   };
 }
 
@@ -205,7 +231,7 @@ export function normalizeReferences(refs: unknown): Reference[] {
   return out;
 }
 
-export function normalizeExperienceResult(raw: unknown, source: Source): ExperienceResult {
+export function normalizeExperienceResult(raw: unknown, source: Source, options: NormalizeOptions = {}): ExperienceResult {
   if (!isObject(raw)) throw new SchemaError('結果がオブジェクトではありません');
   const situation = isObject(raw.situation) ? raw.situation : {};
   const n = isObject(raw.notification) ? raw.notification : {};
@@ -243,7 +269,7 @@ export function normalizeExperienceResult(raw: unknown, source: Source): Experie
       .slice(0, 5),
     is_obligation: raw.is_obligation === true,
     confidence: clamp01(raw.confidence) ?? 0.5,
-    experience: normalizeExperience(raw.experience),
+    experience: normalizeExperience(raw.experience, options),
     should_notify: notification !== null,
     notification,
     references: normalizeReferences(raw.references),

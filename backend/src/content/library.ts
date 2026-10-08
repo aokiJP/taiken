@@ -1,10 +1,15 @@
-// 七十二候・テーマ・気分・体験ライブラリ (contracts/content.ja.json のコピー。テストで一致を確認する)。
+// 体験ライブラリ・要素・テーマ・気分 (contracts/content.ja.json のコピー。テストで一致を確認する)。
 // 体験の選び方の仕様は contracts/tools/selection_reference.py で、iOS (LibrarySelector.swift) と同じ結果を返す。
 // モック生成と、AIが使えないときの代替生成に使う。
 import { readFileSync } from 'node:fs';
-import type { FeedbackSignal, Mood, SeasonContext } from '../engine/types.ts';
+import type { Element, FeedbackSignal, Mood, TreeContext } from '../engine/types.ts';
 
 export type TimeOfDay = 'dawn' | 'morning' | 'daytime' | 'evening' | 'night' | 'lateNight';
+
+export interface Link {
+  to: string;
+  kind: 'deepen' | 'widen' | 'cross';
+}
 
 export interface LibraryExperience {
   id: string;
@@ -17,7 +22,17 @@ export interface LibraryExperience {
   moods: string[];
   times: string[];
   effort: 'low' | 'medium';
-  solar_terms: number[];
+  elements: Element[];
+  opens: Link[];
+}
+
+export interface ElementEntry {
+  id: Element;
+  glyph: string;
+  label: string;
+  hint: string;
+  root: string;
+  keywords: string[];
 }
 
 interface Keyworded {
@@ -28,8 +43,7 @@ interface Keyworded {
 
 export interface Content {
   version: number;
-  solar_terms: { name: string; reading: string }[];
-  micro_seasons: { name: string; reading: string; meaning: string }[];
+  elements: ElementEntry[];
   themes: Keyworded[];
   moods: Keyworded[];
   experiences: LibraryExperience[];
@@ -38,7 +52,13 @@ export interface Content {
 export const CONTENT_URL = new URL('./content.ja.json', import.meta.url);
 export const CONTENT: Content = JSON.parse(readFileSync(CONTENT_URL, 'utf8')) as Content;
 
+export const ELEMENT_IDS: ReadonlySet<string> = new Set(CONTENT.elements.map((e) => e.id));
+const BY_ID: ReadonlyMap<string, LibraryExperience> = new Map(CONTENT.experiences.map((e) => [e.id, e]));
+const ROOTS: ReadonlySet<string> = new Set(CONTENT.elements.map((e) => e.root));
+
 const SPECIFIC_THEMES: ReadonlySet<string> = new Set(['study', 'work', 'commute', 'meal', 'housework', 'shopping', 'people', 'body']);
+/** 芽に足す点数 */
+const BUD_BONUS = 1.5;
 
 export const TIME_LABELS: Record<TimeOfDay, string> = {
   dawn: '夜明け',
@@ -80,19 +100,16 @@ export function dayNumberOf(isoLocal: string): number {
   return Math.floor(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) / 86_400_000);
 }
 
-export function solarTermIndex(name: string | null | undefined, content: Content = CONTENT): number | null {
-  if (!name) return null;
-  const i = content.solar_terms.findIndex((t) => t.name === name);
-  return i >= 0 ? i : null;
+export function experienceById(id: string | null | undefined): LibraryExperience | undefined {
+  return id ? BY_ID.get(id) : undefined;
 }
 
-/** 七十二候の名前から、正しい節気と意味を引く (クライアントの文言はそのまま使わない) */
-export function canonicalSeason(microSeason: string, content: Content = CONTENT): SeasonContext | null {
-  const i = content.micro_seasons.findIndex((m) => m.name === microSeason);
-  const entry = content.micro_seasons[i];
-  const term = content.solar_terms[Math.floor(i / 3)];
-  if (i < 0 || !entry || !term) return null;
-  return { solar_term: term.name, micro_season: entry.name, meaning: entry.meaning };
+export function isRoot(id: string): boolean {
+  return ROOTS.has(id);
+}
+
+export function elementLabel(id: string): string | undefined {
+  return CONTENT.elements.find((e) => e.id === id)?.label;
 }
 
 export function detectThemes(texts: readonly string[], content: Content = CONTENT): Set<string> {
@@ -113,13 +130,14 @@ export function detectMood(texts: readonly string[], content: Content = CONTENT)
 export interface SelectionInput {
   day: number;
   timeOfDay: TimeOfDay;
-  solarTerm: number | null;
   eventTitle: string | null;
   messages: readonly string[];
   mood: Mood | null;
   feedback: readonly FeedbackSignal[];
   recentTitles: readonly string[];
   excludeTitles: readonly string[];
+  /** 体験の樹の芽 (少しだけ前に出す) */
+  buds: readonly string[];
 }
 
 export interface Choice {
@@ -128,6 +146,7 @@ export interface Choice {
   themesFromMessages: Set<string>;
   mood: Mood | null;
   moodWasChosen: boolean;
+  isBud: boolean;
 }
 
 export function choose(input: SelectionInput, content: Content = CONTENT): Choice {
@@ -139,10 +158,10 @@ export function choose(input: SelectionInput, content: Content = CONTENT): Choic
   const timeTheme = tod === 'dawn' || tod === 'morning' ? 'morning' : tod === 'night' || tod === 'lateNight' ? 'night' : null;
   const recent = new Set(input.recentTitles);
   const exclude = new Set(input.excludeTitles);
+  const buds = new Set(input.buds);
 
   const eligible = (e: LibraryExperience, useExclude: boolean) => {
     if (useExclude && exclude.has(e.title)) return false;
-    if (e.solar_terms.length && (input.solarTerm === null || !e.solar_terms.includes(input.solarTerm))) return false;
     if (e.times.length && !e.times.includes(tod)) return false;
     return true;
   };
@@ -152,8 +171,8 @@ export function choose(input: SelectionInput, content: Content = CONTENT): Choic
     if (e.themes.some((t) => detected.has(t))) s += 4;
     else if (e.themes.every((t) => SPECIFIC_THEMES.has(t))) s -= 2;
     if (mood && e.moods.includes(mood)) s += 2.5;
-    if (e.solar_terms.length) s += 3;
     if (timeTheme && e.themes.includes(timeTheme)) s += 1.5;
+    if (buds.has(e.id)) s += BUD_BONUS;
     for (const tag of e.tags) {
       for (const f of input.feedback) {
         if (f.tag !== tag) continue;
@@ -180,7 +199,23 @@ export function choose(input: SelectionInput, content: Content = CONTENT): Choic
       bestScore = s;
     }
   }
-  return { experience: best, themesFromEvent: fromEvent, themesFromMessages: fromMessages, mood, moodWasChosen: input.mood !== null };
+  return {
+    experience: best,
+    themesFromEvent: fromEvent,
+    themesFromMessages: fromMessages,
+    mood,
+    moodWasChosen: input.mood !== null,
+    isBud: buds.has(best.id),
+  };
+}
+
+/** 選んだ体験が伸びている、灯った体験 (樹のいまの「灯った体験」の順に、つながりを探す) */
+export function parentOf(picked: LibraryExperience, tree: TreeContext | null): { id: string; title: string } | null {
+  if (!tree) return null;
+  for (const lived of tree.lived) {
+    if (experienceById(lived.id)?.opens.some((link) => link.to === picked.id)) return { id: lived.id, title: lived.title };
+  }
+  return null;
 }
 
 const MOOD_LABELS: Record<Mood, string> = { tired: '疲れぎみ', bored: 'ひま', focus: '集中したい', refresh: '気分転換' };
@@ -198,13 +233,19 @@ export function moodLabel(mood: Mood): string {
 const intersects = (a: readonly string[], b: Set<string>) => a.some((x) => b.has(x));
 
 /** 何を手がかりに選んだかを正直に書く (iOS の端末内の提案と同じ書き方) */
-export function reasonFor(choice: Choice, eventTitle: string | null, hasEvent: boolean, solarTerm: string | null): string {
+export function reasonFor(choice: Choice, eventTitle: string | null, hasEvent: boolean, parent: { title: string } | null): string {
   if (choice.moodWasChosen && choice.mood) return `「${MOOD_LABELS[choice.mood]}」とのことなので、${MOOD_REASONS[choice.mood]}`;
   if (hasEvent && intersects(choice.experience.themes, choice.themesFromEvent)) {
     return eventTitle ? `「${eventTitle}」の予定があるので、その時間の見方を少し変える提案にしました。` : 'このあとの予定に合わせて選びました。';
   }
   if (choice.mood === 'tired') return '疲れていると話していたので、負担の少ないものを選びました。';
   if (intersects(choice.experience.themes, choice.themesFromMessages)) return '話していたことから選びました。';
-  if (choice.experience.solar_terms.length && solarTerm) return `今は「${solarTerm}」の頃。季節の小さな変化に目を向ける提案です。`;
+  if (choice.isBud) {
+    if (parent) return `前に記した「${parent.title}」の先にある体験です。`;
+    const element = choice.experience.elements[0];
+    const label = element ? elementLabel(element) : undefined;
+    if (isRoot(choice.experience.id) && label) return `「${label}」の根にある、いちばん小さなかたちの体験です。`;
+    return 'あなたの体験の樹の、芽のひとつです。';
+  }
   return '特別な予定がなくても、いつもの時間の中に体験は見つけられます。';
 }

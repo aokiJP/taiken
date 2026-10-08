@@ -55,7 +55,10 @@ struct InkDrops: View {
 
 struct ProposalCard: View {
     let response: ExperienceResponse
+    /// この体験が樹のどこにあるか
+    let lineage: Lineage?
     let isLoading: Bool
+    let openBranch: @MainActor (String?) -> Void
     let tryIt: @MainActor () -> Void
     let another: @MainActor () -> Void
     let notNow: @MainActor () -> Void
@@ -107,6 +110,12 @@ struct ProposalCard: View {
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 8)
                     .inkReveal(delay: 0.42)
+
+                if let lineage {
+                    BranchLine(lineage: lineage, open: openBranch)
+                        .padding(.top, 12)
+                        .inkReveal(delay: 0.5)
+                }
 
                 VStack(alignment: .leading, spacing: 0) {
                     Button {
@@ -195,6 +204,8 @@ struct ProposalCard: View {
 
 struct ActiveCard: View {
     let entry: HistoryEntry
+    let lineage: Lineage?
+    let openBranch: @MainActor (String?) -> Void
     let finish: @MainActor () -> Void
     let abandon: @MainActor () -> Void
     let presenceChanged: @MainActor (Bool) -> Void
@@ -222,6 +233,11 @@ struct ActiveCard: View {
 
                 Signature(title: entry.title)
                     .padding(.top, 14)
+
+                if let lineage {
+                    BranchLine(lineage: lineage, open: openBranch)
+                        .padding(.top, 12)
+                }
 
                 if let question = entry.reflectionQuestion {
                     VStack(alignment: .leading, spacing: 6) {
@@ -272,12 +288,17 @@ struct ActiveCard: View {
 
 // MARK: - 記したところ
 
-/// 印が押される瞬間。重さのある動きと触覚で、終えたことを確かめる
+/// 印が押される瞬間。重さのある動きと触覚で、終えたことを確かめる。
+/// 樹に灯りがともり、その先に出た芽を見せる (芽は押すと、樹の上でひらく)
 struct CompletedCard: View {
     let entry: HistoryEntry
-    let season: MicroSeason
+    /// 記したことで、その先に出た芽
+    let growth: [TreeNode]
+    /// 樹の上での、この体験の id
+    let nodeID: String?
     let another: @MainActor () -> Void
     let openJournal: @MainActor () -> Void
+    let openTree: @MainActor (String?) -> Void
     @State private var stamped = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -294,9 +315,10 @@ struct CompletedCard: View {
                     .font(.sectionTitle)
                     .foregroundStyle(Palette.ink)
                     .padding(.top, 18)
-                Text("\(entry.title) · \(season.name)の頃")
+                Text("「\(entry.title)」が、樹に灯りました")
                     .font(.footnote)
                     .foregroundStyle(Palette.ink2)
+                    .multilineTextAlignment(.center)
                     .padding(.top, 6)
                 if let note = entry.note {
                     Text("「\(note)」")
@@ -305,14 +327,46 @@ struct CompletedCard: View {
                         .multilineTextAlignment(.center)
                         .padding(.top, 12)
                 }
-                Text("次の体験は、気が向いたときに。")
-                    .font(.footnote)
-                    .foregroundStyle(Palette.ink2)
-                    .padding(.top, 12)
+
+                if growth.isEmpty {
+                    Text("次の体験は、気が向いたときに。")
+                        .font(.footnote)
+                        .foregroundStyle(Palette.ink2)
+                        .padding(.top, 12)
+                } else {
+                    VStack(spacing: 10) {
+                        Text("その先に、芽が出ました")
+                            .font(.caption)
+                            .tracking(1)
+                            .foregroundStyle(Palette.ink3)
+                        FlowLayout(spacing: 8) {
+                            ForEach(growth) { node in
+                                Button {
+                                    openTree(node.id)
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        NodeStateMark(state: .bud, glyph: "", size: 16)
+                                        Text(node.title)
+                                    }
+                                }
+                                .buttonStyle(ChipButtonStyle())
+                                .accessibilityHint("体験の樹で、この芽をひらきます")
+                            }
+                        }
+                    }
+                    .padding(.top, 16)
+                    .opacity(stamped ? 1 : 0)
+                    .animation(reduceMotion ? nil : .easeOut(duration: 0.6).delay(0.5), value: stamped)
+                }
 
                 VStack(spacing: 6) {
-                    Button("もうひとつ受け取る", action: another)
-                        .buttonStyle(QuietButtonStyle())
+                    HStack(spacing: 10) {
+                        Button("もうひとつ受け取る", action: another)
+                            .buttonStyle(QuietButtonStyle())
+                        Button("樹で見る") { openTree(nodeID) }
+                            .buttonStyle(QuietButtonStyle())
+                            .accessibilityIdentifier("completed.tree")
+                    }
                     Button("体験帳をひらく", action: openJournal)
                         .font(.footnote)
                         .foregroundStyle(Palette.ink3)
@@ -328,6 +382,58 @@ struct CompletedCard: View {
             }
         }
         .accessibilityElement(children: .contain)
+    }
+}
+
+// MARK: - 樹の上の位置
+
+/// 提案や体験中のカードに添える「枝」: 要素の字と、樹のどこから伸びているか。押すと樹の上でひらく
+struct BranchLine: View {
+    let lineage: Lineage
+    let open: @MainActor (String?) -> Void
+
+    var body: some View {
+        if let nodeID = lineage.nodeID {
+            Button {
+                open(nodeID)
+            } label: {
+                face(showsChevron: true)
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("体験の樹の上で、\(lineage.sentence)")
+            .accessibilityHint("体験の樹で、この体験の場所をひらきます")
+            .accessibilityAddTraits(.isButton)
+            .accessibilityIdentifier("card.branch")
+        } else {
+            face(showsChevron: false)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(lineage.sentence)
+        }
+    }
+
+    private func face(showsChevron: Bool) -> some View {
+        HStack(spacing: 8) {
+            HStack(spacing: 3) {
+                ForEach(lineage.elements) { element in
+                    ElementMark(glyph: element.glyph, size: 18)
+                }
+            }
+            Text(lineage.sentence)
+                .font(.caption)
+                .foregroundStyle(Palette.ink2)
+                .lineLimit(2)
+            Spacer(minLength: 0)
+            if showsChevron {
+                Image(systemName: "chevron.right")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(Palette.ink3)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Palette.wash, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 }
 

@@ -4,7 +4,7 @@ import Observation
 /// Home (指示書 §6, §21): 「今日何をするか」ではなく「今日、何を体験できるか」を中心に置く。
 ///
 /// 一日の流れ:
-/// 提案 → やってみる (体験中) → 振り返って記す (体験帳に印) → ひと休み → また提案
+/// 提案 → やってみる (体験中) → 振り返って記す (体験帳に印・樹に灯る) → ひと休み → また提案
 /// どの段階でも断れる。断ったあとはしばらく提案を控え、押しつけない。
 @MainActor
 @Observable
@@ -39,9 +39,15 @@ public final class HomeViewModel {
     public private(set) var proposal: ExperienceResponse?
     /// 新しい提案が届くたびに変わる (表示の切り替えに使う)
     public private(set) var proposalID = UUID()
+    /// 提案が樹のどこにあるか
+    public private(set) var proposalLineage: Lineage?
     public private(set) var activeEntry: HistoryEntry?
+    /// 体験中の体験が樹のどこにあるか
+    public private(set) var activeLineage: Lineage?
     /// 記したばかりの体験。アプリを閉じると消える (ひと休みは残る)
     public private(set) var completedEntry: HistoryEntry?
+    /// 記したことで、その先に出た芽
+    public private(set) var completedGrowth: [TreeNode] = []
     public private(set) var restingUntil: Date?
     /// いま選んでいる気分 (その場かぎり)
     public private(set) var mood: Mood?
@@ -49,8 +55,9 @@ public final class HomeViewModel {
     public private(set) var calendarAccess: PermissionState = .notDetermined
     public private(set) var notice: Notice?
     public private(set) var lastGeneratedAt: Date?
-    public private(set) var season: MicroSeason
     public private(set) var timeOfDay: TimeOfDay
+    /// 樹が変わるたびに増える (ホームの小さな樹を描き直す合図)
+    public private(set) var treeRevision = 0
 
     /// 「別の提案」で一度見た体験 (同じものを出さない)
     private var excludedTitles: [String] = []
@@ -65,6 +72,8 @@ public final class HomeViewModel {
     private let widgets: (any WidgetPublishing)?
     private let presenceEnabled: @MainActor () -> Bool
     private let diagnostics: any Diagnostics
+    /// 体験の樹 (無ければ樹のことは何もしない)
+    public let trees: TreeSource?
 
     /// これより古い提案は、開き直したときに作り直す
     public var staleAfter: TimeInterval = 30 * 60
@@ -82,6 +91,7 @@ public final class HomeViewModel {
         presence: (any ExperiencePresence)? = nil,
         widgets: (any WidgetPublishing)? = nil,
         presenceEnabled: @escaping @MainActor () -> Bool = { true },
+        trees: TreeSource? = nil,
         diagnostics: any Diagnostics = NoopDiagnostics()
     ) {
         self.service = service
@@ -92,10 +102,9 @@ public final class HomeViewModel {
         self.presence = presence ?? NoPresence()
         self.widgets = widgets
         self.presenceEnabled = presenceEnabled
+        self.trees = trees
         self.diagnostics = diagnostics
-        let now = assembler.currentDate
-        season = MicroSeason.at(now, calendar: assembler.calendar)
-        timeOfDay = TimeOfDay.at(now, calendar: assembler.calendar)
+        timeOfDay = TimeOfDay.at(assembler.currentDate, calendar: assembler.calendar)
     }
 
     public var isLoading: Bool { phase == .loading }
@@ -129,6 +138,7 @@ public final class HomeViewModel {
         if let until = restingUntil, until <= now {
             endRest()
             completedEntry = nil
+            completedGrowth = []
         }
 
         if let cached = cache.load(), assembler.calendar.isDate(cached.generatedAt, inSameDayAs: now) {
@@ -140,6 +150,7 @@ public final class HomeViewModel {
                 notice = Self.notice(for: cached.response)
             }
         }
+        refreshLineages()
         presence.sync(active: activeEntry)
         publishWidget()
 
@@ -148,12 +159,9 @@ public final class HomeViewModel {
         if proposal == nil || stale { await generate() }
     }
 
-    /// 季節と時間帯を今の時刻に合わせる (画面の時計から呼ぶ)
+    /// 時間帯を今の時刻に合わせる (画面の時計から呼ぶ)
     public func updateClock() {
-        let now = assembler.currentDate
-        let newSeason = MicroSeason.at(now, calendar: assembler.calendar)
-        let newTime = TimeOfDay.at(now, calendar: assembler.calendar)
-        if newSeason != season { season = newSeason }
+        let newTime = TimeOfDay.at(assembler.currentDate, calendar: assembler.calendar)
         if newTime != timeOfDay { timeOfDay = newTime }
     }
 
@@ -197,8 +205,10 @@ public final class HomeViewModel {
         lastGeneratedAt = date
         phase = .ready
         completedEntry = nil
+        completedGrowth = []
         endRest()
         cache.save(CachedProposal(generatedAt: date, response: response))
+        refreshLineages()
     }
 
     static func notice(for response: ExperienceResponse) -> Notice? {
@@ -222,11 +232,13 @@ public final class HomeViewModel {
 
     public func tryIt() {
         guard let proposal else { return }
+        let experience = place(proposal.experience)
         persist {
-            activeEntry = try history.record(proposal.experience, theme: Self.theme(of: proposal), status: .active, at: assembler.currentDate)
+            activeEntry = try history.record(experience, theme: Self.theme(of: proposal), status: .active, at: assembler.currentDate)
         }
         clearProposal()
         reloadHistory()
+        refreshLineages()
         if let activeEntry, presenceEnabled() { presence.begin(activeEntry) }
         publishWidget()
     }
@@ -245,6 +257,7 @@ public final class HomeViewModel {
         // 気分が変わっただけで、今の提案を断ったわけではない (履歴には残さない)
         if let proposal { excludedTitles = Array((excludedTitles + [proposal.experience.title]).suffix(10)) }
         completedEntry = nil
+        completedGrowth = []
         endRest()
         await generate()
     }
@@ -263,12 +276,14 @@ public final class HomeViewModel {
         guard let entry = activeEntry else { return }
         persist { try history.finish(id: entry.id, rating: rating, note: note, at: assembler.currentDate) }
         completedEntry = history.entry(id: entry.id) ?? entry
+        completedGrowth = growth(after: entry)
         activeEntry = nil
         excludedTitles = []
         mood = nil
         rest(for: restAfterCompletion)
         presence.end()
         reloadHistory()
+        refreshLineages()
         publishWidget()
     }
 
@@ -278,21 +293,33 @@ public final class HomeViewModel {
         entry.status = .declined
         entry.finishedAt = assembler.currentDate
         persist { try history.update(entry) }
+        trees?.discardFoundIfUnused(entry.nodeID)
         activeEntry = nil
         presence.end()
         reloadHistory()
+        refreshLineages()
         publishWidget()
     }
 
     /// ひと休みをやめて、すぐに提案をもらう
     public func wakeUp() async {
         completedEntry = nil
+        completedGrowth = []
         endRest()
         await generate()
     }
 
     /// AIチャットで提案された体験を「やってみる」
     public func adopt(_ experience: Experience) {
+        start(place(experience))
+    }
+
+    /// 体験の樹から選んだ体験を、いま始める
+    public func begin(_ node: TreeNode) {
+        start(node.experience())
+    }
+
+    private func start(_ experience: Experience) {
         if var current = activeEntry {
             current.status = .skipped
             persist { try history.update(current) }
@@ -300,8 +327,10 @@ public final class HomeViewModel {
         persist { activeEntry = try history.record(experience, theme: nil, status: .active, at: assembler.currentDate) }
         clearProposal()
         completedEntry = nil
+        completedGrowth = []
         endRest()
         reloadHistory()
+        refreshLineages()
         if let activeEntry, presenceEnabled() { presence.begin(activeEntry) }
         publishWidget()
     }
@@ -315,10 +344,16 @@ public final class HomeViewModel {
         }
     }
 
+    /// 樹の画面で体験を編んだ・結んだあと (ホームの小さな樹を描き直す)
+    public func treeDidChange() {
+        refreshLineages()
+    }
+
     public func resetAfterDataDeletion() {
         clearProposal()
         activeEntry = nil
         completedEntry = nil
+        completedGrowth = []
         excludedTitles = []
         mood = nil
         notice = nil
@@ -326,13 +361,42 @@ public final class HomeViewModel {
         endRest()
         presence.end()
         reloadHistory()
+        refreshLineages()
         publishWidget()
     }
 
     // MARK: - 内部
 
+    /// やってみる体験を樹の上に置く (樹が無ければ、要素だけ推し量って付ける)
+    private func place(_ experience: Experience) -> Experience {
+        if let trees { return trees.place(experience) }
+        let elements = ElementClassifier.elements(of: experience)
+        return experience.placed(nodeID: experience.nodeID, elements: elements, growsFrom: experience.growsFrom)
+    }
+
+    /// 記したことで、その先に出た芽 (まだ灯っていない、つながった体験)
+    private func growth(after entry: HistoryEntry) -> [TreeNode] {
+        guard let trees else { return [] }
+        let tree = trees.tree()
+        guard let id = tree.nodeID(of: entry) ?? entry.nodeID else { return [] }
+        return tree.opened(by: id, limit: 3)
+    }
+
+    private func refreshLineages() {
+        treeRevision += 1
+        guard let trees else {
+            proposalLineage = nil
+            activeLineage = nil
+            return
+        }
+        let tree = trees.tree()
+        proposalLineage = proposal.map { trees.lineage(of: $0.experience, in: tree) }
+        activeLineage = activeEntry.map { trees.lineage(of: $0.experience, in: tree) }
+    }
+
     private func clearProposal() {
         proposal = nil
+        proposalLineage = nil
         lastGeneratedAt = nil
         cache.clear()
     }
@@ -370,21 +434,23 @@ public final class HomeViewModel {
         let now = assembler.currentDate
         let snapshot: WidgetSnapshot
         if let entry = activeEntry {
+            let elements = entry.resolvedElements()
             snapshot = WidgetSnapshot(
                 kind: .active, title: entry.title, invitation: entry.invitation, reflectionQuestion: entry.reflectionQuestion,
-                startedAt: entry.createdAt, sealCharacter: entry.sealCharacter, season: season, updatedAt: now
+                startedAt: entry.createdAt, sealCharacter: entry.sealCharacter,
+                elementLabel: elements.first.flatMap { TaikenContent.shared.element($0)?.label }, updatedAt: now
             )
         } else if let experience = proposal?.experience {
+            let elements = ElementClassifier.elements(of: experience)
             snapshot = WidgetSnapshot(
                 kind: .proposal, title: experience.title, invitation: experience.invitation,
-                reflectionQuestion: experience.reflectionQuestion,
-                sealCharacter: ExperienceTag.sealCharacter(ExperienceTag.primary(of: experience.tags)),
-                season: season, updatedAt: now
+                reflectionQuestion: experience.reflectionQuestion, sealCharacter: ElementClassifier.glyph(for: elements),
+                elementLabel: elements.first.flatMap { TaikenContent.shared.element($0)?.label }, updatedAt: now
             )
         } else if restingUntil != nil || completedEntry != nil {
-            snapshot = WidgetSnapshot(kind: .resting, season: season, updatedAt: now)
+            snapshot = WidgetSnapshot(kind: .resting, updatedAt: now)
         } else {
-            snapshot = WidgetSnapshot(kind: .empty, season: season, updatedAt: now)
+            snapshot = WidgetSnapshot(kind: .empty, updatedAt: now)
         }
         widgets.publish(snapshot)
     }

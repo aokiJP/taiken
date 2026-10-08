@@ -20,8 +20,7 @@ final class JournalTests: XCTestCase {
 
         XCTAssertEqual(model.stats.lived, 3)
         XCTAssertEqual(model.stats.thisMonth, 2)
-        // 10/8 は鴻雁来 (48)、9/30 と 10/1 は蟄虫坏戸 (46)
-        XCTAssertEqual(model.stats.microSeasons, [46, 48])
+        XCTAssertFalse(model.stats.elements.isEmpty)
 
         let grid = model.monthGrid()
         XCTAssertEqual(grid.count, 35)
@@ -51,16 +50,33 @@ final class JournalTests: XCTestCase {
         let model = HistoryViewModel(history: repo, calendar: tokyoCalendar, now: { referenceDate })
         model.reload()
         XCTAssertEqual(model.sections.flatMap { $0.entries.map(\.title) }, ["最近", "春のこと"])
-        XCTAssertEqual(model.stats.microSeasons.count, 2)
-        XCTAssertEqual(model.microSeason(of: repo.storage[1]).solarTerm, "春分")
     }
 
-    func testSealCharacters() async {
-        XCTAssertEqual(ExperienceTag.sealCharacter(ExperienceTag.primary(of: ["short", "observation"])), "観")
-        XCTAssertEqual(ExperienceTag.sealCharacter(ExperienceTag.primary(of: ["short"])), "刻")
-        XCTAssertEqual(ExperienceTag.sealCharacter(ExperienceTag.primary(of: [])), "体")
-        XCTAssertEqual(ExperienceTag.sealCharacter("unknown"), "体")
+    /// 印は、体験の主な要素の字。要素が記録に無い古い記録は、ライブラリか文から推し量る
+    func testSealCharactersComeFromElements() async {
+        XCTAssertEqual(livedEntry("meal-first-bite").sealCharacter, "味")
+        XCTAssertEqual(livedEntry("people-listen").sealCharacter, "人")
+        // 3.0 より前の記録 (要素が無い) でも、ライブラリと同じ名前なら同じ印
+        let old = HistoryEntry(createdAt: referenceDate, title: "いちばん小さな音", theme: nil, invitation: "i", perspective: "p", tags: ["sensory"], status: .completed)
+        XCTAssertEqual(old.sealCharacter, "聴")
+        // ライブラリに無い体験は、名前と文から
+        let found = HistoryEntry(createdAt: referenceDate, title: "雨の匂いを探す", theme: nil, invitation: "外に出たら、雨の匂いを探してみませんか？", perspective: "p", tags: [], status: .completed)
+        XCTAssertEqual(found.sealCharacter, "香")
+        XCTAssertEqual(ElementClassifier.glyph(for: []), "体")
         XCTAssertEqual(ExperienceTag.displayLabels(["short", "observation", "short", "hack"]), ["短い時間", "観察"])
+    }
+
+    func testExportIncludesTheGarden() async throws {
+        let repo = InMemoryHistoryRepository([livedEntry("meal-first-bite")])
+        let store = InMemoryGardenStore()
+        let trees = TreeSource(history: repo, store: store, now: { referenceDate })
+        try trees.weave(WeaveDraft(title: "湯気を見る", invitation: "湯気の形を見てみませんか？", elements: ["see"]))
+        let model = HistoryViewModel(history: repo, calendar: tokyoCalendar, now: { referenceDate }, trees: trees)
+        let json = try jsonObject(model.exportJSON())
+        let garden = try XCTUnwrap(json["garden"] as? NSDictionary)
+        XCTAssertEqual((garden["nodes"] as? [NSDictionary])?.first?["title"] as? String, "湯気を見る")
+        XCTAssertEqual((json["entries"] as? [NSDictionary])?.first?["node_id"] as? String, "meal-first-bite")
+        XCTAssertFalse(model.vaultFiles().isEmpty)
     }
 
     func testSampleJournalUsesLibraryEntries() async {
@@ -73,17 +89,17 @@ final class JournalTests: XCTestCase {
 final class DailyLetterTests: XCTestCase {
     private let enabled = DailyLetterPreferences(enabled: true, hour: 8, minute: 0)
 
-    func testPlansTheComingMorningsWithTheirMicroSeasons() {
+    func testPlansTheComingMornings() {
         let letters = DailyLetter.plan(now: referenceDate, preferences: enabled, engagedToday: false, calendar: tokyoCalendar)
         // 今日の8時は過ぎているので、明日から6日分
         XCTAssertEqual(letters.count, 6)
         XCTAssertEqual(letters.first?.identifier, "letter-2026-10-09")
         XCTAssertEqual(letters.first?.fireDate, tokyoDate("2026-10-09", hour: 8))
-        XCTAssertEqual(letters.first?.title, "寒露・鴻雁来")
-        XCTAssertTrue(letters.first?.body.hasPrefix("雁が北から渡ってくる頃。") == true)
-        // 10/13 から菊花開
-        XCTAssertEqual(letters.first { $0.identifier == "letter-2026-10-13" }?.title, "寒露・菊花開")
+        XCTAssertEqual(letters.first?.title, "今日の体験")
+        XCTAssertTrue(DailyLetter.bodies.contains(letters.first?.body ?? ""))
         XCTAssertEqual(Set(letters.map(\.identifier)).count, letters.count)
+        // 季節のことは書かない
+        XCTAssertFalse(letters.contains { $0.body.contains("季節") || $0.title.contains("・") })
     }
 
     func testSkipsTodayWhenAlreadyOpened() {
@@ -107,8 +123,9 @@ final class RequestPreviewTests: XCTestCase {
         let sections = RequestPreview.sections(for: request)
         let byTitle = Dictionary(uniqueKeysWithValues: sections.map { ($0.title, $0.items) })
         XCTAssertEqual(byTitle["時刻"], ["2026-10-08 18:10 (Asia/Tokyo)"])
-        XCTAssertEqual(byTitle["季節"], ["寒露・鴻雁来 — 雁が北から渡ってくる頃"])
+        XCTAssertNil(byTitle["季節"])
         XCTAssertEqual(byTitle["いまの気分"], ["疲れぎみ"])
+        XCTAssertEqual(byTitle["体験の樹"], ["灯った体験: ひと口目の観察、三つの音", "芽: 食感をことばに、最後のひと口、自分の足音"])
         XCTAssertEqual(byTitle["予定"], ["今日 19:00〜 数学の課題", "明日 09:00〜 (タイトルは送りません)"])
         XCTAssertEqual(byTitle["最近の発言"], ["「今日ちょっと疲れた」"])
         XCTAssertEqual(byTitle["最近の体験"], ["通学路の音を数える — やってみた · 響いた"])
@@ -130,7 +147,7 @@ final class RequestPreviewTests: XCTestCase {
         XCTAssertEqual(byTitle["予定"], [RequestPreview.notSent])
         XCTAssertEqual(byTitle["おおよその地域"], [RequestPreview.notSent])
         XCTAssertEqual(byTitle["いまの気分"], ["選んでいません"])
-        XCTAssertNil(byTitle["季節"])
+        XCTAssertEqual(byTitle["体験の樹"], [RequestPreview.notSent])
         XCTAssertEqual(byTitle["Web検索"], ["使わない"])
     }
 
@@ -140,7 +157,7 @@ final class RequestPreviewTests: XCTestCase {
         let fields = Set(Mirror(reflecting: request).children.compactMap(\.label))
         XCTAssertEqual(fields, [
             "currentTime", "timeZone", "locale", "calendarContext", "recentUserMessages", "recentExperiences",
-            "userFeedback", "excludeTitles", "area", "allowWebSearch", "mood", "season",
+            "userFeedback", "excludeTitles", "area", "allowWebSearch", "mood", "tree",
         ], "ExperienceRequest に項目を足したら RequestPreview.sections にも表示を足してください")
     }
 }

@@ -1,7 +1,8 @@
 import XCTest
 
 /// 体験の流れを、実際の画面で最初から最後までたどる (シミュレータ)。
-/// 受け取る → 手がかりを見る → 季節を見る → やってみる → 思い返して記す → 印 → 体験帳 → 記録 → 話す → 設定
+/// 受け取る → 手がかりを見る → 体験の樹 (一覧・体験のページ・編む) → やってみる → 思い返して記す → 印 → 樹に灯る
+/// → 体験帳 → 記録 → 話す → 設定
 ///
 /// - アプリは `-UITesting` で、端末の状態に左右されない組み立てで起動する (メモリ上の保存先・見本の予定・体験ライブラリ)
 /// - 各場面のスクリーンショットを、環境変数 `TAIKEN_SCREENSHOTS` のフォルダ (xcodebuild には
@@ -24,10 +25,15 @@ final class ExperienceFlowUITests: XCTestCase {
         snap("00b-onboarding-stance")
 
         next.tap()
+        pause(0.9)
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "やった体験が")).firstMatch.waitForExistence(timeout: 5))
+        snap("00c-onboarding-tree")
+
+        app.buttons["つぎへ"].firstMatch.tap()
         let begin = app.buttons["最初の体験を受け取る"].firstMatch
         XCTAssertTrue(begin.waitForExistence(timeout: 5))
         pause(0.9)
-        snap("00c-onboarding-permissions")
+        snap("00d-onboarding-permissions")
 
         // UIテストでは見本のカレンダー (許可済み) を使うので、システムの許可ダイアログは出ない
         begin.tap()
@@ -55,15 +61,46 @@ final class ExperienceFlowUITests: XCTestCase {
         closeInsight.tap()
         pause(0.8)
 
-        // 七十二候
-        let tanzaku = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "七十二候")).firstMatch
-        XCTAssertTrue(tanzaku.waitForExistence(timeout: 5))
-        tanzaku.tap()
-        let closeSeason = app.buttons["閉じる"].firstMatch
-        XCTAssertTrue(closeSeason.waitForExistence(timeout: 5))
-        pause(1.0)
-        snap("03-season")
-        closeSeason.tap()
+        // 体験の樹 (ホームの見出しの小さな樹から)
+        let openTree = app.buttons["体験の樹をひらく"].firstMatch
+        XCTAssertTrue(openTree.waitForExistence(timeout: 5))
+        openTree.tap()
+        let weave = app.buttons["体験を編む"].firstMatch
+        XCTAssertTrue(weave.waitForExistence(timeout: 8))
+        pause(1.6)
+        snap("03-tree")
+
+        // 一覧と、体験のページ
+        let listMode = app.buttons["一覧"].firstMatch
+        if listMode.waitForExistence(timeout: 4) {
+            listMode.tap()
+            pause(1.0)
+            snap("03b-tree-list")
+            let row = app.descendants(matching: .any).matching(identifier: "tree.row").firstMatch
+            if row.waitForExistence(timeout: 4) {
+                row.tap()
+                let startHere = app.buttons.matching(NSPredicate(format: "label IN %@", ["これをやってみる", "もう一度やってみる"])).firstMatch
+                XCTAssertTrue(startHere.waitForExistence(timeout: 6))
+                pause(1.0)
+                snap("03c-node-page")
+                app.buttons["閉じる"].firstMatch.tap()
+                pause(0.8)
+            }
+            app.buttons["樹"].firstMatch.tap()
+            pause(0.6)
+        }
+
+        // 体験を編む
+        weave.tap()
+        let plant = app.buttons["樹に植える"].firstMatch
+        XCTAssertTrue(plant.waitForExistence(timeout: 6))
+        pause(0.8)
+        snap("03d-weave")
+        app.buttons["閉じる"].firstMatch.tap()
+        pause(0.8)
+
+        // ホームへ戻る
+        app.navigationBars.buttons.element(boundBy: 0).tap()
         pause(0.8)
 
         // やってみる
@@ -90,17 +127,28 @@ final class ExperienceFlowUITests: XCTestCase {
         XCTAssertTrue(record.isEnabled)
         record.tap()
 
-        // 印 (シートが閉じてから押される)
+        // 印 (シートが閉じてから押される) と、その先に出た芽
         let openJournal = app.buttons["体験帳をひらく"].firstMatch
         XCTAssertTrue(openJournal.waitForExistence(timeout: 10))
-        pause(1.6)
+        pause(1.8)
         snap("06-stamped")
 
+        // 樹に灯ったところ
+        let seeOnTree = app.buttons["樹で見る"].firstMatch
+        if seeOnTree.waitForExistence(timeout: 4) {
+            seeOnTree.tap()
+            pause(1.8)
+            snap("06b-tree-lit")
+            app.navigationBars.buttons.element(boundBy: 0).tap()
+            pause(0.8)
+        }
+
         // 体験帳
+        XCTAssertTrue(openJournal.waitForExistence(timeout: 8))
         openJournal.tap()
         XCTAssertTrue(app.staticTexts["体験帳"].firstMatch.waitForExistence(timeout: 8))
         pause(1.2)
-        snap("07-journal-ring")
+        snap("07-journal")
         app.swipeUp()
         pause(0.9)
         snap("08-journal-calendar")

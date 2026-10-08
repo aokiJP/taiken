@@ -2,7 +2,7 @@ import SwiftUI
 import TaikenCore
 
 /// はじめての人には案内を、それ以外はホームを出す。
-/// 体験帳は押し出し (ホーム → 体験帳 → 記録)、話す・設定はシートで開く。
+/// 体験帳・体験の樹は押し出し (ホーム → 体験帳 → 記録 / ホーム → 樹)、話す・設定はシートで開く。
 struct RootView: View {
     let dependencies: AppDependencies
     @Bindable private var router: AppRouter
@@ -40,20 +40,30 @@ struct RootView: View {
         NavigationStack(path: $router.path) {
             HomeView(
                 model: dependencies.home,
+                tree: dependencies.tree,
                 engine: dependencies.engineState.engine,
                 openChat: { router.sheet = .chat },
                 openJournal: { router.openJournal() },
+                openTree: { focus in
+                    dependencies.tree.reload()
+                    router.openTree(focus: focus)
+                },
                 openSettings: { router.sheet = .settings },
-                previewRequest: { await dependencies.previewRequest() },
-                livedSeasons: {
-                    dependencies.history.reload()
-                    return dependencies.history.stats.microSeasons
-                }
+                previewRequest: { await dependencies.previewRequest() }
             )
             .navigationDestination(for: AppRouter.Destination.self) { destination in
                 switch destination {
                 case .journal:
-                    JournalView(model: dependencies.history) { router.returnHome() }
+                    JournalView(
+                        model: dependencies.history,
+                        goHome: { router.returnHome() },
+                        openTree: { focus in
+                            dependencies.tree.reload()
+                            router.openTree(focus: focus, fromHome: false)
+                        }
+                    )
+                case .tree(let focus):
+                    TreeView(model: dependencies.tree, home: dependencies.home, focus: focus)
                 }
             }
         }

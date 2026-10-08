@@ -29,7 +29,7 @@ final class ExperienceFlowTests: XCTestCase {
         await rig.model.refresh()
         XCTAssertEqual(rig.model.stage, .proposal)
         XCTAssertEqual(rig.widgets.snapshots.last?.kind, .proposal)
-        XCTAssertEqual(rig.widgets.snapshots.last?.microSeason, "鴻雁来")
+        XCTAssertNotNil(rig.widgets.snapshots.last?.sealCharacter)
 
         rig.model.tryIt()
         XCTAssertEqual(rig.model.stage, .active)
@@ -106,13 +106,13 @@ final class ExperienceFlowTests: XCTestCase {
         XCTAssertNil(rig.model.restingUntil)
     }
 
-    func testRequestsCarryTheSeason() async {
+    func testRequestsCarryTheTimeButNoSeason() async throws {
         let h = Harness()
         let rig = make(h)
         await rig.model.generate()
-        XCTAssertEqual(rig.service.experienceRequests.first?.season?.microSeason, "鴻雁来")
-        XCTAssertEqual(rig.model.season.name, "鴻雁来")
         XCTAssertEqual(rig.model.timeOfDay, .evening)
+        let json = try jsonObject(APICoding.encoder().encode(XCTUnwrap(rig.service.experienceRequests.first)))
+        XCTAssertNil(json["season"])
     }
 
     func testLockScreenPresenceFollowsTheSetting() async {
@@ -196,7 +196,9 @@ final class ExperienceFlowTests: XCTestCase {
         await rig.model.generate()
         rig.model.tryIt()
         XCTAssertEqual(rig.model.activeEntry?.reflectionQuestion, "何が引っかかっていましたか？")
-        XCTAssertEqual(rig.model.activeEntry?.sealCharacter, "観")
+        // ライブラリと同じ体験なので、樹が無くても要素 (考える) と印が付く
+        XCTAssertEqual(rig.model.activeEntry?.elements, ["think"])
+        XCTAssertEqual(rig.model.activeEntry?.sealCharacter, "考")
         rig.model.finish(rating: .positive)
         XCTAssertEqual(h.history.storage.first?.reflectionQuestion, "何が引っかかっていましたか？")
     }

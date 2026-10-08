@@ -1,7 +1,7 @@
 import Foundation
 
 /// 端末内だけで動く提案。Backend未設定・オフライン時・Apple Intelligence が使えないときに使う。
-/// 体験ライブラリ (七十二候の季節の体験を含む) から、予定・気分・時間帯・最近の反応に合うものを選ぶ。
+/// 体験ライブラリから、予定・気分・時間帯・最近の反応・体験の樹の芽に合うものを選ぶ。
 /// AIの代わりを装わず、何を手がかりに選んだかを正直に書く。
 public struct LocalExperienceService: ExperienceService {
     private let content: TaikenContent
@@ -41,7 +41,6 @@ struct LocalClock {
 
     var timeOfDay: TimeOfDay { TimeOfDay.at(date, calendar: calendar) }
     var day: Int { LibrarySelector.dayNumber(of: date, calendar: calendar) }
-    var season: MicroSeason { MicroSeason.at(date, calendar: calendar) }
 }
 
 struct LocalGenerator {
@@ -50,22 +49,20 @@ struct LocalGenerator {
     func response(for request: ExperienceRequest) -> ExperienceResponse {
         let clock = LocalClock(currentTime: request.currentTime, timeZone: request.timeZone)
         let selector = LibrarySelector(content: content)
-        let termIndex = request.season.flatMap { season in content.solarTerms.firstIndex { $0.name == season.solarTerm } }
-            ?? clock.season.solarTermIndex
         let next = request.calendarContext.first { !$0.isAllDay && $0.day == .today }
         let choice = selector.choose(LibrarySelector.Input(
             day: clock.day,
             timeOfDay: clock.timeOfDay,
-            solarTermIndex: termIndex,
             eventTitle: next?.title,
             messages: request.recentUserMessages,
             mood: request.mood,
             feedback: request.userFeedback,
             recentTitles: Set(request.recentExperiences.map(\.title)),
-            excludeTitles: Set(request.excludeTitles)
+            excludeTitles: Set(request.excludeTitles),
+            buds: Set(request.tree?.buds ?? [])
         ))
         let picked = choice.experience
-        let termName = content.solarTerms.indices.contains(termIndex) ? content.solarTerms[termIndex].name : clock.season.solarTerm
+        let parent = Self.parent(of: picked, tree: request.tree, content: content)
 
         var observations: [SituationNote] = []
         var actions: [DetectedAction] = []
@@ -79,6 +76,9 @@ struct LocalGenerator {
         } else if choice.mood == .tired {
             observations.append(SituationNote(text: "疲れや面倒さを口にしていた", basis: .stated))
             observations.append(SituationNote(text: "今日は負担の少ない提案が合うかもしれない", basis: .inferred))
+        }
+        if let parent {
+            observations.append(SituationNote(text: "体験帳に「\(parent.title)」が記されている", basis: .stated))
         }
 
         let obligations = choice.themesFromEvent.intersection(["study", "work", "housework"])
@@ -100,10 +100,13 @@ struct LocalGenerator {
                 title: picked.title,
                 perspective: picked.perspective,
                 invitation: picked.invitation,
-                reason: Self.reason(for: choice, next: next, solarTerm: termName),
+                reason: Self.reason(for: choice, next: next, parent: parent, content: content),
                 difficulty: picked.effort == "medium" ? .medium : .low,
                 tags: picked.tags,
-                reflectionQuestion: picked.reflectionQuestion
+                reflectionQuestion: picked.reflectionQuestion,
+                nodeID: picked.id,
+                elements: picked.elements,
+                growsFrom: parent?.id
             ),
             shouldNotify: false,
             notification: nil,
@@ -111,8 +114,18 @@ struct LocalGenerator {
         )
     }
 
+    /// 選んだ体験が伸びている、灯った体験 (樹のいまの「灯った体験」の順に、つながりを探す)
+    static func parent(of picked: TaikenContent.LibraryExperience, tree: TreeContext?, content: TaikenContent) -> TreeContext.LivedNode? {
+        guard let tree else { return nil }
+        return tree.lived.first { lived in
+            content.experience(lived.id)?.opens.contains { $0.to == picked.id } ?? false
+        }
+    }
+
     /// 何を手がかりに選んだかを正直に書く
-    static func reason(for choice: LibrarySelector.Choice, next: CalendarItem?, solarTerm: String) -> String {
+    static func reason(
+        for choice: LibrarySelector.Choice, next: CalendarItem?, parent: TreeContext.LivedNode?, content: TaikenContent
+    ) -> String {
         if choice.moodWasChosen, let mood = choice.mood {
             let detail = switch mood {
             case .tired: "負担の少ないものを選びました。"
@@ -132,8 +145,14 @@ struct LocalGenerator {
         if choice.matchesMessages {
             return "話していたことから選びました。"
         }
-        if choice.experience.isSeasonal {
-            return "今は「\(solarTerm)」の頃。季節の小さな変化に目を向ける提案です。"
+        if choice.isBud {
+            if let parent {
+                return "前に記した「\(parent.title)」の先にある体験です。"
+            }
+            if content.isRoot(choice.experience.id), let element = choice.experience.elements.first.flatMap(content.element) {
+                return "「\(element.label)」の根にある、いちばん小さなかたちの体験です。"
+            }
+            return "あなたの体験の樹の、芽のひとつです。"
         }
         return "特別な予定がなくても、いつもの時間の中に体験は見つけられます。"
     }

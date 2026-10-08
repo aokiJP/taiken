@@ -14,7 +14,7 @@ export function fixture<T = Record<string, unknown>>(name: string): T {
 }
 
 // ---- contracts/openapi.json のスキーマで値を検証する最小のバリデータ ----
-// 対応: $ref, anyOf, type (配列可), enum, properties, required, additionalProperties:false, items, minimum, maximum
+// 対応: $ref, anyOf, type (配列可), enum, pattern, properties, required, additionalProperties:false, items, minItems, maxItems, minimum, maximum
 
 type Schema = Record<string, unknown>;
 const openapi = fixture<{ components: { schemas: Record<string, Schema> } }>('openapi.json');
@@ -49,6 +49,13 @@ function check(schema: Schema, value: unknown, path: string, out: string[]): voi
     if (!ok) return void out.push(`${path}: 型が ${types.join('|')} ではなく ${actual}`);
   }
   if (Array.isArray(schema.enum) && !schema.enum.includes(value)) out.push(`${path}: ${JSON.stringify(value)} は enum 外`);
+  if (typeof value === 'string' && typeof schema.pattern === 'string' && !new RegExp(schema.pattern).test(value)) {
+    out.push(`${path}: ${JSON.stringify(value)} は pattern に合いません`);
+  }
+  if (Array.isArray(value)) {
+    if (typeof schema.minItems === 'number' && value.length < schema.minItems) out.push(`${path}: minItems 未満`);
+    if (typeof schema.maxItems === 'number' && value.length > schema.maxItems) out.push(`${path}: maxItems 超過`);
+  }
   if (typeof value === 'number') {
     if (typeof schema.minimum === 'number' && value < schema.minimum) out.push(`${path}: minimum 未満`);
     if (typeof schema.maximum === 'number' && value > schema.maximum) out.push(`${path}: maximum 超過`);

@@ -4,7 +4,7 @@ import SwiftUI
 import WidgetKit
 
 /// 体験中の Live Activity。ロック画面と Dynamic Island に、誘いかけと問いを静かに置いておく。
-/// 経過時間は数えない (急かさない)。始めた時刻と、今日の候だけを添える
+/// 経過時間は数えない (急かさない)。始めた時刻と、体験の要素だけを添える
 struct ExperienceLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: ExperienceActivityAttributes.self) { context in
@@ -19,7 +19,7 @@ struct ExperienceLiveActivity: Widget {
                         .padding(.leading, 4)
                 }
                 DynamicIslandExpandedRegion(.trailing) {
-                    Text(context.attributes.microSeason)
+                    Text(context.attributes.elementLabel)
                         .font(Typeface.fixedMincho(13))
                         .foregroundStyle(.white.opacity(0.75))
                         .padding(.trailing, 4)
@@ -51,7 +51,7 @@ struct ExperienceLiveActivity: Widget {
                     .font(Typeface.fixedMincho(15))
                     .foregroundStyle(Palette.shu)
             } compactTrailing: {
-                Text(context.attributes.microSeason)
+                Text(context.attributes.elementLabel)
                     .font(Typeface.fixedMincho(12))
                     .foregroundStyle(.white.opacity(0.8))
             } minimal: {
@@ -81,7 +81,7 @@ struct ExperienceLockScreenView: View {
                         .font(.caption)
                         .foregroundStyle(Palette.ink3)
                     Spacer(minLength: 4)
-                    Text(attributes.microSeason)
+                    Text(attributes.elementLabel)
                         .font(Typeface.fixedMincho(12))
                         .foregroundStyle(Palette.ink3)
                 }
@@ -103,14 +103,14 @@ struct ExperienceLockScreenView: View {
 }
 
 #Preview("ロック画面", as: .content, using: ExperienceActivityAttributes(
-    title: "渡っていくもの",
-    invitation: "移動の途中で一度だけ空を見上げて、渡っていくものを探してみませんか？",
-    sealCharacter: "観",
+    title: "いちばん遠くを見る",
+    invitation: "少し手を止めて、窓の外のいちばん遠くにあるものを眺めてみませんか？",
+    sealCharacter: "見",
     startedAt: Date(),
-    microSeason: "鴻雁来"
+    elementLabel: "見る"
 )) {
     ExperienceLiveActivity()
 } contentStates: {
-    ExperienceActivityAttributes.ContentState(reflectionQuestion: "空には、何が渡っていましたか？")
+    ExperienceActivityAttributes.ContentState(reflectionQuestion: "いちばん遠くに、何が見えましたか？")
 }
 #endif

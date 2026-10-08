@@ -35,7 +35,8 @@ test('リクエストのフィクスチャは入力の正規化を通しても�
 });
 
 test('レスポンスのフィクスチャは出力の正規化を通しても変わらない', () => {
-  assert.deepEqual(normalizeExperienceResult(fixture('experience_response.sample.json'), 'ai'), fixture('experience_response.sample.json'));
+  const livedIds = new Set(['study-why']);
+  assert.deepEqual(normalizeExperienceResult(fixture('experience_response.sample.json'), 'ai', { livedIds }), fixture('experience_response.sample.json'));
   assert.deepEqual(normalizeChatResult(fixture('chat_response.sample.json'), 'ai'), fixture('chat_response.sample.json'));
 });
 

@@ -10,6 +10,9 @@ final class ContractTests: XCTestCase {
         XCTAssertEqual(response.situation.observations.map(\.basis), [.calendar, .stated, .inferred])
         XCTAssertEqual(response.experience.difficulty, .low)
         XCTAssertEqual(response.experience.reflectionQuestion, "手が止まったとき、何が引っかかっていましたか？")
+        XCTAssertEqual(response.experience.nodeID, "study-stumble")
+        XCTAssertEqual(response.experience.elements, ["think"])
+        XCTAssertEqual(response.experience.growsFrom, "study-why")
         XCTAssertNil(response.notification)
         XCTAssertEqual(response.references, [])
         XCTAssertNil(response.fallbackReason)
@@ -38,7 +41,8 @@ final class ContractTests: XCTestCase {
         let data = try Fixtures.data("experience_request.sample")
         let request = try APICoding.decoder().decode(ExperienceRequest.self, from: data)
         XCTAssertEqual(request.mood, .tired)
-        XCTAssertEqual(request.season, SeasonContext(solarTerm: "寒露", microSeason: "鴻雁来", meaning: "雁が北から渡ってくる頃"))
+        XCTAssertEqual(request.tree?.lived.first, TreeContext.LivedNode(id: "meal-first-bite", title: "ひと口目の観察", elements: ["taste"]))
+        XCTAssertEqual(request.tree?.buds.first, "meal-texture")
         XCTAssertEqual(try jsonObject(APICoding.encoder().encode(request)), try jsonObject(data))
     }
 
@@ -48,11 +52,12 @@ final class ContractTests: XCTestCase {
         let withoutMood = ExperienceRequest(
             currentTime: request.currentTime, timeZone: request.timeZone, locale: request.locale,
             calendarContext: request.calendarContext, recentUserMessages: [], recentExperiences: [], userFeedback: [],
-            excludeTitles: [], area: nil, allowWebSearch: false, mood: nil, season: request.season
+            excludeTitles: [], area: nil, allowWebSearch: false, mood: nil, tree: nil
         )
         let json = try jsonObject(APICoding.encoder().encode(withoutMood))
         XCTAssertNil(json["mood"])
-        XCTAssertNotNil(json["season"])
+        XCTAssertNil(json["tree"], "樹を送らないときはキーごと送らない")
+        XCTAssertNil(json["season"], "季節は送らない")
     }
 
     /// OpenAPI に書いた気分の値と、iOS の Mood が一致する
@@ -87,11 +92,14 @@ final class ContractTests: XCTestCase {
         old.removeObject(forKey: "references")
         old.removeObject(forKey: "fallback_reason")
         let oldExperience = (old["experience"] as! NSDictionary).mutableCopy() as! NSMutableDictionary
-        oldExperience.removeObject(forKey: "reflection_question")
+        for key in ["reflection_question", "node_id", "elements", "grows_from"] { oldExperience.removeObject(forKey: key) }
         old["experience"] = oldExperience
         let response = try APICoding.decoder().decode(ExperienceResponse.self, from: JSONSerialization.data(withJSONObject: old))
         XCTAssertEqual(response.references, [])
         XCTAssertNil(response.experience.reflectionQuestion)
+        XCTAssertNil(response.experience.nodeID)
+        XCTAssertEqual(response.experience.elements, [])
+        XCTAssertNil(response.experience.growsFrom)
 
         let oldChat = try Fixtures.object("chat_response.sample").mutableCopy() as! NSMutableDictionary
         oldChat.removeObject(forKey: "needs_care")
@@ -113,6 +121,28 @@ final class ContractTests: XCTestCase {
         raw["should_notify"] = true
         let response = try APICoding.decoder().decode(ExperienceResponse.self, from: JSONSerialization.data(withJSONObject: raw))
         XCTAssertFalse(response.shouldNotify)
+    }
+
+    /// id の形でないもの (文や記号) は id として受け取らない
+    func testIgnoresMalformedNodeIDs() throws {
+        let raw = try Fixtures.object("experience_response.sample").mutableCopy() as! NSMutableDictionary
+        let experience = (raw["experience"] as! NSDictionary).mutableCopy() as! NSMutableDictionary
+        experience["node_id"] = "これは id ではない"
+        experience["grows_from"] = "../../etc"
+        experience["elements"] = ["see", "unknown"]
+        raw["experience"] = experience
+        let response = try APICoding.decoder().decode(ExperienceResponse.self, from: JSONSerialization.data(withJSONObject: raw))
+        XCTAssertNil(response.experience.nodeID)
+        XCTAssertNil(response.experience.growsFrom)
+        XCTAssertEqual(ElementClassifier.elements(of: response.experience), ["see"], "知らない要素は使わない")
+    }
+
+    /// OpenAPI に書いた要素の値と、体験ライブラリの要素が一致する
+    func testElementValuesMatchContract() throws {
+        let api = try Fixtures.object("openapi")
+        let schemas = (api["components"] as? NSDictionary)?["schemas"] as? NSDictionary
+        let values = (schemas?["Element"] as? NSDictionary)?["enum"] as? [String]
+        XCTAssertEqual(values, TaikenContent.shared.elements.map(\.id))
     }
 
     func testReferenceOnlyOpensHTTP() {

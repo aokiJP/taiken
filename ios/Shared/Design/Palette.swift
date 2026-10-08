@@ -112,13 +112,13 @@ struct StillSky: View {
 
 // MARK: - 書体
 
-/// 明朝 (ヒラギノ明朝)。誘いかけ・体験の名前・季節の名前に使う。Dynamic Type に合わせて大きさが変わる
+/// 明朝 (ヒラギノ明朝)。誘いかけ・体験の名前・要素の字に使う。Dynamic Type に合わせて大きさが変わる
 enum Typeface {
     static func mincho(_ size: CGFloat, bold: Bool = false, relativeTo style: Font.TextStyle = .body) -> Font {
         .custom(bold ? "HiraMinProN-W6" : "HiraMinProN-W3", size: size, relativeTo: style)
     }
 
-    /// 大きさを固定した明朝 (印・短冊など、形として扱う文字)
+    /// 大きさを固定した明朝 (印・樹の上の字など、形として扱う文字)
     static func fixedMincho(_ size: CGFloat, bold: Bool = true) -> Font {
         .custom(bold ? "HiraMinProN-W6" : "HiraMinProN-W3", fixedSize: size)
     }

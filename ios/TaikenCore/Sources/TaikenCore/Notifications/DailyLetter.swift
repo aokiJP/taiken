@@ -1,6 +1,6 @@
 import Foundation
 
-/// 朝の便り: 決まった時刻に一度だけ、その日の七十二候と一緒に「今日の体験」へ誘う通知。
+/// 朝の便り: 決まった時刻に一度だけ、「今日の体験」をそっと知らせる通知。
 /// サーバーもバックグラウンド実行も要らないので、誰でも使える (既定はオフ)。
 /// その日すでにアプリを開いて体験に触れていれば、その日の便りは送らない。
 public struct DailyLetterPreferences: Codable, Sendable, Equatable {
@@ -44,10 +44,11 @@ public enum DailyLetter {
     public static let identifierPrefix = "letter-"
     public static let categoryIdentifier = "letter"
 
-    static let closings = [
+    static let title = "今日の体験"
+    static let bodies = [
         "いつもの一日に、ひとつの視点を受け取りませんか。",
         "気が向いたら、今日の体験をひらいてみてください。",
-        "季節の小さな変化と一緒に、今日の体験をどうぞ。",
+        "今日は、体験の樹のどこから伸ばしましょう。",
     ]
 
     /// これから days 日ぶんの便りを計画する (iOS の予約上限に収まる数だけ)
@@ -63,15 +64,14 @@ public enum DailyLetter {
                   let fire = calendar.date(bySettingHour: p.hour, minute: p.minute, second: 0, of: day),
                   fire > now else { continue }
             if offset == 0 && engagedToday { continue }
-            let season = MicroSeason.at(fire, calendar: calendar)
             let dayNumber = LibrarySelector.dayNumber(of: fire, calendar: calendar)
             let parts = calendar.dateComponents([.year, .month, .day], from: fire)
             let stamp = String(format: "%04d-%02d-%02d", parts.year ?? 0, parts.month ?? 0, parts.day ?? 0)
             letters.append(PlannedLetter(
                 identifier: identifierPrefix + stamp,
                 fireDate: fire,
-                title: "\(season.solarTerm)・\(season.name)",
-                body: "\(season.meaning)。\(closings[((dayNumber % closings.count) + closings.count) % closings.count])"
+                title: title,
+                body: bodies[((dayNumber % bodies.count) + bodies.count) % bodies.count]
             ))
         }
         return letters

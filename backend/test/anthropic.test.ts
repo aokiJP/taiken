@@ -187,16 +187,19 @@ test('引用が無ければ検索結果の上位を参照にする / 地域な�
   assert.deepEqual(tool.user_location, { type: 'approximate', timezone: 'Asia/Tokyo' });
 });
 
-test('体験生成: 気分と七十二候をデータとして渡し、振り返りの問いを必須にする', async () => {
+test('体験生成: 気分と体験の樹をデータとして渡し、振り返りの問いと要素を必須にする', async () => {
   const fetch = fakeFetch(() => toolResponse('propose_experience', { ok: true }));
   await provider(fetch).generateExperience(ctx(), null, collect().opts);
   const body = fetch.calls[0]!.body;
   const content = String((body.messages as Array<{ content: string }>)[0]?.content);
   const data = JSON.parse(content.split('<user_data>')[1]!.split('</user_data>')[0]!) as Record<string, unknown>;
   assert.equal(data.mood, 'tired');
-  assert.deepEqual(data.season, { solar_term: '寒露', micro_season: '鴻雁来', meaning: '雁が北から渡ってくる頃' });
+  assert.equal(data.season, undefined);
+  assert.deepEqual((data.tree as { lived: Array<{ id: string }> }).lived.map((l) => l.id), ['meal-first-bite', 'commute-sounds']);
   const tool = (body.tools as Array<{ input_schema: { properties: { experience: { required: string[] } } } }>)[0]!;
   assert.ok(tool.input_schema.properties.experience.required.includes('reflection_question'));
+  assert.ok(tool.input_schema.properties.experience.required.includes('elements'));
   assert.match(String(body.system), /reflection_question/);
-  assert.match(String(body.system), /七十二候/);
+  assert.match(String(body.system), /grows_from/);
+  assert.doesNotMatch(String(body.system), /七十二候/);
 });

@@ -114,26 +114,3 @@ struct SeededRandom {
         return range.lowerBound + (range.upperBound - range.lowerBound) * unit
     }
 }
-
-/// 七十二候の短冊。漢字を縦に並べる (候の名前は漢字だけなので、回転の要る文字は無い)
-struct TanzakuView: View {
-    let text: String
-    var size: CGFloat = 22
-    var foreground: Color
-    var border: Color
-
-    var body: some View {
-        VStack(spacing: size * 0.18) {
-            ForEach(Array(text.enumerated()), id: \.offset) { item in
-                Text(String(item.element))
-                    .font(Typeface.fixedMincho(size))
-            }
-        }
-        .foregroundStyle(foreground)
-        .padding(.vertical, size * 0.5)
-        .padding(.horizontal, size * 0.36)
-        .overlay(RoundedRectangle(cornerRadius: 3).strokeBorder(border, lineWidth: 1))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(text)
-    }
-}

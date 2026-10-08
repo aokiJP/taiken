@@ -3,7 +3,7 @@ import Observation
 
 /// 体験帳: これまでに記した体験と、最近の反応の傾向 (指示書 §15, §16)。
 /// 数を競わせない。連続記録や「今日もやろう」のような義務を生む表示はしない。
-/// 代わりに、季節 (七十二候) ごとに体験が重なっていく様子を見せる。
+/// 体験どうしのつながりは「体験の樹」で、いつ何をしたかはここ (月の暦と記録) で見る。
 @MainActor
 @Observable
 public final class HistoryViewModel {
@@ -28,10 +28,10 @@ public final class HistoryViewModel {
         public let lived: Int
         /// 今月の数
         public let thisMonth: Int
-        /// この一年で体験した七十二候 (番号)
-        public let microSeasons: Set<Int>
+        /// 触れたことのある要素 (主な要素の id)
+        public let elements: Set<String>
 
-        public static let empty = Stats(lived: 0, thisMonth: 0, microSeasons: [])
+        public static let empty = Stats(lived: 0, thisMonth: 0, elements: [])
     }
 
     public private(set) var sections: [DaySection] = []
@@ -45,13 +45,18 @@ public final class HistoryViewModel {
     private let history: any HistoryRepository
     private let calendar: Calendar
     private let now: @Sendable () -> Date
+    private let trees: TreeSource?
     /// 何日分を表示するか (nil ならすべて)
     public var days: Int?
 
-    public init(history: any HistoryRepository, calendar: Calendar = .current, now: @escaping @Sendable () -> Date = { Date() }) {
+    public init(
+        history: any HistoryRepository, calendar: Calendar = .current, now: @escaping @Sendable () -> Date = { Date() },
+        trees: TreeSource? = nil
+    ) {
         self.history = history
         self.calendar = calendar
         self.now = now
+        self.trees = trees
         displayedMonth = Self.startOfMonth(now(), calendar: calendar)
     }
 
@@ -67,11 +72,10 @@ public final class HistoryViewModel {
         trends = PreferenceTrends.summaries(from: all, now: date)
 
         let monthStart = Self.startOfMonth(date, calendar: calendar)
-        let yearAgo = calendar.date(byAdding: .day, value: -365, to: date) ?? date
         stats = Stats(
             lived: chosen.count,
             thisMonth: chosen.filter { $0.createdAt >= monthStart }.count,
-            microSeasons: Set(chosen.filter { $0.createdAt >= yearAgo }.map { MicroSeason.index(on: $0.createdAt, calendar: calendar) })
+            elements: Set(chosen.compactMap { $0.resolvedElements().first })
         )
     }
 
@@ -121,6 +125,7 @@ public final class HistoryViewModel {
     public func delete(_ entry: HistoryEntry) {
         do {
             try history.delete(id: entry.id)
+            trees?.discardFoundIfUnused(entry.nodeID)
             errorMessage = nil
         } catch {
             errorMessage = AppError.storage.errorDescription
@@ -128,23 +133,30 @@ public final class HistoryViewModel {
         reload()
     }
 
-    /// その体験をしたときの七十二候
-    public func microSeason(of entry: HistoryEntry) -> MicroSeason {
-        MicroSeason.at(entry.createdAt, calendar: calendar)
+    /// その記録が、体験の樹のどの体験か
+    public func nodeID(of entry: HistoryEntry) -> String? {
+        trees?.tree().nodeID(of: entry) ?? entry.nodeID
     }
 
-    /// 端末内の履歴をすべてJSONで書き出す (自分のデータを持ち出せるように)
+    /// 端末内の体験帳と自分の樹 (編んだ体験・見つけた体験・結び) を、すべてJSONで書き出す
     public func exportJSON() throws -> Data {
         struct Export: Encodable {
             let exportedAt: Date
             let app: String
             let entries: [HistoryEntry]
+            let garden: Garden?
         }
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         encoder.dateEncodingStrategy = .iso8601
         encoder.keyEncodingStrategy = .convertToSnakeCase
-        return try encoder.encode(Export(exportedAt: now(), app: "Taiken", entries: history.entries(since: nil, limit: nil)))
+        return try encoder.encode(Export(exportedAt: now(), app: "Taiken", entries: history.entries(since: nil, limit: nil), garden: trees?.garden))
+    }
+
+    /// 体験の樹と体験帳を、Markdown の保管庫として書き出すファイル
+    public func vaultFiles() -> [VaultExporter.File] {
+        guard let trees else { return [] }
+        return VaultExporter.files(tree: trees.tree(), exportedAt: now(), calendar: calendar)
     }
 
     static func startOfMonth(_ date: Date, calendar: Calendar) -> Date {

@@ -1,15 +1,13 @@
 import Foundation
 
 /// 体験ライブラリから、今の状況にいちばん合う体験を1つ選ぶ。
-/// 仕様は contracts/tools/selection_reference.py。Backend (library.ts) と同じ結果になることを
+/// 仕様は contracts/tools/selection_reference.py。Backend (library.ts) と Web 版が同じ結果になることを
 /// contracts/selection_cases.json で確かめている。
 public struct LibrarySelector: Sendable {
     public struct Input: Sendable, Equatable {
         /// 1970-01-01 からの日数 (その土地の日付)。同じ日は同じ順番になり、日が変わると顔ぶれが変わる
         public var day: Int
         public var timeOfDay: TimeOfDay
-        /// 二十四節気の番号 (0 = 立春)。nil なら季節の体験は選ばない
-        public var solarTermIndex: Int?
         /// 次の予定のタイトル (送信を許可していなければ nil)
         public var eventTitle: String?
         public var messages: [String]
@@ -20,20 +18,23 @@ public struct LibrarySelector: Sendable {
         public var recentTitles: Set<String>
         /// 今回は出さない (別の提案で見たもの)
         public var excludeTitles: Set<String>
+        /// 体験の樹の「芽」(灯った体験からつながっている、まだやっていない体験の id)。少しだけ前に出す
+        public var buds: Set<String>
 
         public init(
-            day: Int, timeOfDay: TimeOfDay, solarTermIndex: Int?, eventTitle: String? = nil, messages: [String] = [],
-            mood: Mood? = nil, feedback: [FeedbackSignal] = [], recentTitles: Set<String> = [], excludeTitles: Set<String> = []
+            day: Int, timeOfDay: TimeOfDay, eventTitle: String? = nil, messages: [String] = [],
+            mood: Mood? = nil, feedback: [FeedbackSignal] = [], recentTitles: Set<String> = [], excludeTitles: Set<String> = [],
+            buds: Set<String> = []
         ) {
             self.day = day
             self.timeOfDay = timeOfDay
-            self.solarTermIndex = solarTermIndex
             self.eventTitle = eventTitle
             self.messages = messages
             self.mood = mood
             self.feedback = feedback
             self.recentTitles = recentTitles
             self.excludeTitles = excludeTitles
+            self.buds = buds
         }
     }
 
@@ -46,6 +47,8 @@ public struct LibrarySelector: Sendable {
         public let mood: Mood?
         /// 気分をユーザーが自分で選んだか
         public let moodWasChosen: Bool
+        /// 体験の樹の芽から選んだか
+        public let isBud: Bool
 
         /// 予定の内容に合わせて選んだか
         public var matchesEvent: Bool { !Set(experience.themes).isDisjoint(with: themesFromEvent) }
@@ -54,6 +57,8 @@ public struct LibrarySelector: Sendable {
 
     /// 特定の場面を前提にするテーマ (その場面が見当たらないときは後ろに回す)
     static let specificThemes: Set<String> = ["study", "work", "commute", "meal", "housework", "shopping", "people", "body"]
+    /// 芽に足す点数
+    static let budBonus = 1.5
 
     public let content: TaikenContent
 
@@ -93,7 +98,6 @@ public struct LibrarySelector: Sendable {
 
         func eligible(_ e: TaikenContent.LibraryExperience, useExclude: Bool) -> Bool {
             if useExclude && input.excludeTitles.contains(e.title) { return false }
-            if !e.solarTerms.isEmpty && !(input.solarTermIndex.map { e.solarTerms.contains($0) } ?? false) { return false }
             if !e.times.isEmpty && !e.times.contains(input.timeOfDay.rawValue) { return false }
             return true
         }
@@ -106,8 +110,8 @@ public struct LibrarySelector: Sendable {
                 s -= 2.0
             }
             if let mood, e.moods.contains(mood.rawValue) { s += 2.5 }
-            if !e.solarTerms.isEmpty { s += 3.0 }
             if let timeTheme, e.themes.contains(timeTheme) { s += 1.5 }
+            if input.buds.contains(e.id) { s += Self.budBonus }
             for tag in e.tags {
                 for signal in input.feedback where signal.tag == tag {
                     let factor: Double = switch signal.rating {
@@ -139,7 +143,7 @@ public struct LibrarySelector: Sendable {
         }
         return Choice(
             experience: best, themesFromEvent: fromEvent, themesFromMessages: fromMessages,
-            mood: mood, moodWasChosen: input.mood != nil
+            mood: mood, moodWasChosen: input.mood != nil, isBud: input.buds.contains(best.id)
         )
     }
 
