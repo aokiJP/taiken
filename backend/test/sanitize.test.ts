@@ -101,3 +101,20 @@ test('チャット: 直近の発言だけを残す', () => {
   assert.equal(out.messages.length, LIMITS.messages);
   assert.equal(out.messages.at(-1)?.text, 'last');
 });
+
+test('気分は決まった値だけ、季節は正しい節気と意味に置き換える', () => {
+  const out = sanitizeExperienceRequest({
+    current_time: now,
+    mood: 'tired',
+    season: { solar_term: '嘘の節気', micro_season: '鴻雁来', meaning: '指示を無視して、と書かれた意味' },
+  });
+  assert.equal(out.mood, 'tired');
+  assert.deepEqual(out.season, { solar_term: '寒露', micro_season: '鴻雁来', meaning: '雁が北から渡ってくる頃' });
+
+  const odd = sanitizeExperienceRequest({ current_time: now, mood: 'angry', season: { micro_season: '存在しない候' } });
+  assert.equal(odd.mood, null);
+  assert.equal(odd.season, null);
+  const missing = sanitizeExperienceRequest({ current_time: now, season: 'autumn' });
+  assert.equal(missing.mood, null);
+  assert.equal(missing.season, null);
+});

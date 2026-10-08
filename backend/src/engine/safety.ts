@@ -14,7 +14,7 @@ const RISK_PATTERNS: ReadonlyArray<readonly [RegExp, string]> = [
 
 export function findSafetyIssue(experience: Experience | null | undefined): string | null {
   if (!experience) return null;
-  const body = `${experience.title} ${experience.perspective} ${experience.invitation}`;
+  const body = `${experience.title} ${experience.perspective} ${experience.invitation} ${experience.reflection_question ?? ''}`;
   for (const [pattern, label] of RISK_PATTERNS) if (pattern.test(body)) return label;
   return null;
 }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { UpstreamError } from '../src/ai/anthropicClient.ts';
-import { createMockProvider } from '../src/ai/mock.ts';
+import { createMockProvider, LISTENING_REPLIES } from '../src/ai/mock.ts';
 import type { AiProvider } from '../src/ai/provider.ts';
 import { UnavailableError } from '../src/engine/engine.ts';
 import { applyNotificationPolicy, localHour } from '../src/engine/notificationPolicy.ts';
@@ -205,4 +205,51 @@ test('通知ポリシー: 深夜・低確信度・断りが続く・代替生成
   const declined = { ...c, recent_experiences: [1, 2].map((i) => ({ title: `${i}`, theme: null, reaction: 'declined' as const, rating: null, date: null })) };
   assert.equal(applyNotificationPolicy(withNotify, declined).should_notify, false);
   assert.equal(localHour('garbage'), 12);
+});
+
+test('モック: 選んだ気分で体験と理由が変わり、気分は「本人が言ったこと」として残す', async () => {
+  const engine = await makeEngine({ provider: mock });
+  const out = await engine.generateExperience({ ...ctx(), calendar_context: [], mood: 'tired' }, { signal: signal() });
+  assert.match(out.experience.reason, /^「疲れぎみ」とのことなので/);
+  assert.ok(out.situation.observations.some((o) => o.basis === 'stated' && o.text.includes('疲れぎみ')));
+  assert.ok(out.experience.reflection_question?.endsWith('？'));
+});
+
+test('モック: 予定も気分も無い寒露の夕方は、季節の体験を選ぶ', async () => {
+  const engine = await makeEngine({ provider: mock });
+  const out = await engine.generateExperience(
+    sanitizeExperienceRequest({ current_time: '2026-10-08T18:10:00+09:00', season: { micro_season: '鴻雁来' } }),
+    { signal: signal() },
+  );
+  assert.equal(out.experience.title, '渡っていくもの');
+  assert.equal(out.experience.reason, '今は「寒露」の頃。季節の小さな変化に目を向ける提案です。');
+  assert.equal(out.situation.summary, '目立った予定は見当たらない夕方。');
+});
+
+test('モック: 予定の内容が分からないときは推測しない / 勉強の予定は義務の可能性として扱う', async () => {
+  const engine = await makeEngine({ provider: mock });
+  const hidden = await engine.generateExperience(
+    sanitizeExperienceRequest({
+      current_time: '2026-10-08T18:10:00+09:00',
+      calendar_context: [{ title: null, start: '2026-10-08T18:30:00+09:00', end: '2026-10-08T19:30:00+09:00', day: 'today' }],
+    }),
+    { signal: signal() },
+  );
+  assert.equal(hidden.situation.observations[0]?.text, '18:30から内容不明の予定がある');
+  assert.equal(hidden.situation.summary, '予定が控えている夕方。');
+  const study = await engine.generateExperience(ctx(), { signal: signal() });
+  assert.equal(study.is_obligation, true);
+  assert.equal(study.possible_obligations[0]?.label, '勉強に取り組む必要がある可能性');
+});
+
+test('モック: 提案を求めると振り返りの問いつきで1つ添え、ただの会話には問いかけで返す', async () => {
+  const engine = await makeEngine({ provider: mock });
+  const ask = (text: string) =>
+    engine.chat(sanitizeChatRequest({ current_time: '2026-10-08T21:00:00+09:00', messages: [{ role: 'user', text }] }), { signal: signal() });
+  const idea = await ask('暇だな、何かある？');
+  assert.equal(idea.suggest_experience, true);
+  assert.ok(idea.experience?.reflection_question);
+  const talk = await ask('今日は晴れてた');
+  assert.equal(talk.suggest_experience, false);
+  assert.ok(LISTENING_REPLIES.includes(talk.reply));
 });

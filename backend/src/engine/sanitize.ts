@@ -1,5 +1,6 @@
 // iOSから届いた入力を「許可リスト方式」で組み立て直す。
 // 未知のフィールドはAIへ渡さない (プライバシー原則: 送る必要がないものは送らない)。
+import { canonicalSeason } from '../content/library.ts';
 import type {
   Area,
   CalendarItem,
@@ -8,8 +9,10 @@ import type {
   ExperienceContext,
   ExperienceRef,
   FeedbackSignal,
+  Mood,
   Rating,
   Reaction,
+  SeasonContext,
 } from './types.ts';
 
 export class InputError extends Error {
@@ -32,6 +35,7 @@ export const LIMITS = Object.freeze({
 
 const RATINGS: ReadonlySet<string> = new Set(['positive', 'neutral', 'negative']);
 const REACTIONS: ReadonlySet<string> = new Set(['accepted', 'alternative', 'declined', 'completed']);
+const MOODS: ReadonlySet<string> = new Set(['tired', 'bored', 'focus', 'refresh']);
 
 type Json = Record<string, unknown>;
 
@@ -127,6 +131,13 @@ function sanitizeArea(value: unknown): Area | null {
   return area.locality || area.administrative_area || area.country_code ? area : null;
 }
 
+/** 七十二候は名前だけを手がかりに、正しい節気と意味へ置き換える (クライアントの文言をAIへ渡さない) */
+function sanitizeSeason(value: unknown): SeasonContext | null {
+  if (!isObject(value)) return null;
+  const name = cleanText(value.micro_season, 8);
+  return name ? canonicalSeason(name) : null;
+}
+
 export function sanitizeExperienceRequest(input: unknown): ExperienceContext {
   const { body, ctx } = base(input);
   return {
@@ -150,6 +161,8 @@ export function sanitizeExperienceRequest(input: unknown): ExperienceContext {
       .slice(0, LIMITS.excludeTitles),
     area: sanitizeArea(body.area),
     allow_web_search: body.allow_web_search === true,
+    mood: typeof body.mood === 'string' && MOODS.has(body.mood) ? (body.mood as Mood) : null,
+    season: sanitizeSeason(body.season),
   };
 }
 

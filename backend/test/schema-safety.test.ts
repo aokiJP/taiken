@@ -81,3 +81,12 @@ test('強い苦痛のサインを検出する (誤検出しにくい普通の言
   assert.equal(detectCareNeed(['リスカしそう']), true);
   assert.equal(detectCareNeed(['今日は疲れた', '宿題が面倒']), false);
 });
+
+test('振り返りの問い: 欠けていれば null、長すぎれば切り詰め、安全確認の対象にもする', () => {
+  const base = { title: 't', perspective: 'p', invitation: 'i', reason: 'r', difficulty: 'low', tags: [] };
+  assert.equal(normalizeExperience(base).reflection_question, null);
+  assert.equal(normalizeExperience({ ...base, reflection_question: '  何が見えましたか？  ' }).reflection_question, '何が見えましたか？');
+  assert.equal(Array.from(normalizeExperience({ ...base, reflection_question: 'あ'.repeat(200) }).reflection_question ?? '').length, 80);
+  const experience = normalizeExperience({ ...base, reflection_question: '限界まで走れましたか？' });
+  assert.equal(findSafetyIssue(experience), '心身への過度な負担');
+});

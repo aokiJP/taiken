@@ -49,11 +49,15 @@ const experienceSchema = {
       type: 'string',
       description: 'ユーザーへの誘いかけ。命令ではなく「〜してみませんか？」の形。具体的な手順や時刻は指定しない',
     },
-    reason: { type: 'string', description: 'なぜ今この提案なのか。推測は推測として書く' },
+    reason: { type: 'string', description: 'なぜ今この提案なのか。予定・発言・気分・傾向のどれを手がかりにしたかが分かるように。推測は推測として書く' },
     difficulty: { type: 'string', enum: DIFFICULTY },
     tags: { type: 'array', items: { type: 'string', enum: EXPERIENCE_TAGS }, maxItems: 4 },
+    reflection_question: {
+      type: 'string',
+      description: '体験のあとに思い返すための短い問い。30字以内で「？」で終える。評価や反省を迫らず、答えが一つに決まらない問い',
+    },
   },
-  required: ['title', 'perspective', 'invitation', 'reason', 'difficulty', 'tags'],
+  required: ['title', 'perspective', 'invitation', 'reason', 'difficulty', 'tags', 'reflection_question'],
 } as const;
 
 export interface ToolDefinition {
@@ -182,6 +186,8 @@ export function normalizeExperience(e: unknown): Experience {
     reason,
     difficulty: DIFFICULTY.includes(e.difficulty as Difficulty) ? (e.difficulty as Difficulty) : 'low',
     tags: tags.slice(0, 4),
+    // 無くても体験としては成り立つので、欠けていれば null (古い出力・モデルの書き漏らしに備える)
+    reflection_question: text(e.reflection_question, 80),
   };
 }
 

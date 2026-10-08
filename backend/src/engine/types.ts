@@ -4,6 +4,8 @@ export type Basis = 'calendar' | 'stated' | 'inferred';
 export type Rating = 'positive' | 'neutral' | 'negative';
 export type Reaction = 'accepted' | 'alternative' | 'declined' | 'completed';
 export type Difficulty = 'low' | 'medium' | 'high';
+/** ユーザーがその場で選んだ気分 (自己申告) */
+export type Mood = 'tired' | 'bored' | 'focus' | 'refresh';
 export type Source = 'ai' | 'mock' | 'fallback';
 export type FallbackReason =
   | 'budget_exceeded'
@@ -41,6 +43,13 @@ export interface Area {
   country_code: string | null;
 }
 
+/** 七十二候。日付から決まる情報 */
+export interface SeasonContext {
+  solar_term: string;
+  micro_season: string;
+  meaning: string;
+}
+
 interface BaseContext {
   current_time: string;
   time_zone: string;
@@ -55,6 +64,8 @@ export interface ExperienceContext extends BaseContext {
   exclude_titles: string[];
   area: Area | null;
   allow_web_search: boolean;
+  mood: Mood | null;
+  season: SeasonContext | null;
 }
 
 export interface ChatTurn {
@@ -80,6 +91,8 @@ export interface Experience {
   reason: string;
   difficulty: Difficulty;
   tags: string[];
+  /** 体験のあとに思い返すための問い */
+  reflection_question: string | null;
 }
 
 export interface Reference {

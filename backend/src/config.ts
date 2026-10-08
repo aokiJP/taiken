@@ -1,7 +1,7 @@
 // 設定の読み込みと検証。本番 (NODE_ENV=production) では危険な設定を起動時に拒否する (fail fast)。
 import type { LogLevel } from './support/logger.ts';
 
-export const APP_VERSION = '1.1.0';
+export const APP_VERSION = '2.0.0';
 
 export type Provider = 'anthropic' | 'mock';
 export type Environment = 'development' | 'production' | 'test';
