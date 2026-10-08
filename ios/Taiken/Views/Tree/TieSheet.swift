@@ -1,8 +1,8 @@
 import SwiftUI
 import TaikenCore
 
-/// 結ぶ: 灯った体験どうしを、朱の糸で結ぶ。何が響き合ったかを、ひとことだけ添えられる。
-/// ライブラリのつながりとは別の、自分だけのつながり。
+/// 結ぶ: 身についた技どうしを、朱の糸で結ぶ。何が響き合ったかを、ひとことだけ添えられる。
+/// 技の樹のつながりとは別の、自分だけのつながり。
 struct TieSheet: View {
     let model: TreeViewModel
     let nodeID: String
@@ -19,7 +19,7 @@ struct TieSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     if let node = model.node(nodeID) {
-                        Text("「\(node.title)」と響き合った体験を選んでください。灯った体験どうしを結べます。")
+                        Text("「\(node.title)」と、暮らしの中で響き合った技を選んでください。身についた技どうしを結べます。")
                             .font(.footnote)
                             .foregroundStyle(Palette.ink2)
                             .fixedSize(horizontal: false, vertical: true)
@@ -28,7 +28,7 @@ struct TieSheet: View {
                     let candidates = filteredCandidates
                     if model.tieCandidates(for: nodeID).isEmpty {
                         LinedBox {
-                            Text("結べる灯った体験が、まだほかにありません。別の体験を記すと、ここに並びます。")
+                            Text("結べる技が、まだほかにありません。ほかの技が身につくと、ここに並びます。")
                                 .font(.footnote)
                                 .foregroundStyle(Palette.ink2)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -81,7 +81,7 @@ struct TieSheet: View {
                                     .monospacedDigit()
                                     .foregroundStyle(Palette.ink3)
                             }
-                            TextField("例: どちらも、思ったより長く見ていた", text: $note, axis: .vertical)
+                            TextField("例: 遠目で見ていたら、音まで遠くから聞こえてきた", text: $note, axis: .vertical)
                                 .font(Typeface.mincho(16))
                                 .lineLimit(1...3)
                                 .padding(14)
@@ -96,7 +96,7 @@ struct TieSheet: View {
                             .buttonStyle(ShuButtonStyle())
                             .disabled(partner == nil)
                             .accessibilityHint(partner == nil ? "先に、結ぶ相手を選んでください" : "朱の糸で結びます")
-                        Text("結びは、あなたの樹にだけ残ります。あとから、体験のページでほどけます。")
+                        Text("結びは、あなたの樹にだけ残ります。あとから、技のページでほどけます。")
                             .font(.caption)
                             .foregroundStyle(Palette.ink3)
                     }

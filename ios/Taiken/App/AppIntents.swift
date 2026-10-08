@@ -14,8 +14,8 @@ final class PendingRoute {
 }
 
 struct OpenTodayIntent: AppIntent {
-    static let title: LocalizedStringResource = "今日の体験をひらく"
-    static let description = IntentDescription("今日の体験の提案をひらきます。")
+    static let title: LocalizedStringResource = "ホームをひらく"
+    static let description = IntentDescription("自分の樹と、体験を記す入口をひらきます。きっかけは、ひらいてから求めたときだけ出ます。")
     static let openAppWhenRun = true
 
     @MainActor
@@ -37,9 +37,21 @@ struct OpenJournalIntent: AppIntent {
     }
 }
 
+struct RecordIntent: AppIntent {
+    static let title: LocalizedStringResource = "体験を記す"
+    static let description = IntentDescription("いつもの一日で体験したことを、ひとこと記す画面をひらきます。記したことは、この端末の中にだけ残ります。")
+    static let openAppWhenRun = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        PendingRoute.shared.url = DeepLink.record.url
+        return .result()
+    }
+}
+
 struct OpenTreeIntent: AppIntent {
-    static let title: LocalizedStringResource = "体験の樹をひらく"
-    static let description = IntentDescription("灯った体験と、その先の芽が見える体験の樹をひらきます。")
+    static let title: LocalizedStringResource = "技の樹をひらく"
+    static let description = IntentDescription("要素ごとの段と、身についた技と、伸ばせる芽が見える技の樹をひらきます。")
     static let openAppWhenRun = true
 
     @MainActor
@@ -65,9 +77,15 @@ struct TaikenShortcuts: AppShortcutsProvider {
     @AppShortcutsBuilder
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
+            intent: RecordIntent(),
+            phrases: ["\(.applicationName)で体験を記す", "\(.applicationName)に体験を記す"],
+            shortTitle: "体験を記す",
+            systemImageName: "square.and.pencil"
+        )
+        AppShortcut(
             intent: OpenTodayIntent(),
-            phrases: ["\(.applicationName)で今日の体験をひらく", "\(.applicationName)の今日の体験"],
-            shortTitle: "今日の体験",
+            phrases: ["\(.applicationName)のホームをひらく", "\(.applicationName)の今日の体験"],
+            shortTitle: "ホーム",
             systemImageName: "sun.horizon"
         )
         AppShortcut(
@@ -78,8 +96,8 @@ struct TaikenShortcuts: AppShortcutsProvider {
         )
         AppShortcut(
             intent: OpenTreeIntent(),
-            phrases: ["\(.applicationName)の体験の樹をひらく"],
-            shortTitle: "体験の樹",
+            phrases: ["\(.applicationName)の技の樹をひらく"],
+            shortTitle: "技の樹",
             systemImageName: "circle.hexagongrid"
         )
         AppShortcut(

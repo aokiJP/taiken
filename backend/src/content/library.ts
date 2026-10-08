@@ -136,7 +136,7 @@ export interface SelectionInput {
   feedback: readonly FeedbackSignal[];
   recentTitles: readonly string[];
   excludeTitles: readonly string[];
-  /** 体験の樹の芽 (少しだけ前に出す) */
+  /** 技の樹の芽: 身についた・伸ばせる技の稽古 (少しだけ前に出す) */
   buds: readonly string[];
 }
 
@@ -209,7 +209,7 @@ export function choose(input: SelectionInput, content: Content = CONTENT): Choic
   };
 }
 
-/** 選んだ体験が伸びている、灯った体験 (樹のいまの「灯った体験」の順に、つながりを探す) */
+/** 選んだ体験が伸びている、記した体験 (樹のいまの lived の順に、ライブラリのつながりを探す) */
 export function parentOf(picked: LibraryExperience, tree: TreeContext | null): { id: string; title: string } | null {
   if (!tree) return null;
   for (const lived of tree.lived) {
@@ -232,8 +232,11 @@ export function moodLabel(mood: Mood): string {
 
 const intersects = (a: readonly string[], b: Set<string>) => a.some((x) => b.has(x));
 
-/** 何を手がかりに選んだかを正直に書く (iOS の端末内の提案と同じ書き方) */
-export function reasonFor(choice: Choice, eventTitle: string | null, hasEvent: boolean, parent: { title: string } | null): string {
+/**
+ * 何を手がかりに選んだかを正直に書く (iOS の端末内の提案と同じ書き方)。
+ * 伸びてきた記録 (_parent) は 4.0 から理由には書かず、observations にだけ書く
+ */
+export function reasonFor(choice: Choice, eventTitle: string | null, hasEvent: boolean, _parent: { title: string } | null): string {
   if (choice.moodWasChosen && choice.mood) return `「${MOOD_LABELS[choice.mood]}」とのことなので、${MOOD_REASONS[choice.mood]}`;
   if (hasEvent && intersects(choice.experience.themes, choice.themesFromEvent)) {
     return eventTitle ? `「${eventTitle}」の予定があるので、その時間の見方を少し変える提案にしました。` : 'このあとの予定に合わせて選びました。';
@@ -241,11 +244,12 @@ export function reasonFor(choice: Choice, eventTitle: string | null, hasEvent: b
   if (choice.mood === 'tired') return '疲れていると話していたので、負担の少ないものを選びました。';
   if (intersects(choice.experience.themes, choice.themesFromMessages)) return '話していたことから選びました。';
   if (choice.isBud) {
-    if (parent) return `前に記した「${parent.title}」の先にある体験です。`;
+    // 芽 (buds) は、ユーザーが身につけた・伸ばせる技の稽古。どの技かは iOS がカードに添える
+    // (霧の中の技の名前を明かさないよう、ここでは名前を出さない)
     const element = choice.experience.elements[0];
     const label = element ? elementLabel(element) : undefined;
-    if (isRoot(choice.experience.id) && label) return `「${label}」の根にある、いちばん小さなかたちの体験です。`;
-    return 'あなたの体験の樹の、芽のひとつです。';
+    if (isRoot(choice.experience.id) && label) return `「${label}」の、いちばん小さなかたちの体験です。`;
+    return 'あなたの技の樹にある、技の稽古になる体験です。';
   }
   return '特別な予定がなくても、いつもの時間の中に体験は見つけられます。';
 }

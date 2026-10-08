@@ -2,7 +2,7 @@ import SwiftUI
 import TaikenCore
 import WidgetKit
 
-/// 今日の体験。アプリを開かなくても、今日の誘いかけを眺められる。
+/// 今日の体験。体験中は、その体験を眺められる。ふだんは「体験を記す」への入口。
 /// アプリが App Group に置いた状態を読むだけで、ウィジェットからは何も送らない
 struct TodayWidget: Widget {
     static let kind = "TodayWidget"
@@ -12,7 +12,7 @@ struct TodayWidget: Widget {
             TodayWidgetView(entry: entry)
         }
         .configurationDisplayName("今日の体験")
-        .description("今日の誘いかけ。体験中は、その体験を。")
+        .description("体験中は、その体験を。ふだんは、体験を記す入口に。")
         .supportedFamilies([.systemSmall, .systemMedium, .accessoryRectangular, .accessoryInline])
         .contentMarginsDisabled()
     }
@@ -39,7 +39,7 @@ struct TodayProvider: TimelineProvider {
         let snapshot = Self.current(now: now, calendar: calendar)
         let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now.addingTimeInterval(86_400)
 
-        // 空の色が変わる時刻ごとに描き直す。日付が変わったら読み直す (日付と提案が変わるため)
+        // 空の色が変わる時刻ごとに描き直す。日付が変わったら読み直す (日付ときっかけが変わるため)
         var dates = [now]
         var cursor = now
         while true {
@@ -82,7 +82,8 @@ struct TodayWidgetView: View {
 
     var body: some View {
         content
-            .widgetURL(DeepLink.today.url)
+            // 体験中・きっかけがあるときはホームへ、ふだんは「体験を記す」へ
+            .widgetURL(hasExperience ? DeepLink.today.url : DeepLink.record.url)
             .containerBackground(for: .widget) {
                 switch family {
                 case .accessoryInline, .accessoryRectangular, .accessoryCircular:
@@ -159,7 +160,7 @@ struct TodayWidgetView: View {
                     .foregroundStyle(palette.onSky)
                     .lineLimit(4)
                     .minimumScaleFactor(0.85)
-                Text(snapshot.kind == .resting ? "今はひと休み" : "今日の体験をひらく")
+                Text(snapshot.kind == .resting ? "今日の印を押しました" : "体験を記す")
                     .font(.system(size: 10))
                     .foregroundStyle(palette.onSkySecondary)
                     .padding(.top, 6)
@@ -207,7 +208,7 @@ struct TodayWidgetView: View {
                         .font(Typeface.fixedMincho(16, bold: false))
                         .foregroundStyle(palette.onSky)
                         .lineLimit(2)
-                    Text(snapshot.kind == .resting ? "今はひと休み。次の提案は、気が向いたときに。" : "今日の体験を受け取りにいく")
+                    Text(snapshot.kind == .resting ? "今日の印を押しました。また気が向いたときに。" : "押すと、体験を記せます")
                         .font(.system(size: 11))
                         .foregroundStyle(palette.onSkySecondary)
                         .padding(.top, 6)
@@ -230,7 +231,7 @@ struct TodayWidgetView: View {
                     .font(.caption)
                     .lineLimit(3)
             } else {
-                Text(snapshot.kind == .resting ? "今はひと休み" : "今日、何を体験できるか")
+                Text(snapshot.kind == .resting ? "今日の印を押しました" : "いつもの一日に、体験はある")
                     .font(.caption)
                     .lineLimit(2)
             }
@@ -243,7 +244,7 @@ struct TodayWidgetView: View {
         if let title = snapshot.title, hasExperience {
             Text(snapshot.kind == .active ? "体験中 · \(title)" : title)
         } else {
-            Text("今日の体験をひらく")
+            Text("体験を記す")
         }
     }
 
@@ -252,7 +253,7 @@ struct TodayWidgetView: View {
         entry.date.formatted(.dateTime.month().day().weekday(.wide))
     }
 
-    /// 提案の無いときのひとこと (時間帯で変える)
+    /// きっかけも体験中のものも無いときのひとこと (時間帯で変える)
     private var restLine: String {
         switch TimeOfDay.at(entry.date, calendar: .current) {
         case .dawn, .morning: "いつもの朝に、まだ見ていない体験がある。"
@@ -270,8 +271,8 @@ struct TodayWidgetView: View {
             }
             return "体験中"
         case .proposal:
-            if let label = snapshot.elementLabel { return "今日の体験 · \(label)" }
-            return "今日の体験"
+            if let label = snapshot.elementLabel { return "きっかけ · \(label)" }
+            return "きっかけ"
         case .resting, .empty:
             return dateLine
         }

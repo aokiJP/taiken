@@ -1,0 +1,2354 @@
+{
+  "version": 1,
+  "language": "ja",
+  "description": "技の樹。10の要素の根から、一の技 (一段)・二の技 (三段)・奥義 (六段)・渡り技 (ふたつの要素の二段)・閃き (条件は明かさない) が伸びる。稽古は体験ライブラリの id。",
+  "mastery": {
+    "ha": 3,
+    "ri": 7
+  },
+  "skills": [
+    {
+      "id": "see-tomeru",
+      "kind": "art",
+      "element": "see",
+      "also": [],
+      "name": "目を留める",
+      "reading": "めをとめる",
+      "ability": "流れていく景色の中から、ひとつを選んで見ていられる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "see": 1
+      },
+      "practice": [
+        "root-see",
+        "work-desk-map"
+      ],
+      "keywords": [
+        "眺め",
+        "じっと",
+        "見つめ",
+        "見入"
+      ]
+    },
+    {
+      "id": "see-chigai",
+      "kind": "art",
+      "element": "see",
+      "also": [],
+      "name": "違いの目",
+      "reading": "ちがいのめ",
+      "ability": "昨日と今日の、小さな違いに気づける。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "see": 1
+      },
+      "practice": [
+        "daily-difference",
+        "commute-change",
+        "shop-new"
+      ],
+      "keywords": [
+        "違い",
+        "変わっ",
+        "いつもと",
+        "新しく",
+        "昨日"
+      ]
+    },
+    {
+      "id": "see-hikari",
+      "kind": "art",
+      "element": "see",
+      "also": [],
+      "name": "光を見る",
+      "reading": "ひかりをみる",
+      "ability": "光の色や、影のかたちが目に入ってくる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "see": 1
+      },
+      "practice": [
+        "morning-light",
+        "see-shadow"
+      ],
+      "keywords": [
+        "光",
+        "影",
+        "日差し",
+        "朝日",
+        "夕日",
+        "夕焼け",
+        "木漏れ日",
+        "明る"
+      ]
+    },
+    {
+      "id": "see-toome",
+      "kind": "art",
+      "element": "see",
+      "also": [],
+      "name": "遠目",
+      "reading": "とおめ",
+      "ability": "景色の中のいちばん遠いものに、目が届く。",
+      "after": [
+        "see-tomeru"
+      ],
+      "needs": 1,
+      "rank": {
+        "see": 3
+      },
+      "practice": [
+        "rest-far",
+        "night-sky"
+      ],
+      "keywords": [
+        "遠く",
+        "山",
+        "地平",
+        "向こう",
+        "雲",
+        "月",
+        "星"
+      ]
+    },
+    {
+      "id": "see-tana",
+      "kind": "art",
+      "element": "see",
+      "also": [],
+      "name": "棚の外",
+      "reading": "たなのそと",
+      "ability": "見慣れた場所にも、まだ見ていない一角を見つけられる。",
+      "after": [
+        "see-chigai"
+      ],
+      "needs": 1,
+      "rank": {
+        "see": 3
+      },
+      "practice": [
+        "shop-other-shelf",
+        "house-before-after"
+      ],
+      "keywords": [
+        "初めて",
+        "気づかなかった",
+        "知らなかった",
+        "一角",
+        "隅"
+      ]
+    },
+    {
+      "id": "see-iro",
+      "kind": "art",
+      "element": "see",
+      "also": [],
+      "name": "色を拾う",
+      "reading": "いろをひろう",
+      "ability": "一日の中から、その日の色を拾い集められる。",
+      "after": [
+        "see-hikari"
+      ],
+      "needs": 1,
+      "rank": {
+        "see": 3
+      },
+      "practice": [
+        "commute-color",
+        "daily-one-photo"
+      ],
+      "keywords": [
+        "色",
+        "赤",
+        "青",
+        "緑",
+        "黄色",
+        "写真"
+      ]
+    },
+    {
+      "id": "see-manazashi",
+      "kind": "secret",
+      "element": "see",
+      "also": [],
+      "name": "まなざし",
+      "reading": "まなざし",
+      "ability": "何気ない景色が、二度とない一枚として目に映る。",
+      "after": [
+        "see-toome",
+        "see-tana",
+        "see-iro"
+      ],
+      "needs": 2,
+      "rank": {
+        "see": 6
+      },
+      "practice": [
+        "body-scenery",
+        "root-see"
+      ],
+      "keywords": [
+        "景色",
+        "一瞬",
+        "二度と"
+      ]
+    },
+    {
+      "id": "hear-sumasu",
+      "kind": "art",
+      "element": "hear",
+      "also": [],
+      "name": "耳を澄ます",
+      "reading": "みみをすます",
+      "ability": "いま聞こえている音を、ひとつずつ聞き分けられる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "hear": 1
+      },
+      "practice": [
+        "root-hear",
+        "commute-sounds"
+      ],
+      "keywords": [
+        "音",
+        "聞こえ",
+        "耳",
+        "鳴"
+      ]
+    },
+    {
+      "id": "hear-koe",
+      "kind": "art",
+      "element": "hear",
+      "also": [],
+      "name": "声の色",
+      "reading": "こえのいろ",
+      "ability": "声の高さや速さから、その人の様子が聞こえてくる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "hear": 1
+      },
+      "practice": [
+        "hear-voice"
+      ],
+      "keywords": [
+        "声",
+        "話し方",
+        "口調",
+        "笑い声"
+      ]
+    },
+    {
+      "id": "hear-hyoshi",
+      "kind": "art",
+      "element": "hear",
+      "also": [],
+      "name": "拍子を聴く",
+      "reading": "ひょうしをきく",
+      "ability": "足音や家事の音に、リズムが聞こえる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "hear": 1
+      },
+      "practice": [
+        "house-rhythm",
+        "hear-own-steps",
+        "hear-music-one"
+      ],
+      "keywords": [
+        "リズム",
+        "足音",
+        "拍子",
+        "テンポ",
+        "曲",
+        "音楽"
+      ]
+    },
+    {
+      "id": "hear-toomimi",
+      "kind": "art",
+      "element": "hear",
+      "also": [],
+      "name": "遠耳",
+      "reading": "とおみみ",
+      "ability": "いちばん遠くから届く音に、耳が向く。",
+      "after": [
+        "hear-sumasu"
+      ],
+      "needs": 1,
+      "rank": {
+        "hear": 3
+      },
+      "practice": [
+        "hear-far"
+      ],
+      "keywords": [
+        "遠く",
+        "かすか",
+        "遠い",
+        "サイレン",
+        "踏切"
+      ]
+    },
+    {
+      "id": "hear-ma",
+      "kind": "art",
+      "element": "hear",
+      "also": [],
+      "name": "言葉の間",
+      "reading": "ことばのま",
+      "ability": "話の間や言いよどみに、込められたものが聞こえる。",
+      "after": [
+        "hear-koe"
+      ],
+      "needs": 1,
+      "rank": {
+        "hear": 3
+      },
+      "practice": [
+        "work-one-word",
+        "people-listen"
+      ],
+      "keywords": [
+        "間",
+        "沈黙",
+        "言いよど",
+        "黙っ"
+      ]
+    },
+    {
+      "id": "hear-shizuka",
+      "kind": "art",
+      "element": "hear",
+      "also": [],
+      "name": "静けさを聴く",
+      "reading": "しずけさをきく",
+      "ability": "音と音のあいだの、静けさが聞こえる。",
+      "after": [
+        "hear-hyoshi"
+      ],
+      "needs": 1,
+      "rank": {
+        "hear": 3
+      },
+      "practice": [
+        "night-quiet-sound",
+        "hear-silence"
+      ],
+      "keywords": [
+        "静か",
+        "静けさ",
+        "しーん",
+        "無音",
+        "止ん"
+      ]
+    },
+    {
+      "id": "hear-keshiki",
+      "kind": "secret",
+      "element": "hear",
+      "also": [],
+      "name": "音の景色",
+      "reading": "おとのけしき",
+      "ability": "目を閉じても、音だけでいる場所の景色が浮かぶ。",
+      "after": [
+        "hear-toomimi",
+        "hear-ma",
+        "hear-shizuka"
+      ],
+      "needs": 2,
+      "rank": {
+        "hear": 6
+      },
+      "practice": [
+        "root-hear",
+        "hear-far"
+      ],
+      "keywords": [
+        "目を閉じ",
+        "景色"
+      ]
+    },
+    {
+      "id": "smell-kizuku",
+      "kind": "art",
+      "element": "smell",
+      "also": [],
+      "name": "匂いに気づく",
+      "reading": "においにきづく",
+      "ability": "ふとした匂いを、通り過ぎずに覚えておける。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "smell": 1
+      },
+      "practice": [
+        "daily-scent"
+      ],
+      "keywords": [
+        "匂い",
+        "におい",
+        "香り",
+        "臭い"
+      ]
+    },
+    {
+      "id": "smell-soto",
+      "kind": "art",
+      "element": "smell",
+      "also": [],
+      "name": "外のひと息",
+      "reading": "そとのひといき",
+      "ability": "外へ出た最初のひと息で、その日の空気が分かる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "smell": 1
+      },
+      "practice": [
+        "smell-breath"
+      ],
+      "keywords": [
+        "外の",
+        "空気",
+        "雨",
+        "朝の空気",
+        "ひと息"
+      ]
+    },
+    {
+      "id": "smell-daidokoro",
+      "kind": "art",
+      "element": "smell",
+      "also": [],
+      "name": "台所の鼻",
+      "reading": "だいどころのはな",
+      "ability": "料理の香りが変わる瞬間を、鼻で捉えられる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "smell": 1
+      },
+      "practice": [
+        "house-aroma",
+        "smell-cup"
+      ],
+      "keywords": [
+        "料理",
+        "焼け",
+        "煮え",
+        "炒め",
+        "コーヒー",
+        "湯気"
+      ]
+    },
+    {
+      "id": "smell-kioku",
+      "kind": "art",
+      "element": "smell",
+      "also": [],
+      "name": "匂いの記憶",
+      "reading": "においのきおく",
+      "ability": "匂いから、昔の場面がよみがえる。",
+      "after": [
+        "smell-kizuku"
+      ],
+      "needs": 1,
+      "rank": {
+        "smell": 3
+      },
+      "practice": [
+        "smell-nostalgia",
+        "smell-paper"
+      ],
+      "keywords": [
+        "懐かし",
+        "思い出",
+        "昔",
+        "子どもの頃"
+      ]
+    },
+    {
+      "id": "smell-sakai",
+      "kind": "art",
+      "element": "smell",
+      "also": [],
+      "name": "匂いの境目",
+      "reading": "においのさかいめ",
+      "ability": "歩いていて、匂いが切り替わる場所が分かる。",
+      "after": [
+        "smell-soto"
+      ],
+      "needs": 1,
+      "rank": {
+        "smell": 3
+      },
+      "practice": [
+        "smell-change"
+      ],
+      "keywords": [
+        "境目",
+        "切り替わ",
+        "通りの",
+        "角を"
+      ]
+    },
+    {
+      "id": "smell-ie",
+      "kind": "art",
+      "element": "smell",
+      "also": [],
+      "name": "家の匂い",
+      "reading": "いえのにおい",
+      "ability": "帰ってきたとき、自分の家の匂いが分かる。",
+      "after": [
+        "smell-daidokoro"
+      ],
+      "needs": 1,
+      "rank": {
+        "smell": 3
+      },
+      "practice": [
+        "smell-home"
+      ],
+      "keywords": [
+        "家の",
+        "玄関",
+        "帰って",
+        "部屋の"
+      ]
+    },
+    {
+      "id": "smell-chizu",
+      "kind": "secret",
+      "element": "smell",
+      "also": [],
+      "name": "香りの地図",
+      "reading": "かおりのちず",
+      "ability": "一日を、匂いの移り変わりとして思い出せる。",
+      "after": [
+        "smell-kioku",
+        "smell-sakai",
+        "smell-ie"
+      ],
+      "needs": 2,
+      "rank": {
+        "smell": 6
+      },
+      "practice": [
+        "daily-scent"
+      ],
+      "keywords": [
+        "一日",
+        "移り変わ"
+      ]
+    },
+    {
+      "id": "taste-hitokuchi",
+      "kind": "art",
+      "element": "taste",
+      "also": [],
+      "name": "ひと口目",
+      "reading": "ひとくちめ",
+      "ability": "ひと口目の味を、意識して受け取れる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "taste": 1
+      },
+      "practice": [
+        "meal-first-bite"
+      ],
+      "keywords": [
+        "ひと口",
+        "一口",
+        "食べ",
+        "おいし",
+        "美味"
+      ]
+    },
+    {
+      "id": "taste-mizu",
+      "kind": "art",
+      "element": "taste",
+      "also": [],
+      "name": "水の味",
+      "reading": "みずのあじ",
+      "ability": "水やお茶にも、味の違いがあると分かる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "taste": 1
+      },
+      "practice": [
+        "taste-water"
+      ],
+      "keywords": [
+        "水",
+        "お茶",
+        "白湯",
+        "飲ん"
+      ]
+    },
+    {
+      "id": "taste-shiranai",
+      "kind": "art",
+      "element": "taste",
+      "also": [],
+      "name": "知らない一品",
+      "reading": "しらないいっぴん",
+      "ability": "知らない味を、ためらわずに選べる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "taste": 1
+      },
+      "practice": [
+        "meal-new-taste"
+      ],
+      "keywords": [
+        "初めて食べ",
+        "食べたことのない",
+        "新しい味",
+        "初めての味"
+      ]
+    },
+    {
+      "id": "taste-saigo",
+      "kind": "art",
+      "element": "taste",
+      "also": [],
+      "name": "最後のひと口",
+      "reading": "さいごのひとくち",
+      "ability": "食べ終わりの味まで、覚えていられる。",
+      "after": [
+        "taste-hitokuchi"
+      ],
+      "needs": 1,
+      "rank": {
+        "taste": 3
+      },
+      "practice": [
+        "taste-last-bite",
+        "meal-screen-down"
+      ],
+      "keywords": [
+        "最後",
+        "食べ終わ",
+        "余韻",
+        "後味"
+      ]
+    },
+    {
+      "id": "taste-oku",
+      "kind": "art",
+      "element": "taste",
+      "also": [],
+      "name": "味の奥",
+      "reading": "あじのおく",
+      "ability": "味つけの中に、隠れた素材が分かる。",
+      "after": [
+        "taste-mizu"
+      ],
+      "needs": 1,
+      "rank": {
+        "taste": 3
+      },
+      "practice": [
+        "taste-seasoning"
+      ],
+      "keywords": [
+        "味つけ",
+        "隠し味",
+        "出汁",
+        "だし",
+        "甘",
+        "酸っぱ",
+        "苦",
+        "辛"
+      ]
+    },
+    {
+      "id": "taste-tabi",
+      "kind": "art",
+      "element": "taste",
+      "also": [],
+      "name": "一皿の旅",
+      "reading": "ひとさらのたび",
+      "ability": "食材が、どこから来たのかを思い描ける。",
+      "after": [
+        "taste-shiranai"
+      ],
+      "needs": 1,
+      "rank": {
+        "taste": 3
+      },
+      "practice": [
+        "meal-journey"
+      ],
+      "keywords": [
+        "産地",
+        "食材",
+        "畑",
+        "農家",
+        "漁"
+      ]
+    },
+    {
+      "id": "taste-jimi",
+      "kind": "secret",
+      "element": "taste",
+      "also": [],
+      "name": "滋味",
+      "reading": "じみ",
+      "ability": "毎日の食事の中に、その日だけの味わいが見つかる。",
+      "after": [
+        "taste-saigo",
+        "taste-oku",
+        "taste-tabi"
+      ],
+      "needs": 2,
+      "rank": {
+        "taste": 6
+      },
+      "practice": [
+        "meal-first-bite",
+        "taste-last-bite"
+      ],
+      "keywords": [
+        "味わい",
+        "しみじみ"
+      ]
+    },
+    {
+      "id": "touch-tezawari",
+      "kind": "art",
+      "element": "touch",
+      "also": [],
+      "name": "手ざわり",
+      "reading": "てざわり",
+      "ability": "触れているものの、温度や手ざわりが分かる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "touch": 1
+      },
+      "practice": [
+        "root-touch",
+        "touch-fabric"
+      ],
+      "keywords": [
+        "手ざわり",
+        "触れ",
+        "さらさら",
+        "ざらざら",
+        "つるつる",
+        "柔らか",
+        "ふわふわ"
+      ]
+    },
+    {
+      "id": "touch-nukumori",
+      "kind": "art",
+      "element": "touch",
+      "also": [],
+      "name": "温もり",
+      "reading": "ぬくもり",
+      "ability": "手のひらで、温かさを見つけられる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "touch": 1
+      },
+      "practice": [
+        "touch-warmth",
+        "rest-warm-cup"
+      ],
+      "keywords": [
+        "温か",
+        "あったか",
+        "温もり",
+        "ぬくもり",
+        "冷た"
+      ]
+    },
+    {
+      "id": "touch-teoboe",
+      "kind": "art",
+      "element": "touch",
+      "also": [],
+      "name": "手が覚えている",
+      "reading": "てがおぼえている",
+      "ability": "無意識にしている動作を、意識してなぞれる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "touch": 1
+      },
+      "practice": [
+        "daily-hands",
+        "house-one-thing"
+      ],
+      "keywords": [
+        "手つき",
+        "動作",
+        "指先",
+        "無意識"
+      ]
+    },
+    {
+      "id": "touch-suashi",
+      "kind": "art",
+      "element": "touch",
+      "also": [],
+      "name": "素足",
+      "reading": "すあし",
+      "ability": "足の裏で、床や地面の違いが分かる。",
+      "after": [
+        "touch-tezawari"
+      ],
+      "needs": 1,
+      "rank": {
+        "touch": 3
+      },
+      "practice": [
+        "touch-feet"
+      ],
+      "keywords": [
+        "裸足",
+        "足の裏",
+        "床",
+        "地面",
+        "砂",
+        "芝"
+      ]
+    },
+    {
+      "id": "touch-kaze",
+      "kind": "art",
+      "element": "touch",
+      "also": [],
+      "name": "風を読む",
+      "reading": "かぜをよむ",
+      "ability": "肌で、風の向きと冷たさが分かる。",
+      "after": [
+        "touch-nukumori"
+      ],
+      "needs": 1,
+      "rank": {
+        "touch": 3
+      },
+      "practice": [
+        "touch-wind"
+      ],
+      "keywords": [
+        "風",
+        "肌",
+        "涼し",
+        "寒",
+        "そよ"
+      ]
+    },
+    {
+      "id": "touch-gyakute",
+      "kind": "art",
+      "element": "touch",
+      "also": [],
+      "name": "逆の手",
+      "reading": "ぎゃくのて",
+      "ability": "いつもの動作を、利き手でない手で新しく感じられる。",
+      "after": [
+        "touch-teoboe"
+      ],
+      "needs": 1,
+      "rank": {
+        "touch": 3
+      },
+      "practice": [
+        "daily-other-hand",
+        "morning-slow"
+      ],
+      "keywords": [
+        "利き手",
+        "左手",
+        "右手",
+        "反対の手"
+      ]
+    },
+    {
+      "id": "touch-tenome",
+      "kind": "secret",
+      "element": "touch",
+      "also": [],
+      "name": "手の目",
+      "reading": "てのめ",
+      "ability": "目で見る前に、手が世界を確かめている。",
+      "after": [
+        "touch-suashi",
+        "touch-kaze",
+        "touch-gyakute"
+      ],
+      "needs": 2,
+      "rank": {
+        "touch": 6
+      },
+      "practice": [
+        "root-touch"
+      ],
+      "keywords": [
+        "確かめ",
+        "手で知"
+      ]
+    },
+    {
+      "id": "move-hakobi",
+      "kind": "art",
+      "element": "move",
+      "also": [],
+      "name": "足の運び",
+      "reading": "あしのはこび",
+      "ability": "歩くとき、足の裏が地面に着く順番が分かる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "move": 1
+      },
+      "practice": [
+        "root-move",
+        "move-stairs"
+      ],
+      "keywords": [
+        "歩",
+        "足",
+        "階段",
+        "一歩"
+      ]
+    },
+    {
+      "id": "move-nobi",
+      "kind": "art",
+      "element": "move",
+      "also": [],
+      "name": "伸び",
+      "reading": "のび",
+      "ability": "体がいちばん気持ちよく伸びる方向が分かる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "move": 1
+      },
+      "practice": [
+        "move-stretch",
+        "move-posture"
+      ],
+      "keywords": [
+        "伸び",
+        "ストレッチ",
+        "姿勢",
+        "肩",
+        "背中",
+        "首"
+      ]
+    },
+    {
+      "id": "move-michi",
+      "kind": "art",
+      "element": "move",
+      "also": [],
+      "name": "ひと筋ちがう道",
+      "reading": "ひとすじちがうみち",
+      "ability": "いつもと違う道を、気軽に選べる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "move": 1
+      },
+      "practice": [
+        "commute-another-way"
+      ],
+      "keywords": [
+        "道",
+        "回り道",
+        "寄り道",
+        "遠回り",
+        "散歩"
+      ]
+    },
+    {
+      "id": "move-yukkuri",
+      "kind": "art",
+      "element": "move",
+      "also": [],
+      "name": "ゆっくり歩く",
+      "reading": "ゆっくりあるく",
+      "ability": "急がない足で、景色の速さを変えられる。",
+      "after": [
+        "move-hakobi"
+      ],
+      "needs": 1,
+      "rank": {
+        "move": 3
+      },
+      "practice": [
+        "move-walk-slow"
+      ],
+      "keywords": [
+        "ゆっくり",
+        "のんびり",
+        "ぶらぶら"
+      ]
+    },
+    {
+      "id": "move-iki",
+      "kind": "art",
+      "element": "move",
+      "also": [],
+      "name": "呼吸の深さ",
+      "reading": "こきゅうのふかさ",
+      "ability": "体を動かしながら、息がいちばん深くなる瞬間が分かる。",
+      "after": [
+        "move-nobi"
+      ],
+      "needs": 1,
+      "rank": {
+        "move": 3
+      },
+      "practice": [
+        "body-breath"
+      ],
+      "keywords": [
+        "息",
+        "呼吸",
+        "深呼吸",
+        "息が上が"
+      ]
+    },
+    {
+      "id": "move-mochikaeru",
+      "kind": "art",
+      "element": "move",
+      "also": [],
+      "name": "景色を持ち帰る",
+      "reading": "けしきをもちかえる",
+      "ability": "動いた先で出会った景色を、ひとつ持ち帰れる。",
+      "after": [
+        "move-michi"
+      ],
+      "needs": 1,
+      "rank": {
+        "move": 3
+      },
+      "practice": [
+        "body-scenery"
+      ],
+      "keywords": [
+        "走っ",
+        "自転車",
+        "ジョギング",
+        "散策",
+        "登っ"
+      ]
+    },
+    {
+      "id": "move-migaru",
+      "kind": "secret",
+      "element": "move",
+      "also": [],
+      "name": "身軽",
+      "reading": "みがる",
+      "ability": "動くことで、気持ちまで軽くできる。",
+      "after": [
+        "move-yukkuri",
+        "move-iki",
+        "move-mochikaeru"
+      ],
+      "needs": 2,
+      "rank": {
+        "move": 6
+      },
+      "practice": [
+        "body-after"
+      ],
+      "keywords": [
+        "軽い",
+        "軽く",
+        "すっきり",
+        "汗"
+      ]
+    },
+    {
+      "id": "pause-tomeru",
+      "kind": "art",
+      "element": "pause",
+      "also": [],
+      "name": "手を止める",
+      "reading": "てをとめる",
+      "ability": "切り替わりの前に、ひと呼吸おける。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "pause": 1
+      },
+      "practice": [
+        "rest-pause",
+        "pause-breath"
+      ],
+      "keywords": [
+        "ひと息",
+        "一息",
+        "休憩",
+        "手を止め"
+      ]
+    },
+    {
+      "id": "pause-nanimo",
+      "kind": "art",
+      "element": "pause",
+      "also": [],
+      "name": "何もしない",
+      "reading": "なにもしない",
+      "ability": "何もしない時間を、そのまま過ごせる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "pause": 1
+      },
+      "practice": [
+        "rest-nothing"
+      ],
+      "keywords": [
+        "何もしない",
+        "ぼーっと",
+        "ぼんやり",
+        "ごろごろ"
+      ]
+    },
+    {
+      "id": "pause-hitotsu",
+      "kind": "art",
+      "element": "pause",
+      "also": [],
+      "name": "ひとつだけ",
+      "reading": "ひとつだけ",
+      "ability": "並行していることを、ひとつに絞れる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "pause": 1
+      },
+      "practice": [
+        "pause-one-thing"
+      ],
+      "keywords": [
+        "ひとつだけ",
+        "集中",
+        "ひとつに"
+      ]
+    },
+    {
+      "id": "pause-matsu",
+      "kind": "art",
+      "element": "pause",
+      "also": [],
+      "name": "待つ時間",
+      "reading": "まつじかん",
+      "ability": "待つあいだを、空白ではなく景色として過ごせる。",
+      "after": [
+        "pause-tomeru"
+      ],
+      "needs": 1,
+      "rank": {
+        "pause": 3
+      },
+      "practice": [
+        "pause-waiting"
+      ],
+      "keywords": [
+        "待っ",
+        "待ち",
+        "列に",
+        "信号"
+      ]
+    },
+    {
+      "id": "pause-yoru",
+      "kind": "art",
+      "element": "pause",
+      "also": [],
+      "name": "夜の暗さ",
+      "reading": "よるのくらさ",
+      "ability": "眠る前の暗さを、味わえる。",
+      "after": [
+        "pause-nanimo"
+      ],
+      "needs": 1,
+      "rank": {
+        "pause": 3
+      },
+      "practice": [
+        "pause-before-sleep",
+        "night-sky"
+      ],
+      "keywords": [
+        "夜",
+        "暗",
+        "眠",
+        "寝る前",
+        "布団"
+      ]
+    },
+    {
+      "id": "pause-gamen",
+      "kind": "art",
+      "element": "pause",
+      "also": [],
+      "name": "画面を置く",
+      "reading": "がめんをおく",
+      "ability": "画面から離れて、目の前のことに向き合える。",
+      "after": [
+        "pause-hitotsu"
+      ],
+      "needs": 1,
+      "rank": {
+        "pause": 3
+      },
+      "practice": [
+        "pause-notification",
+        "meal-screen-down"
+      ],
+      "keywords": [
+        "スマホ",
+        "画面",
+        "通知",
+        "携帯"
+      ]
+    },
+    {
+      "id": "pause-yohaku",
+      "kind": "secret",
+      "element": "pause",
+      "also": [],
+      "name": "余白",
+      "reading": "よはく",
+      "ability": "忙しい日の中にも、自分の余白をつくれる。",
+      "after": [
+        "pause-matsu",
+        "pause-yoru",
+        "pause-gamen"
+      ],
+      "needs": 2,
+      "rank": {
+        "pause": 6
+      },
+      "practice": [
+        "rest-pause",
+        "rest-nothing"
+      ],
+      "keywords": [
+        "余白",
+        "ゆとり"
+      ]
+    },
+    {
+      "id": "think-naze",
+      "kind": "art",
+      "element": "think",
+      "also": [],
+      "name": "なぜを持つ",
+      "reading": "なぜをもつ",
+      "ability": "「なぜだろう」を、ひとつ持ち歩ける。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "think": 1
+      },
+      "practice": [
+        "root-think"
+      ],
+      "keywords": [
+        "なぜ",
+        "どうして",
+        "不思議",
+        "疑問"
+      ]
+    },
+    {
+      "id": "think-tsumazuki",
+      "kind": "art",
+      "element": "think",
+      "also": [],
+      "name": "つまずきを見る",
+      "reading": "つまずきをみる",
+      "ability": "手が止まった瞬間を、責めずに眺められる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "think": 1
+      },
+      "practice": [
+        "study-stumble"
+      ],
+      "keywords": [
+        "つまず",
+        "止まった",
+        "難し",
+        "分からなかった",
+        "失敗"
+      ]
+    },
+    {
+      "id": "think-riyuu",
+      "kind": "art",
+      "element": "think",
+      "also": [],
+      "name": "選んだ理由",
+      "reading": "えらんだりゆう",
+      "ability": "なぜそれを選んだのかを、一言で言える。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "think": 1
+      },
+      "practice": [
+        "shop-why",
+        "house-one-thing"
+      ],
+      "keywords": [
+        "選ん",
+        "理由",
+        "決め",
+        "迷っ"
+      ]
+    },
+    {
+      "id": "think-tantei",
+      "kind": "art",
+      "element": "think",
+      "also": [],
+      "name": "一問の探偵",
+      "reading": "いちもんのたんてい",
+      "ability": "ひとつの問いを、一段深く掘れる。",
+      "after": [
+        "think-naze"
+      ],
+      "needs": 1,
+      "rank": {
+        "think": 3
+      },
+      "practice": [
+        "study-why",
+        "work-one-question",
+        "daily-nameless"
+      ],
+      "keywords": [
+        "調べ",
+        "深く",
+        "掘",
+        "謎"
+      ]
+    },
+    {
+      "id": "think-kugiri",
+      "kind": "art",
+      "element": "think",
+      "also": [],
+      "name": "最初のひと区切り",
+      "reading": "さいしょのひとくぎり",
+      "ability": "重いことも、最初のひと区切りから始められる。",
+      "after": [
+        "think-tsumazuki"
+      ],
+      "needs": 1,
+      "rank": {
+        "think": 3
+      },
+      "practice": [
+        "study-first-step"
+      ],
+      "keywords": [
+        "始め",
+        "最初",
+        "区切り",
+        "手をつけ"
+      ]
+    },
+    {
+      "id": "think-kinou",
+      "kind": "art",
+      "element": "think",
+      "also": [],
+      "name": "昨日の自分",
+      "reading": "きのうのじぶん",
+      "ability": "昨日の自分と比べて、分かるようになったことに気づける。",
+      "after": [
+        "think-riyuu"
+      ],
+      "needs": 1,
+      "rank": {
+        "think": 3
+      },
+      "practice": [
+        "study-yesterday"
+      ],
+      "keywords": [
+        "昨日",
+        "前より",
+        "できるように",
+        "分かるように"
+      ]
+    },
+    {
+      "id": "think-toi",
+      "kind": "secret",
+      "element": "think",
+      "also": [],
+      "name": "問いの灯",
+      "reading": "といのひ",
+      "ability": "迷ったときも、自分によい問いを立てられる。",
+      "after": [
+        "think-tantei",
+        "think-kugiri",
+        "think-kinou"
+      ],
+      "needs": 2,
+      "rank": {
+        "think": 6
+      },
+      "practice": [
+        "root-think",
+        "study-why"
+      ],
+      "keywords": [
+        "問い",
+        "問う"
+      ]
+    },
+    {
+      "id": "word-ichigyo",
+      "kind": "art",
+      "element": "word",
+      "also": [],
+      "name": "一行で書く",
+      "reading": "いちぎょうでかく",
+      "ability": "いまの気分や様子を、一行で書き留められる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "word": 1
+      },
+      "practice": [
+        "root-word",
+        "work-one-line"
+      ],
+      "keywords": [
+        "書い",
+        "一行",
+        "メモ",
+        "日記",
+        "書き留"
+      ]
+    },
+    {
+      "id": "word-nazukeru",
+      "kind": "art",
+      "element": "word",
+      "also": [],
+      "name": "名づける",
+      "reading": "なづける",
+      "ability": "出来事に、短い題名をつけられる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "word": 1
+      },
+      "practice": [
+        "word-name-it"
+      ],
+      "keywords": [
+        "名前を",
+        "題名",
+        "名づけ",
+        "タイトル"
+      ]
+    },
+    {
+      "id": "word-tegaki",
+      "kind": "art",
+      "element": "word",
+      "also": [],
+      "name": "手で書く",
+      "reading": "てでかく",
+      "ability": "手で書く文字の、速さと重さを感じられる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "word": 1
+      },
+      "practice": [
+        "word-letter"
+      ],
+      "keywords": [
+        "手書き",
+        "ペン",
+        "鉛筆",
+        "ノート",
+        "手紙"
+      ]
+    },
+    {
+      "id": "word-hitokoto",
+      "kind": "art",
+      "element": "word",
+      "also": [],
+      "name": "今日のひと言",
+      "reading": "きょうのひとこと",
+      "ability": "一日を、ひと言で言い表せる。",
+      "after": [
+        "word-ichigyo"
+      ],
+      "needs": 1,
+      "rank": {
+        "word": 3
+      },
+      "practice": [
+        "morning-word",
+        "night-tomorrow"
+      ],
+      "keywords": [
+        "ひと言",
+        "一言",
+        "今日は"
+      ]
+    },
+    {
+      "id": "word-tatoeru",
+      "kind": "art",
+      "element": "word",
+      "also": [],
+      "name": "たとえる",
+      "reading": "たとえる",
+      "ability": "気分や出来事を、何かにたとえられる。",
+      "after": [
+        "word-nazukeru"
+      ],
+      "needs": 1,
+      "rank": {
+        "word": 3
+      },
+      "practice": [
+        "word-metaphor"
+      ],
+      "keywords": [
+        "たとえ",
+        "みたい",
+        "ような",
+        "まるで"
+      ]
+    },
+    {
+      "id": "word-utsusu",
+      "kind": "art",
+      "element": "word",
+      "also": [],
+      "name": "書き写す",
+      "reading": "かきうつす",
+      "ability": "心に残った一文を、手で書き写せる。",
+      "after": [
+        "word-tegaki"
+      ],
+      "needs": 1,
+      "rank": {
+        "word": 3
+      },
+      "practice": [
+        "word-letter",
+        "root-word"
+      ],
+      "keywords": [
+        "書き写",
+        "写し",
+        "一文",
+        "好きな言葉"
+      ]
+    },
+    {
+      "id": "word-kotonoha",
+      "kind": "secret",
+      "element": "word",
+      "also": [],
+      "name": "言の葉",
+      "reading": "ことのは",
+      "ability": "感じたことが、自分の言葉になって残る。",
+      "after": [
+        "word-hitokoto",
+        "word-tatoeru",
+        "word-utsusu"
+      ],
+      "needs": 2,
+      "rank": {
+        "word": 6
+      },
+      "practice": [
+        "root-word",
+        "word-metaphor"
+      ],
+      "keywords": [
+        "言葉に"
+      ]
+    },
+    {
+      "id": "people-rashisa",
+      "kind": "art",
+      "element": "people",
+      "also": [],
+      "name": "その人らしさ",
+      "reading": "そのひとらしさ",
+      "ability": "会う人の、その人らしいところに気づける。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "people": 1
+      },
+      "practice": [
+        "root-meet",
+        "people-words"
+      ],
+      "keywords": [
+        "らしい",
+        "人柄",
+        "友達",
+        "家族",
+        "同僚"
+      ]
+    },
+    {
+      "id": "people-kiku",
+      "kind": "art",
+      "element": "people",
+      "also": [],
+      "name": "最後まで聞く",
+      "reading": "さいごまできく",
+      "ability": "相手の話を、最後まで聞いてから話せる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "people": 1
+      },
+      "practice": [
+        "people-listen"
+      ],
+      "keywords": [
+        "話を聞",
+        "聞いた",
+        "相談",
+        "話してくれ"
+      ]
+    },
+    {
+      "id": "people-soeru",
+      "kind": "art",
+      "element": "people",
+      "also": [],
+      "name": "ひとこと添える",
+      "reading": "ひとことそえる",
+      "ability": "あいさつやお礼に、ひとこと添えられる。",
+      "after": [],
+      "needs": 0,
+      "rank": {
+        "people": 1
+      },
+      "practice": [
+        "meet-greeting",
+        "word-thanks"
+      ],
+      "keywords": [
+        "あいさつ",
+        "挨拶",
+        "ありがとう",
+        "お礼",
+        "おはよう"
+      ]
+    },
+    {
+      "id": "people-hyojo",
+      "kind": "art",
+      "element": "people",
+      "also": [],
+      "name": "表情を読む",
+      "reading": "ひょうじょうをよむ",
+      "ability": "相手の表情がふっと変わる瞬間が分かる。",
+      "after": [
+        "people-rashisa"
+      ],
+      "needs": 1,
+      "rank": {
+        "people": 3
+      },
+      "practice": [
+        "people-expression"
+      ],
+      "keywords": [
+        "表情",
+        "笑顔",
+        "顔",
+        "目が合"
+      ]
+    },
+    {
+      "id": "people-toi",
+      "kind": "art",
+      "element": "people",
+      "also": [],
+      "name": "まだ聞いていない問い",
+      "reading": "まだきいていないとい",
+      "ability": "相手に、まだ聞いたことのない質問ができる。",
+      "after": [
+        "people-kiku"
+      ],
+      "needs": 1,
+      "rank": {
+        "people": 3
+      },
+      "practice": [
+        "people-new-question",
+        "taste-share"
+      ],
+      "keywords": [
+        "質問",
+        "聞いてみ",
+        "初めて聞"
+      ]
+    },
+    {
+      "id": "people-namae",
+      "kind": "art",
+      "element": "people",
+      "also": [],
+      "name": "名前で呼ぶ",
+      "reading": "なまえでよぶ",
+      "ability": "話す相手を、名前で呼べる。",
+      "after": [
+        "people-soeru"
+      ],
+      "needs": 1,
+      "rank": {
+        "people": 3
+      },
+      "practice": [
+        "meet-name",
+        "people-message"
+      ],
+      "keywords": [
+        "名前で",
+        "呼ん",
+        "メッセージ",
+        "連絡"
+      ]
+    },
+    {
+      "id": "people-en",
+      "kind": "secret",
+      "element": "people",
+      "also": [],
+      "name": "縁",
+      "reading": "えん",
+      "ability": "人とのあいだに、小さなつながりを結べる。",
+      "after": [
+        "people-hyojo",
+        "people-toi",
+        "people-namae"
+      ],
+      "needs": 2,
+      "rank": {
+        "people": 6
+      },
+      "practice": [
+        "root-meet",
+        "people-message"
+      ],
+      "keywords": [
+        "縁",
+        "つながり",
+        "久しぶり"
+      ]
+    },
+    {
+      "id": "cross-mitate",
+      "kind": "cross",
+      "element": "see",
+      "also": [
+        "think"
+      ],
+      "name": "見立て",
+      "reading": "みたて",
+      "ability": "あるものを、別の何かに見立てて楽しめる。",
+      "after": [
+        "see-tomeru",
+        "think-naze"
+      ],
+      "needs": 1,
+      "rank": {
+        "see": 2,
+        "think": 2
+      },
+      "practice": [
+        "work-desk-map",
+        "word-metaphor"
+      ],
+      "keywords": [
+        "見立て",
+        "似て"
+      ]
+    },
+    {
+      "id": "cross-surechigai",
+      "kind": "cross",
+      "element": "see",
+      "also": [
+        "people"
+      ],
+      "name": "すれ違う物語",
+      "reading": "すれちがうものがたり",
+      "ability": "すれ違う人の、このあとの物語を想像できる。",
+      "after": [
+        "see-chigai",
+        "people-rashisa"
+      ],
+      "needs": 1,
+      "rank": {
+        "see": 2,
+        "people": 2
+      },
+      "practice": [
+        "commute-stories",
+        "people-expression"
+      ],
+      "keywords": [
+        "すれ違",
+        "物語",
+        "このあと"
+      ]
+    },
+    {
+      "id": "cross-seijaku",
+      "kind": "cross",
+      "element": "hear",
+      "also": [
+        "pause"
+      ],
+      "name": "静けさの一曲",
+      "reading": "しずけさのいっきょく",
+      "ability": "一曲を聴き終えたあとの静けさまで、味わえる。",
+      "after": [
+        "hear-hyoshi",
+        "pause-nanimo"
+      ],
+      "needs": 1,
+      "rank": {
+        "hear": 2,
+        "pause": 2
+      },
+      "practice": [
+        "hear-music-one",
+        "hear-silence"
+      ],
+      "keywords": [
+        "聴き終え",
+        "余韻"
+      ]
+    },
+    {
+      "id": "cross-yuge",
+      "kind": "cross",
+      "element": "smell",
+      "also": [
+        "pause"
+      ],
+      "name": "湯気の時間",
+      "reading": "ゆげのじかん",
+      "ability": "温かい飲み物の湯気と香りで、ひと息つける。",
+      "after": [
+        "smell-daidokoro",
+        "pause-tomeru"
+      ],
+      "needs": 1,
+      "rank": {
+        "smell": 2,
+        "pause": 2
+      },
+      "practice": [
+        "smell-cup",
+        "rest-warm-cup"
+      ],
+      "keywords": [
+        "湯気",
+        "淹れ"
+      ]
+    },
+    {
+      "id": "cross-komi",
+      "kind": "cross",
+      "element": "taste",
+      "also": [
+        "smell"
+      ],
+      "name": "香味",
+      "reading": "こうみ",
+      "ability": "香りと味を、ひとつながりのものとして味わえる。",
+      "after": [
+        "taste-hitokuchi",
+        "smell-kizuku"
+      ],
+      "needs": 1,
+      "rank": {
+        "taste": 2,
+        "smell": 2
+      },
+      "practice": [
+        "house-aroma",
+        "smell-cup"
+      ],
+      "keywords": [
+        "香ばし",
+        "風味"
+      ]
+    },
+    {
+      "id": "cross-hodokeru",
+      "kind": "cross",
+      "element": "touch",
+      "also": [
+        "pause"
+      ],
+      "name": "ほどける",
+      "reading": "ほどける",
+      "ability": "体のこわばりに気づいて、ほどける。",
+      "after": [
+        "touch-teoboe",
+        "pause-tomeru"
+      ],
+      "needs": 1,
+      "rank": {
+        "touch": 2,
+        "pause": 2
+      },
+      "practice": [
+        "move-posture",
+        "morning-slow"
+      ],
+      "keywords": [
+        "こわば",
+        "力を抜",
+        "ほぐ",
+        "緩"
+      ]
+    },
+    {
+      "id": "cross-karada",
+      "kind": "cross",
+      "element": "move",
+      "also": [
+        "touch"
+      ],
+      "name": "体で覚える",
+      "reading": "からだでおぼえる",
+      "ability": "体の動きを、手ざわりのように細かく感じられる。",
+      "after": [
+        "move-hakobi",
+        "touch-tezawari"
+      ],
+      "needs": 1,
+      "rank": {
+        "move": 2,
+        "touch": 2
+      },
+      "practice": [
+        "touch-feet",
+        "body-after",
+        "move-stairs"
+      ],
+      "keywords": [
+        "体が覚え",
+        "感覚"
+      ]
+    },
+    {
+      "id": "cross-arukime",
+      "kind": "cross",
+      "element": "move",
+      "also": [
+        "see"
+      ],
+      "name": "歩く目",
+      "reading": "あるくめ",
+      "ability": "歩きながら、景色の移り変わりを拾える。",
+      "after": [
+        "move-michi",
+        "see-chigai"
+      ],
+      "needs": 1,
+      "rank": {
+        "move": 2,
+        "see": 2
+      },
+      "practice": [
+        "commute-change",
+        "move-walk-slow"
+      ],
+      "keywords": [
+        "歩きながら",
+        "通りすがり"
+      ]
+    },
+    {
+      "id": "cross-toiwatashi",
+      "kind": "cross",
+      "element": "think",
+      "also": [
+        "people"
+      ],
+      "name": "問いを渡す",
+      "reading": "といをわたす",
+      "ability": "自分の問いを、人と分かち合える。",
+      "after": [
+        "think-naze",
+        "people-kiku"
+      ],
+      "needs": 1,
+      "rank": {
+        "think": 2,
+        "people": 2
+      },
+      "practice": [
+        "work-one-question",
+        "people-new-question"
+      ],
+      "keywords": [
+        "聞いてみた",
+        "話し合"
+      ]
+    },
+    {
+      "id": "cross-yokatta",
+      "kind": "cross",
+      "element": "think",
+      "also": [
+        "word"
+      ],
+      "name": "よかった探し",
+      "reading": "よかったさがし",
+      "ability": "一日の中の、小さな「よかった」を見つけられる。",
+      "after": [
+        "think-riyuu",
+        "word-ichigyo"
+      ],
+      "needs": 1,
+      "rank": {
+        "think": 2,
+        "word": 2
+      },
+      "practice": [
+        "night-good-thing",
+        "night-tomorrow"
+      ],
+      "keywords": [
+        "よかった",
+        "うれし",
+        "嬉し"
+      ]
+    },
+    {
+      "id": "cross-keshiki",
+      "kind": "cross",
+      "element": "word",
+      "also": [
+        "see"
+      ],
+      "name": "一行の景色",
+      "reading": "いちぎょうのけしき",
+      "ability": "見た景色を、一行の言葉に写せる。",
+      "after": [
+        "word-ichigyo",
+        "see-hikari"
+      ],
+      "needs": 1,
+      "rank": {
+        "word": 2,
+        "see": 2
+      },
+      "practice": [
+        "commute-color",
+        "daily-one-photo"
+      ],
+      "keywords": [
+        "景色を",
+        "書き写"
+      ]
+    },
+    {
+      "id": "cross-ajikotoba",
+      "kind": "cross",
+      "element": "word",
+      "also": [
+        "taste"
+      ],
+      "name": "味の言葉",
+      "reading": "あじのことば",
+      "ability": "食感や味わいを、自分の言葉で言える。",
+      "after": [
+        "word-nazukeru",
+        "taste-hitokuchi"
+      ],
+      "needs": 1,
+      "rank": {
+        "word": 2,
+        "taste": 2
+      },
+      "practice": [
+        "meal-texture"
+      ],
+      "keywords": [
+        "食感",
+        "ほろっ",
+        "しゃきっ",
+        "もちもち"
+      ]
+    },
+    {
+      "id": "cross-kikite",
+      "kind": "cross",
+      "element": "people",
+      "also": [
+        "hear"
+      ],
+      "name": "聞き手",
+      "reading": "ききて",
+      "ability": "声と言葉と間から、相手の気持ちを聞き取れる。",
+      "after": [
+        "people-kiku",
+        "hear-koe"
+      ],
+      "needs": 1,
+      "rank": {
+        "people": 2,
+        "hear": 2
+      },
+      "practice": [
+        "hear-voice",
+        "people-listen",
+        "work-one-word"
+      ],
+      "keywords": [
+        "気持ち",
+        "聞き取"
+      ]
+    },
+    {
+      "id": "cross-tsutawaru",
+      "kind": "cross",
+      "element": "people",
+      "also": [
+        "word"
+      ],
+      "name": "伝わるひと言",
+      "reading": "つたわるひとこと",
+      "ability": "気持ちを、相手に届く言葉にできる。",
+      "after": [
+        "people-soeru",
+        "word-ichigyo"
+      ],
+      "needs": 1,
+      "rank": {
+        "people": 2,
+        "word": 2
+      },
+      "practice": [
+        "word-thanks",
+        "people-message",
+        "work-small-craft",
+        "study-explain"
+      ],
+      "keywords": [
+        "伝え",
+        "伝わ",
+        "届い",
+        "説明"
+      ]
+    },
+    {
+      "id": "flash-gokan",
+      "kind": "flash",
+      "element": "touch",
+      "also": [],
+      "name": "五感の交わり",
+      "reading": "ごかんのまじわり",
+      "ability": "ひとつの体験の中に、いくつもの感覚が重なっているのが分かる。",
+      "found": "ひとつの体験で、三つの要素に触れたとき",
+      "after": [],
+      "needs": 0,
+      "rank": {},
+      "practice": [],
+      "keywords": [],
+      "flash": {
+        "senses": 2,
+        "elements": 3
+      }
+    },
+    {
+      "id": "flash-yoake",
+      "kind": "flash",
+      "element": "see",
+      "also": [],
+      "name": "夜明けの目",
+      "reading": "よあけのめ",
+      "ability": "夜が明けていく空の、刻々とした変わりようを知っている。",
+      "found": "夜明けの時間に、体験を記したとき",
+      "after": [],
+      "needs": 0,
+      "rank": {},
+      "practice": [],
+      "keywords": [],
+      "flash": {
+        "times": [
+          "dawn"
+        ]
+      }
+    },
+    {
+      "id": "flash-yorumimi",
+      "kind": "flash",
+      "element": "hear",
+      "also": [],
+      "name": "夜の耳",
+      "reading": "よるのみみ",
+      "ability": "夜にしか聞こえない音を、拾える。",
+      "found": "夜に、聴く体験を記したとき",
+      "after": [],
+      "needs": 0,
+      "rank": {},
+      "practice": [],
+      "keywords": [],
+      "flash": {
+        "times": [
+          "night",
+          "lateNight"
+        ],
+        "element": "hear"
+      }
+    },
+    {
+      "id": "flash-meguri",
+      "kind": "flash",
+      "element": "pause",
+      "also": [],
+      "name": "一日の巡り",
+      "reading": "いちにちのめぐり",
+      "ability": "朝も昼も夜も、その時間の手ざわりを知っている。",
+      "found": "ひとつの日の三つの時間帯に、体験を記したとき",
+      "after": [],
+      "needs": 0,
+      "rank": {},
+      "practice": [],
+      "keywords": [],
+      "flash": {
+        "bands": 3
+      }
+    },
+    {
+      "id": "flash-tone",
+      "kind": "flash",
+      "element": "taste",
+      "also": [],
+      "name": "十の根",
+      "reading": "とおのね",
+      "ability": "十の要素のどれもが、自分の中に根を張っている。",
+      "found": "十の要素すべてに、触れたとき",
+      "after": [],
+      "needs": 0,
+      "rank": {},
+      "practice": [],
+      "keywords": [],
+      "flash": {
+        "all_elements": 1
+      }
+    },
+    {
+      "id": "flash-nanoka",
+      "kind": "flash",
+      "element": "word",
+      "also": [],
+      "name": "七つの日",
+      "reading": "ななつのひ",
+      "ability": "急がずに、日を重ねていける。",
+      "found": "七つの別々の日に、体験を記したとき",
+      "after": [],
+      "needs": 0,
+      "rank": {},
+      "practice": [],
+      "keywords": [],
+      "flash": {
+        "days": 7
+      }
+    },
+    {
+      "id": "flash-jibun",
+      "kind": "flash",
+      "element": "think",
+      "also": [],
+      "name": "自分の目",
+      "reading": "じぶんのめ",
+      "ability": "誰に言われなくても、体験を見つけられる。",
+      "found": "自分で見つけた体験を、十記したとき",
+      "after": [],
+      "needs": 0,
+      "rank": {},
+      "practice": [],
+      "keywords": [],
+      "flash": {
+        "self": 10
+      }
+    },
+    {
+      "id": "flash-hibiki",
+      "kind": "flash",
+      "element": "people",
+      "also": [],
+      "name": "響き合い",
+      "reading": "ひびきあい",
+      "ability": "ちがう技どうしの、響き合うところが分かる。",
+      "found": "ふたつの技を、糸で結んだとき",
+      "after": [],
+      "needs": 0,
+      "rank": {},
+      "practice": [],
+      "keywords": [],
+      "flash": {
+        "ties": 1
+      }
+    },
+    {
+      "id": "flash-kiwami",
+      "kind": "flash",
+      "element": "move",
+      "also": [],
+      "name": "極み",
+      "reading": "きわみ",
+      "ability": "ひとつのことを、自分のものになるまで続けられる。",
+      "found": "ひとつの技が、離に届いたとき",
+      "after": [],
+      "needs": 0,
+      "rank": {},
+      "practice": [],
+      "keywords": [],
+      "flash": {
+        "mastered": 1
+      }
+    }
+  ]
+}

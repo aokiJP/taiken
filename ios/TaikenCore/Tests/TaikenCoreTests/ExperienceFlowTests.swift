@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import TaikenCore
 
-/// Home の一日の流れ: 提案 → 体験中 → 記す (印) → ひと休み → また提案
+/// Home の一日の流れ: (求められたら) きっかけ → 体験中 → 記す (印) → しばらく通知を控える
 @MainActor
 final class ExperienceFlowTests: XCTestCase {
     private struct Rig {
@@ -27,6 +27,11 @@ final class ExperienceFlowTests: XCTestCase {
         let rig = make(h)
 
         await rig.model.refresh()
+        XCTAssertEqual(rig.model.stage, .idle, "ホームの真ん中は、ふだんは自分の樹と「記す」")
+        XCTAssertEqual(rig.service.experienceRequests.count, 0, "きっかけは、求められるまで作らない")
+        XCTAssertEqual(rig.widgets.snapshots.last?.kind, .empty)
+
+        await rig.model.requestPrompt()
         XCTAssertEqual(rig.model.stage, .proposal)
         XCTAssertEqual(rig.widgets.snapshots.last?.kind, .proposal)
         XCTAssertNotNil(rig.widgets.snapshots.last?.sealCharacter)
@@ -43,38 +48,37 @@ final class ExperienceFlowTests: XCTestCase {
         XCTAssertEqual(rig.model.completedEntry?.rating, .positive)
         XCTAssertEqual(rig.model.completedEntry?.note, "三回止まった")
         XCTAssertEqual(rig.presence.events.last, "end")
-        XCTAssertEqual(rig.model.restingUntil, referenceDate.addingTimeInterval(1800 + 3600))
+        XCTAssertEqual(rig.model.restingUntil, referenceDate.addingTimeInterval(1800 + 3600), "しばらく通知を控える")
         XCTAssertEqual(rig.widgets.snapshots.last?.kind, .resting)
         XCTAssertEqual(rig.model.todayEntries.count, 1)
+        rig.model.dismissCompleted()
+        XCTAssertEqual(rig.model.stage, .idle)
 
-        // 閉じて開き直しても、ひと休みは続く (提案を押しつけない)
+        // 閉じて開き直しても、きっかけは勝手に作らない
         let reopened = make(h, service: rig.service)
         await reopened.model.refresh()
-        XCTAssertEqual(reopened.model.stage, .resting(until: referenceDate.addingTimeInterval(5400)))
-        XCTAssertEqual(rig.service.experienceRequests.count, 1)
-
-        // ひと休みが終われば、次の提案
+        XCTAssertEqual(reopened.model.stage, .idle)
+        XCTAssertEqual(reopened.model.restingUntil, referenceDate.addingTimeInterval(5400))
         h.clock.advance(3700)
         await reopened.model.refresh()
-        XCTAssertEqual(reopened.model.stage, .proposal)
         XCTAssertNil(reopened.model.restingUntil)
-        XCTAssertEqual(rig.service.experienceRequests.count, 2)
+        XCTAssertEqual(reopened.model.stage, .idle)
+        XCTAssertEqual(rig.service.experienceRequests.count, 1)
     }
 
-    func testNotNowRestsForAWhileAndCanBeWokenUp() async {
+    func testNotNowKeepsHomeAsItIsAndQuietsNotifications() async {
         let h = Harness()
         let rig = make(h)
         await rig.model.generate()
         rig.model.notNow()
-        XCTAssertEqual(rig.model.stage, .resting(until: referenceDate.addingTimeInterval(3 * 3600)))
-        XCTAssertEqual(h.cache.loadRestingUntil(), referenceDate.addingTimeInterval(3 * 3600))
+        XCTAssertEqual(rig.model.stage, .idle)
+        XCTAssertEqual(h.cache.loadRestingUntil(), referenceDate.addingTimeInterval(3 * 3600), "通知はしばらく控える")
 
         await rig.model.refresh()
-        XCTAssertEqual(rig.service.experienceRequests.count, 1, "ひと休み中は提案を作らない")
+        XCTAssertEqual(rig.service.experienceRequests.count, 1, "断ったあとに、きっかけを作り直さない")
 
-        await rig.model.wakeUp()
+        await rig.model.requestPrompt()
         XCTAssertEqual(rig.model.stage, .proposal)
-        XCTAssertNil(h.cache.loadRestingUntil())
     }
 
     func testChoosingAMoodAsksAgainWithoutCountingAsRejection() async {
@@ -96,14 +100,13 @@ final class ExperienceFlowTests: XCTestCase {
         XCTAssertNil(service.experienceRequests.last?.mood)
     }
 
-    func testMoodWakesUpFromRest() async {
+    func testMoodAsksForANewPromptAfterDeclining() async {
         let h = Harness()
         let rig = make(h)
         await rig.model.generate()
         rig.model.notNow()
         await rig.model.choose(mood: .refresh)
         XCTAssertEqual(rig.model.stage, .proposal)
-        XCTAssertNil(rig.model.restingUntil)
     }
 
     func testRequestsCarryTheTimeButNoSeason() async throws {
@@ -153,7 +156,6 @@ final class ExperienceFlowTests: XCTestCase {
         rig.model.adopt(Experience(title: "一問だけの探偵", perspective: "p", invitation: "i", reason: "r", difficulty: .low, tags: ["question"], reflectionQuestion: "q？"))
         XCTAssertEqual(rig.model.stage, .active)
         XCTAssertEqual(rig.model.activeEntry?.reflectionQuestion, "q？")
-        XCTAssertNil(rig.model.restingUntil)
         XCTAssertEqual(rig.presence.events.last, "begin:一問だけの探偵")
     }
 
@@ -165,6 +167,11 @@ final class ExperienceFlowTests: XCTestCase {
         XCTAssertTrue(rig.model.engagedToday)
         h.clock.advance(86_400)
         await rig.model.refresh()
+        XCTAssertNil(rig.model.proposal, "前の日のきっかけは、黙って下げる")
+        XCTAssertFalse(rig.model.engagedToday)
+        rig.model.record(LivedDraft(text: "朝の光", elements: ["see"]))
+        XCTAssertTrue(rig.model.engagedToday, "自分で記したことも、その日に触れたことになる")
+        await rig.model.generate()
         rig.model.notNow()
         XCTAssertTrue(rig.model.engagedToday, "断ったことも、その日に触れたことになる")
     }

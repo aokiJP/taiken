@@ -1,34 +1,39 @@
 import SwiftUI
 import TaikenCore
 
-/// 指示書 §6, §21: 「今日何をするか」ではなく「今日、何を体験できるか」を中心に置く。
+/// ホーム (4.0): 真ん中は、自分の樹と「体験を記す」。
+/// 体験は、自分で生きて、自分で記すもの。記すと触れた要素に経験が積もり、段が上がると芽が出る。
+/// AIや体験ライブラリの提案は「きっかけ」として、求められたときだけ出す (勝手には出さない)。
 /// 地はいまの空。真ん中に、その時いちばん大事なカードがひとつだけある。
-/// 見出しの横には小さな体験の樹。提案のカードには、その体験が樹のどこにあるか (枝) を添える。
 struct HomeView: View {
     let model: HomeViewModel
     let tree: TreeViewModel
     let engine: ProposalEngine
     let openChat: @MainActor () -> Void
     let openJournal: @MainActor () -> Void
-    /// 体験の樹をひらく (体験の id があれば、そこを中心に)
+    /// 技の樹をひらく (技の id があれば、そこを中心に)
     let openTree: @MainActor (String?) -> Void
     let openSettings: @MainActor () -> Void
     let previewRequest: @MainActor () async -> ExperienceRequest
+    /// ショートカットやウィジェットから「体験を記す」を求められた
+    var recordRequested = false
+    var consumeRecordRequest: @MainActor () -> Void = {}
 
     @State private var sheet: HomeSheet?
-    /// 振り返りのシートが閉じきってから印を押す (押す瞬間を見てもらうため)
-    @State private var pendingRecord: PendingRecord?
+    /// シートが閉じきってから印を押す (押す瞬間を見てもらうため)
+    @State private var pending: Pending?
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     enum HomeSheet: String, Identifiable {
-        case insight, reflection
+        case insight, reflection, record
         var id: String { rawValue }
     }
 
-    struct PendingRecord {
-        let rating: Rating
-        let note: String?
+    /// シートを閉じたあとに記すもの
+    enum Pending {
+        case finish(rating: Rating, note: String?, skills: [String])
+        case record(LivedDraft)
     }
 
     var body: some View {
@@ -43,18 +48,28 @@ struct HomeView: View {
                             date: timeline.date,
                             time: time,
                             palette: palette,
-                            scene: TreeScene.make(tree: tree.tree, layout: tree.layout)
+                            scene: TreeScene.make(tree: tree.tree, layout: tree.layout),
+                            sprouting: !tree.tree.sproutingElements.isEmpty
                         ) {
                             openTree(nil)
                         }
                         if let notice = model.notice {
                             NoticeLine(notice: notice, palette: palette)
                         }
-                        if model.calendarAccess == .notDetermined, model.stage != .active {
+                        if let welcome = model.welcome, model.stage == .idle {
+                            WelcomeCard(report: welcome) {
+                                model.dismissWelcome()
+                                openTree(welcome.sproutElements.first.map { ExperienceTree.rootID($0.id) })
+                            } dismiss: {
+                                model.dismissWelcome()
+                            }
+                            .transition(.opacity)
+                        }
+                        if model.calendarAccess == .notDetermined, model.stage == .proposal || model.stage == .loading {
                             CalendarInvite(palette: palette) { Task { await model.requestCalendarAccess() } }
                         }
                         stageCard
-                        if model.stage != .active {
+                        if model.stage == .proposal {
                             MoodChips(selected: model.mood, palette: palette) { mood in
                                 Task { await model.choose(mood: mood) }
                             }
@@ -87,18 +102,31 @@ struct HomeView: View {
         .toolbarBackground(.hidden, for: .navigationBar)
         .navigationBarTitleDisplayMode(.inline)
         .task { await model.refresh() }
-        .task(id: model.restingUntil) { await wakeWhenRestEnds() }
-        // 記した・始めた・編んだあとは、小さな樹も描き直す
+        .onChange(of: recordRequested, initial: true) { _, requested in
+            guard requested else { return }
+            consumeRecordRequest()
+            sheet = .record
+        }
+        // 記した・始めた・伸ばしたあとは、小さな樹も描き直す
         .onChange(of: model.treeRevision) { tree.reload() }
-        .sheet(item: $sheet, onDismiss: { applyPendingRecord() }) { item in
+        .sheet(item: $sheet, onDismiss: applyPending) { item in
             switch item {
             case .insight:
                 InsightSheet(proposal: model.proposal, engine: engine, previewRequest: previewRequest)
             case .reflection:
                 if let entry = model.activeEntry {
-                    ReflectionSheet(entry: entry) { rating, note in
-                        pendingRecord = PendingRecord(rating: rating, note: note)
+                    ReflectionSheet(
+                        entry: entry,
+                        skills: tree.tree.learnedSkills(touching: entry.resolvedElements()),
+                        practiced: practiced(by: entry),
+                        glyph: { tree.tree.glyph(of: $0) }
+                    ) { rating, note, skills in
+                        pending = .finish(rating: rating, note: note, skills: skills)
                     }
+                }
+            case .record:
+                RecordSheet(tree: tree.tree) { draft in
+                    pending = .record(draft)
                 }
             }
         }
@@ -152,61 +180,65 @@ struct HomeView: View {
                     CompletedCard(
                         entry: entry,
                         growth: model.completedGrowth,
-                        nodeID: tree.tree.nodeID(of: entry) ?? entry.nodeID,
-                        another: { Task { await model.wakeUp() } },
+                        skills: tree.tree.skills(usedIn: entry.id).filter { tree.tree.state(of: $0.id) == .learned },
+                        openTree: openTree,
                         openJournal: openJournal,
-                        openTree: openTree
+                        close: model.dismissCompleted
                     )
                     .transition(.opacity)
                 }
-            case .resting(let until):
-                RestingCard(until: until) { Task { await model.wakeUp() } }
-                    .transition(.opacity)
             case .failed(let message):
-                RestingCard(title: "提案を作れませんでした", message: message, actionTitle: "もう一度") {
+                FailedCard(message: message) {
                     Task { await model.generate() }
+                } close: {
+                    model.dismissFailure()
                 }
                 .transition(.opacity)
             case .idle:
-                RestingCard(title: "また気が向いたら。", message: "提案はいつでも受け取れます。", actionTitle: "提案を受け取る") {
-                    Task { await model.wakeUp() }
-                }
+                TreeStatusCard(
+                    tree: tree.tree,
+                    record: { sheet = .record },
+                    requestPrompt: { Task { await model.requestPrompt() } },
+                    openTree: openTree
+                )
                 .transition(.opacity)
             }
         }
         .animation(reduceMotion ? .easeInOut(duration: 0.2) : .spring(response: 0.55, dampingFraction: 0.86), value: stageKey)
     }
 
-    /// 段階と提案が変わったときだけ動かす
+    /// 段階ときっかけが変わったときだけ動かす
     private var stageKey: String {
         "\(model.stage)-\(model.proposalID)-\(model.activeEntry?.id.uuidString ?? "")-\(model.completedEntry?.id.uuidString ?? "")"
     }
 
-    private func applyPendingRecord() {
-        guard let record = pendingRecord else { return }
-        pendingRecord = nil
-        model.finish(rating: record.rating, note: record.note)
+    /// 稽古として始めた体験なら、選ばなくても数える技 (身についたもの)
+    private func practiced(by entry: HistoryEntry) -> [TreeNode] {
+        guard let id = entry.nodeID else { return [] }
+        return tree.tree.skills(practicing: id).filter { tree.tree.state(of: $0.id) == .learned }
     }
 
-    /// ひと休みが終わったら、開いたままでも次の提案を用意する
-    private func wakeWhenRestEnds() async {
-        guard let until = model.restingUntil else { return }
-        let wait = until.timeIntervalSinceNow
-        if wait > 0 {
-            try? await Task.sleep(for: .seconds(wait + 1))
+    private func applyPending() {
+        guard let action = pending else { return }
+        pending = nil
+        switch action {
+        case .finish(let rating, let note, let skills):
+            model.finish(rating: rating, note: note, skills: skills)
+        case .record(let draft):
+            model.record(draft)
         }
-        guard !Task.isCancelled else { return }
-        await model.refresh()
     }
 }
 
-// MARK: - 見出し: 日付とあいさつと、小さな体験の樹
+// MARK: - 見出し: 日付とあいさつと、小さな技の樹
 
 struct HomeHeader: View {
     let date: Date
     let time: TimeOfDay
     let palette: SkyPalette
     let scene: TreeScene
+    /// 芽が出ていて、伸ばせる技がある
+    let sprouting: Bool
     let openTree: @MainActor () -> Void
 
     var body: some View {
@@ -216,7 +248,7 @@ struct HomeHeader: View {
                     .font(.footnote)
                     .tracking(0.8)
                     .foregroundStyle(palette.onSkySecondary)
-                Text("\(time.greeting)。\n今日、何を体験できるか。")
+                Text("\(time.greeting)。\nいつもの一日に、体験はある。")
                     .font(Typeface.mincho(21, relativeTo: .title2))
                     .lineSpacing(4)
                     .foregroundStyle(palette.onSky)
@@ -226,13 +258,22 @@ struct HomeHeader: View {
             Button(action: openTree) {
                 VStack(spacing: 5) {
                     MiniTreeBadge(scene: scene, palette: palette, size: 58)
-                    Text("体験の樹")
+                        .overlay(alignment: .topTrailing) {
+                            if sprouting {
+                                Circle()
+                                    .fill(Palette.shu)
+                                    .frame(width: 9, height: 9)
+                                    .offset(x: -2, y: 2)
+                            }
+                        }
+                    Text("技の樹")
                         .font(.caption2)
                         .foregroundStyle(palette.onSkySecondary)
                 }
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("体験の樹をひらく")
+            .accessibilityLabel("技の樹をひらく")
+            .accessibilityValue(sprouting ? "芽が出ています" : "")
             .accessibilityIdentifier("home.tree")
         }
         .padding(.horizontal, 4)
@@ -271,10 +312,10 @@ struct CalendarInvite: View {
                     .font(.title3)
                     .foregroundStyle(Palette.shu)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("予定から体験を見つけますか？")
+                    Text("予定から、きっかけを見つけますか？")
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(Palette.ink)
-                    Text("今日と明日の予定の、時間とタイトルだけを使います。許可しなくても使えます。")
+                    Text("きっかけをもらうときに、今日と明日の予定の、時間とタイトルだけを使います。許可しなくても使えます。")
                         .font(.footnote)
                         .foregroundStyle(Palette.ink2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -287,7 +328,7 @@ struct CalendarInvite: View {
     }
 }
 
-// MARK: - 気分
+// MARK: - 気分 (きっかけを見ているときだけ)
 
 struct MoodChips: View {
     let selected: Mood?
@@ -312,7 +353,7 @@ struct MoodChips: View {
                         }
                         .buttonStyle(ChipButtonStyle(selected: selected == mood))
                         .accessibilityAddTraits(selected == mood ? .isSelected : [])
-                        .accessibilityHint(selected == mood ? "もう一度押すと、気分の指定をやめます" : "この気分に合う体験に選び直します")
+                        .accessibilityHint(selected == mood ? "もう一度押すと、気分の指定をやめます" : "この気分に合うきっかけに選び直します")
                     }
                 }
                 .padding(.horizontal, 2)
@@ -345,6 +386,7 @@ struct TodayStamps: View {
                             Text(entry.title)
                                 .font(.experienceTitle)
                                 .foregroundStyle(Palette.ink)
+                                .lineLimit(2)
                             Text(subtitle(for: entry))
                                 .font(.caption)
                                 .foregroundStyle(Palette.ink3)
@@ -372,6 +414,7 @@ struct TodayStamps: View {
     private func subtitle(for entry: HistoryEntry) -> String {
         if entry.status == .active { return "体験中" }
         if let note = entry.note { return "「\(note)」" }
+        if entry.isSelfRecorded { return "自分で記した体験" }
         return entry.rating?.label ?? ""
     }
 }

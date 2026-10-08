@@ -32,7 +32,7 @@ public enum RequestPreview {
             title: "反応の傾向",
             items: request.userFeedback.isEmpty ? [notSent] : request.userFeedback.map(feedbackLine)
         ))
-        sections.append(Section(title: "体験の樹", items: treeLines(request.tree)))
+        sections.append(Section(title: "技の樹", items: treeLines(request.tree)))
         sections.append(Section(title: "おおよその地域", items: [areaLine(request.area)]))
         sections.append(Section(title: "Web検索", items: [request.allowWebSearch ? "必要なときだけ使ってよい" : "使わない"]))
         if !request.excludeTitles.isEmpty {
@@ -89,12 +89,12 @@ public enum RequestPreview {
         if !tree.lived.isEmpty {
             let titles = tree.lived.prefix(5).map(\.title)
             let more = tree.lived.count > 5 ? " ほか\(tree.lived.count - 5)" : ""
-            lines.append("灯った体験: \(titles.joined(separator: "、"))\(more)")
+            lines.append("記した体験: \(titles.joined(separator: "、"))\(more)")
         }
         if !tree.buds.isEmpty {
             let titles = tree.buds.prefix(5).map { content.experience($0)?.title ?? $0 }
             let more = tree.buds.count > 5 ? " ほか\(tree.buds.count - 5)" : ""
-            lines.append("芽: \(titles.joined(separator: "、"))\(more)")
+            lines.append("技の稽古: \(titles.joined(separator: "、"))\(more)")
         }
         return lines
     }

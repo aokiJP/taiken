@@ -29,6 +29,8 @@ enum DeepLink: Equatable {
     case journal
     case tree
     case talk
+    /// 「体験を記す」をひらく
+    case record
 
     static let scheme = "taiken"
 
@@ -39,6 +41,7 @@ enum DeepLink: Equatable {
         case "journal": self = .journal
         case "tree": self = .tree
         case "talk": self = .talk
+        case "record": self = .record
         default: return nil
         }
     }
@@ -54,6 +57,7 @@ enum DeepLink: Equatable {
         case .journal: "journal"
         case .tree: "tree"
         case .talk: "talk"
+        case .record: "record"
         }
     }
 }

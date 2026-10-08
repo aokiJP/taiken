@@ -1,75 +1,80 @@
 import Foundation
 
-/// 体験の樹と体験帳を、Markdown のフォルダ (Obsidian などで開ける保管庫) として書き出す。
-/// 体験ごとに1ページ、要素ごとに1ページ、記した日ごとに1ページ。つながりは [[ ]] のリンクになるので、
-/// グラフ表示にすると、この樹がそのまま現れる。
+/// 技の樹と体験帳を、Markdown のフォルダ (Obsidian などで開ける保管庫) として書き出す。
+/// 要素ごとに1ページ、技ごとに1ページ、記した日ごとに1ページ。つながりは [[ ]] のリンクになるので、
+/// グラフ表示にすると、根から伸びる技と、それを育てた日々がつながって見える。
+/// まだ霧の中の技と、閃いていない閃きは書き出さない (名前を明かさない)。
 public enum VaultExporter {
     public struct File: Sendable, Equatable {
-        /// 保管庫の中のパス (例: 体験/ひと口目の観察.md)
+        /// 保管庫の中のパス (例: 技/遠目.md)
         public let path: String
         public let contents: String
     }
 
-    public static let folderName = "体験の樹"
+    public static let folderName = "技の樹"
 
-    public static func files(tree: ExperienceTree, exportedAt: Date, calendar: Calendar = .current) -> [File] {
+    public static func files(tree: ExperienceTree, entries: [HistoryEntry], exportedAt: Date, calendar: Calendar = .current) -> [File] {
+        let skills = tree.nodes.filter { !$0.isRoot && tree.state(of: $0.id) != .unknown }
         var names: [String: String] = [:]
-        var used = Set<String>()
-        for node in tree.nodes {
+        var used = Set(tree.elements.map { fileName($0.label) })
+        for node in skills {
             var name = fileName(node.title)
             if used.contains(name) { name = "\(name) (\(node.id))" }
             used.insert(name)
             names[node.id] = name
         }
-        func link(_ id: String) -> String {
-            names[id].map { "[[\($0)]]" } ?? id
-        }
+        for element in tree.elements { names[ExperienceTree.rootID(element.id)] = fileName(element.label) }
+        func link(_ id: String) -> String? { names[id].map { "[[\($0)]]" } }
 
         var files: [File] = []
+        let lived = entries.filter { $0.status == .completed }.sorted { $0.createdAt < $1.createdAt }
 
         // はじめに
         var intro = [
             "# \(folderName)",
             "",
-            "「体験」から書き出した、体験の樹です。体験ごとのページ、要素ごとのページ、記した日ごとのページがあります。",
-            "グラフ表示にすると、根から伸びる枝と、自分で結んだ糸が見えます。",
+            "「体験」から書き出した、技の樹です。要素ごとのページ、技ごとのページ、記した日ごとのページがあります。",
+            "記した体験が触れた要素に経験として積もり、段が上がるたびに芽が出て、自分で選んだ技へ伸ばしてきました。",
             "",
             "## 要素",
         ]
         for element in tree.elements {
-            intro.append("- [[\(element.label)]] — \(element.hint)")
+            let progress = tree.progress(of: element.id)
+            intro.append("- [[\(fileName(element.label))]] — \(Ranks.label(progress.rank)) · 経験 \(progress.experience)")
         }
         intro.append("")
+        intro.append("年輪: \(tree.totalRank)")
         intro.append("書き出した日: \(dayString(exportedAt, calendar: calendar))")
         files.append(File(path: "はじめに.md", contents: intro.joined(separator: "\n") + "\n"))
 
         // 要素
         for element in tree.elements {
+            let progress = tree.progress(of: element.id)
             var lines = [
                 "---",
                 "kind: element",
                 "glyph: \(element.glyph)",
+                "rank: \(progress.rank)",
+                "experience: \(progress.experience)",
+                "sprouts: \(progress.sprouts)",
                 "---",
                 "# \(element.label)（\(element.glyph)）",
                 "",
                 element.hint,
                 "",
+                "段: \(Ranks.label(progress.rank)) · 経験 \(progress.experience) · 次の段まで \(progress.remaining)",
+                "",
+                "## この要素の技",
             ]
-            if let root = tree.root(of: element.id) {
-                lines.append("根: \(link(root.id))")
-                lines.append("")
-            }
-            lines.append("## この要素の体験")
-            for node in tree.nodes(inElement: element.id) {
-                lines.append("- \(link(node.id))\(stateSuffix(tree.state(of: node.id)))")
+            for node in tree.nodes(inElement: element.id) where tree.state(of: node.id) != .unknown {
+                lines.append("- \(link(node.id) ?? node.title)\(stateSuffix(tree, node))")
             }
             files.append(File(path: "要素/\(fileName(element.label)).md", contents: lines.joined(separator: "\n") + "\n"))
         }
 
-        // 体験
-        for node in tree.nodes {
+        // 技
+        for node in skills {
             let state = tree.state(of: node.id)
-            let life = tree.lives[node.id]
             let labels = node.elements.compactMap { tree.element($0)?.label }
             var lines = [
                 "---",
@@ -77,66 +82,84 @@ public enum VaultExporter {
                 "kind: \(node.kind.rawValue)",
                 "elements: [\(labels.joined(separator: ", "))]",
                 "state: \(state.rawValue)",
-                "lived: \(life?.litCount ?? 0)",
-                "---",
-                "# \(node.title)",
-                "",
-                "> \(node.invitation)",
-                "",
             ]
-            if !node.perspective.isEmpty {
-                lines.append(node.perspective)
+            if let mastery = tree.mastery(of: node.id) { lines.append("mastery: \(mastery.glyph)") }
+            if let date = tree.learnedAt(node.id) { lines.append("learned: \(dayString(date, calendar: calendar))") }
+            lines += ["---", "# \(node.title)", ""]
+            if !node.reading.isEmpty, node.reading != node.title {
+                lines.append("（\(node.reading)）")
                 lines.append("")
             }
-            if let question = node.reflectionQuestion {
-                lines.append("問い: \(question)")
-                lines.append("")
-            }
-            lines.append("要素: " + node.elements.compactMap { tree.element($0).map { "[[\($0.label)]]" } }.joined(separator: " · "))
+            lines.append("> \(node.ability)")
             lines.append("")
-            let outgoing = tree.outgoing(from: node.id)
-            if !outgoing.isEmpty {
-                lines.append("## ここからひらく")
-                for edge in outgoing {
-                    lines.append("- \(edge.kind.label) → \(link(edge.to))")
-                }
+            if let kind = node.kindLabel {
+                lines.append("種類: \(kind)")
+            }
+            lines.append("要素: " + node.elements.compactMap { tree.element($0).map { "[[\(fileName($0.label))]]" } }.joined(separator: " · "))
+            lines.append("")
+            if node.kind == .flash, let found = node.found {
+                lines.append("閃いたとき: \(found)")
+                lines.append("")
+            }
+            if state != .learned, let requirement = tree.requirement(of: node.id) {
+                lines.append("届く条件: \(requirement.sentence)")
+                lines.append("")
+            }
+            let practices = node.practice.compactMap { tree.content.experience($0) }
+            if !practices.isEmpty || node.practiceText != nil {
+                lines.append("## 稽古")
+                if let own = node.practiceText { lines.append("- \(own)") }
+                for item in practices { lines.append("- \(item.title) — \(item.invitation)") }
+                lines.append("")
+            }
+            let from = tree.incoming(to: node.id).compactMap { link($0.from) }
+            if !from.isEmpty {
+                lines.append("ここから: " + from.joined(separator: " · "))
+                lines.append("")
+            }
+            let next = tree.outgoing(from: node.id).compactMap { edge -> String? in
+                guard let target = link(edge.to) else { return nil }
+                return "- \(edge.kind.label) → \(target)"
+            }
+            if !next.isEmpty {
+                lines.append("## ここから伸びる")
+                lines += next
                 lines.append("")
             }
             let ties = tree.ties(of: node.id)
             if !ties.isEmpty {
-                lines.append("## 結んだ体験")
+                lines.append("## 結んだ技")
                 for tie in ties {
                     let other = tie.from == node.id ? tie.to : tie.from
-                    lines.append("- \(link(other))" + (tie.note.map { " — \($0)" } ?? ""))
+                    lines.append("- \(link(other) ?? other)" + (tie.note.map { " — \($0)" } ?? ""))
                 }
                 lines.append("")
             }
-            if let life, !life.entries.isEmpty {
-                lines.append("## 記録")
+            if let life = tree.life(of: node.id), !life.entries.isEmpty {
+                lines.append("## この技とともにあった体験")
                 for entry in life.entries {
-                    var line = "- [[\(dayString(entry.createdAt, calendar: calendar))]]"
-                    if entry.status == .active { line += " 体験中" }
-                    if let rating = entry.rating { line += " · \(rating.label)" }
+                    var line = "- [[\(dayString(entry.createdAt, calendar: calendar))]] \(entry.title)"
                     if let note = entry.note { line += " ·「\(note)」" }
                     lines.append(line)
                 }
                 lines.append("")
             }
-            files.append(File(path: "体験/\(names[node.id] ?? fileName(node.title)).md", contents: lines.joined(separator: "\n")))
+            files.append(File(path: "技/\(names[node.id] ?? fileName(node.title)).md", contents: lines.joined(separator: "\n")))
         }
 
         // 記した日
-        var byDay: [String: [(HistoryEntry, String)]] = [:]
-        for (id, life) in tree.lives {
-            for entry in life.entries {
-                byDay[dayString(entry.createdAt, calendar: calendar), default: []].append((entry, id))
-            }
+        var byDay: [String: [HistoryEntry]] = [:]
+        for entry in lived {
+            byDay[dayString(entry.createdAt, calendar: calendar), default: []].append(entry)
         }
         for day in byDay.keys.sorted() {
-            let items = (byDay[day] ?? []).sorted { $0.0.createdAt < $1.0.createdAt }
             var lines = ["# \(day)", ""]
-            for (entry, id) in items {
-                var line = "- \(timeString(entry.createdAt, calendar: calendar)) \(link(id))"
+            for entry in byDay[day] ?? [] {
+                var line = "- \(timeString(entry.createdAt, calendar: calendar)) \(entry.title)"
+                let elements = entry.resolvedElements(content: tree.content).compactMap { tree.element($0) }
+                if !elements.isEmpty { line += " — " + elements.map { "[[\(fileName($0.label))]]" }.joined(separator: " ") }
+                let grown = tree.skills(usedIn: entry.id).compactMap { link($0.id) }
+                if !grown.isEmpty { line += " · 技: " + grown.joined(separator: " ") }
                 if let rating = entry.rating { line += " · \(rating.label)" }
                 if let note = entry.note { line += " ·「\(note)」" }
                 lines.append(line)
@@ -165,12 +188,12 @@ public enum VaultExporter {
         }
     }
 
-    static func stateSuffix(_ state: NodeState) -> String {
-        switch state {
-        case .active: " — 体験中"
-        case .lit: " — 灯った"
-        case .bud: " — 芽"
-        case .quiet: ""
+    static func stateSuffix(_ tree: ExperienceTree, _ node: TreeNode) -> String {
+        switch tree.state(of: node.id) {
+        case .learned: tree.mastery(of: node.id).map { " — 身についた (\($0.glyph))" } ?? " — 身についた"
+        case .ready: " — 育てられる"
+        case .sensed: " — 気配"
+        case .unknown: ""
         }
     }
 

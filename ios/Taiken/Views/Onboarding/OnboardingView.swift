@@ -1,7 +1,7 @@
 import SwiftUI
 import TaikenCore
 
-/// はじめの案内。四枚だけ: 何のアプリか → AIの立ち位置 → 体験の樹 → 使う情報はあなたが選ぶ。
+/// はじめの案内。四枚だけ: 何のアプリか → AIの立ち位置 → 技の樹 → 使う情報はあなたが選ぶ。
 /// 許可は最後のページで、理由と一緒に、オフのままでも進めるように聞く。
 struct OnboardingView: View {
     let dependencies: AppDependencies
@@ -14,9 +14,10 @@ struct OnboardingView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     private let pageCount = 4
-    /// 案内の挿絵の樹 (見本の体験帳から組み立てる)
+    /// 案内の挿絵の樹 (見本の体験帳と、見本の自分の樹から組み立てる)
     private let sampleScene: TreeScene = {
-        let tree = TreeBuilder.build(garden: .empty, entries: HistoryEntry.sampleJournal())
+        let entries = HistoryEntry.sampleJournal() + HistoryEntry.sampleLived()
+        let tree = TreeBuilder.build(garden: .sample(entries: entries), entries: entries)
         return TreeScene.make(tree: tree, layout: TreeLayout.make(tree: tree))
     }()
 
@@ -57,7 +58,7 @@ struct OnboardingView: View {
                 .inkReveal(delay: 0.2)
                 .accessibilityAddTraits(.isHeader)
 
-            Text("体験は特別な場所ではなく、予定や移動や食事の中にあります。見る、聴く、味わう、休む。いつもしていることが、そのまま入り口です。")
+            Text("体験は特別な場所ではなく、予定や移動や食事の中にあります。見る、聴く、味わう、休む。だれかに出された課題ではなく、自分で生きて、自分の言葉で記すものです。")
                 .font(Typeface.mincho(16))
                 .lineSpacing(6)
                 .foregroundStyle(palette.onSkySecondary)
@@ -69,33 +70,32 @@ struct OnboardingView: View {
 
     private func stance(palette: SkyPalette) -> some View {
         OnboardingPage {
-            Text("AIは、視点を\nひとつ差し出すだけ。")
+            Text("AIは、きっかけを\n差し出すだけ。")
                 .font(.displayTitle)
                 .lineSpacing(6)
                 .foregroundStyle(palette.onSky)
                 .accessibilityAddTraits(.isHeader)
 
-            Text("予定や気分から、いつもの行動を少し違う角度で見る提案をひとつ。やるかどうか、どう感じるかは、あなたが決めます。")
+            Text("きっかけは、求めたときだけ。予定や気分から、いつもの行動を少し違う角度で見る提案をひとつ。やるかどうか、どう感じるかは、あなたが決めます。")
                 .font(Typeface.mincho(16))
                 .lineSpacing(6)
                 .foregroundStyle(palette.onSkySecondary)
 
             HStack(spacing: 8) {
-                Pill(text: "やってみる", emphasized: true)
-                Pill(text: "別の視点", emphasized: false)
-                Pill(text: "今はやらない", emphasized: false)
+                Pill(text: "体験を記す", emphasized: true)
+                Pill(text: "きっかけをもらう", emphasized: false)
             }
             .padding(.top, 6)
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("選べるのは、やってみる・別の視点・今はやらない の三つ")
+            .accessibilityLabel("ホームにあるのは、体験を記す と、きっかけをもらう の二つ")
 
-            Text("断っても、何も減りません。断ったあとは、しばらく提案を控えます。連続記録やバッジもありません。")
+            Text("きっかけは課題ではありません。やらなくても何も減らず、連続記録も期限もありません。自分で記した体験は、AIに送りません。")
                 .font(.footnote)
                 .foregroundStyle(palette.onSkySecondary)
         }
     }
 
-    // MARK: - 3. 体験の樹
+    // MARK: - 3. 技の樹
 
     private func treePage(palette: SkyPalette) -> some View {
         OnboardingPage {
@@ -107,18 +107,18 @@ struct OnboardingView: View {
             .frame(maxWidth: .infinity)
             .accessibilityHidden(true)
 
-            Text("やった体験が、\n樹になる。")
+            Text("生きた体験が、\n技になる。")
                 .font(.displayTitle)
                 .lineSpacing(6)
                 .foregroundStyle(palette.onSky)
                 .accessibilityAddTraits(.isHeader)
 
-            Text("体験は「見る」「聴く」「味わう」など、10の要素の根から伸びています。記した体験は朱の印として灯り、その先に次の芽が出ます。自分で体験を編んだり、響き合った体験どうしを糸で結んだりもできます。")
+            Text("記した体験は、触れた要素 (「見る」「聴く」「味わう」など10の根) に経験として積もり、段が上がると芽が出ます。芽を使って、どの技へ伸ばすかは自分で選びます。その先は霧の中。暮らし方から、ふっと閃く技もあります。")
                 .font(Typeface.mincho(16))
                 .lineSpacing(6)
                 .foregroundStyle(palette.onSkySecondary)
 
-            Text("点数やレベルはありません。どの体験も、いつでも始められます。")
+            Text("身についた技は、使うほど守・破・離と深まります。経験は減らず、期限もありません。")
                 .font(.footnote)
                 .foregroundStyle(palette.onSkySecondary)
         }
@@ -141,7 +141,7 @@ struct OnboardingView: View {
                     )
                     Divider().overlay(Palette.line)
                     PermissionRow(
-                        title: "朝の便り", detail: "朝に一度だけ。その日の小さな体験のきっかけを", isOn: $morningLetter
+                        title: "朝の便り", detail: "朝に一度だけ、きっかけをひとつ届けます", isOn: $morningLetter
                     )
                 }
             }
@@ -173,13 +173,13 @@ struct OnboardingView: View {
                     } label: {
                         HStack(spacing: 8) {
                             if isFinishing { ProgressView().tint(Palette.onShu) }
-                            Text("最初の体験を受け取る")
+                            Text("はじめる")
                         }
                     }
                     .buttonStyle(ShuButtonStyle())
                     .disabled(isFinishing)
                 } else {
-                    Button(page == 0 ? "はじめる" : "つぎへ") {
+                    Button("つぎへ") {
                         withAnimation(.easeInOut(duration: 0.35)) { page += 1 }
                     }
                     .buttonStyle(QuietButtonStyle())

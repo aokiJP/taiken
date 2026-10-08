@@ -2,7 +2,7 @@ import SwiftUI
 import TaikenCore
 
 /// はじめての人には案内を、それ以外はホームを出す。
-/// 体験帳・体験の樹は押し出し (ホーム → 体験帳 → 記録 / ホーム → 樹)、話す・設定はシートで開く。
+/// 体験帳・技の樹は押し出し (ホーム → 体験帳 → 記録 / ホーム → 樹)、話す・設定はシートで開く。
 struct RootView: View {
     let dependencies: AppDependencies
     @Bindable private var router: AppRouter
@@ -49,7 +49,9 @@ struct RootView: View {
                     router.openTree(focus: focus)
                 },
                 openSettings: { router.sheet = .settings },
-                previewRequest: { await dependencies.previewRequest() }
+                previewRequest: { await dependencies.previewRequest() },
+                recordRequested: router.recordRequested,
+                consumeRecordRequest: { router.recordRequested = false }
             )
             .navigationDestination(for: AppRouter.Destination.self) { destination in
                 switch destination {

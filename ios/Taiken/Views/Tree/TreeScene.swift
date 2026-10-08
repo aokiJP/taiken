@@ -1,7 +1,7 @@
 import SwiftUI
 import TaikenCore
 
-/// 体験の樹を描くための材料。樹が変わったときだけ作り直し、毎フレームの描画ではこれを読むだけにする。
+/// 技の樹を描くための材料。樹が変わったときだけ作り直し、毎フレームの描画ではこれを読むだけにする。
 struct TreeScene {
     struct Node: Identifiable {
         let id: String
@@ -11,20 +11,27 @@ struct TreeScene {
         let state: NodeState
         let kind: TreeNode.Kind
         let glyph: String
+        /// 樹の上に添える名前 (霧の中の技は空)
         let title: String
         let element: String
-        /// 重ねた印の数
-        let litCount: Int
-        /// 最後に記した時刻 (ラベルの優先順位に使う)
-        let lastLived: Date?
+        /// 身についた技の深まり (守 1・破 2・離 3。ほかは 0)
+        let mastery: Int
+        /// いま芽を使って伸ばせる
+        let growable: Bool
+        /// 根: 段・次の段までの割合・使える芽
+        let rank: Int
+        let progress: Double
+        let sprouts: Int
+        /// 身についた時刻 (ラベルの優先順位に使う)
+        let learnedAt: Date?
     }
 
     struct Edge {
-        enum Style { case quiet, toBud, lit, tie }
+        enum Style { case quiet, toReady, learned, spark, tie }
         let from: CGPoint
         let to: CGPoint
         let style: Style
-        /// 別の要素へ渡るつながり (静かなものは、選んだときだけ描く)
+        /// 別の要素から渡るつながり (静かなものは、選んだとき・その要素を見ているときだけ描く)
         let isCross: Bool
         let fromID: String
         let toID: String
@@ -51,7 +58,7 @@ struct TreeScene {
 
     func node(_ id: String) -> Node? { index[id].map { nodes[$0] } }
 
-    /// 要素の体験が集まっているあたり (要素を選んだとき、そこへ寄る)
+    /// 要素の技が集まっているあたり (要素を選んだとき、そこへ寄る)
     func centroid(ofElement element: String) -> CGPoint? {
         let points = nodes.filter { $0.element == element }.map(\.point)
         guard !points.isEmpty else { return nil }
@@ -65,18 +72,27 @@ struct TreeScene {
         var nodes: [Node] = []
         for node in tree.nodes {
             guard let p = layout.position(of: node.id) else { continue }
-            let life = tree.lives[node.id]
+            let state = tree.state(of: node.id)
+            let progress = tree.progress(of: node.primaryElement)
+            let growable: Bool = {
+                if case .available = tree.check(node.id) { return true }
+                return false
+            }()
             nodes.append(Node(
                 id: node.id,
                 point: CGPoint(x: p.x, y: p.y),
                 angle: atan2(p.y, p.x),
-                state: tree.state(of: node.id),
+                state: state,
                 kind: node.kind,
                 glyph: tree.glyph(of: node),
-                title: node.title,
+                title: state == .unknown ? "" : node.title,
                 element: node.primaryElement,
-                litCount: life?.litCount ?? 0,
-                lastLived: life?.lastLived
+                mastery: tree.mastery(of: node.id)?.rawValue ?? 0,
+                growable: growable,
+                rank: node.isRoot ? progress.rank : 0,
+                progress: node.isRoot && progress.span > 0 ? Double(progress.gained) / Double(progress.span) : 0,
+                sprouts: node.isRoot ? progress.sprouts : 0,
+                learnedAt: tree.learnedAt(node.id)
             ))
         }
         var states: [String: NodeState] = [:]
@@ -85,30 +101,34 @@ struct TreeScene {
             states[node.id] = node.state
             elements[node.id] = node.element
         }
-        func isTaken(_ state: NodeState?) -> Bool { state == .lit || state == .active }
 
         var edges: [Edge] = []
         for link in tree.links {
             guard let a = layout.position(of: link.from), let b = layout.position(of: link.to) else { continue }
             let style: Edge.Style
-            if link.kind == .tie {
+            switch link.kind {
+            case .tie:
                 style = .tie
-            } else if isTaken(states[link.from]) && isTaken(states[link.to]) {
-                style = .lit
-            } else if isTaken(states[link.from]) && states[link.to] == .bud {
-                style = .toBud
-            } else {
-                style = .quiet
+            case .spark:
+                style = .spark
+            case .branch, .cross:
+                if states[link.from] == .learned && states[link.to] == .learned {
+                    style = .learned
+                } else if states[link.from] == .learned && states[link.to] == .ready {
+                    style = .toReady
+                } else {
+                    style = .quiet
+                }
             }
             let fromElement = elements[link.from] ?? ""
             let toElement = elements[link.to] ?? ""
             edges.append(Edge(
                 from: CGPoint(x: a.x, y: a.y), to: CGPoint(x: b.x, y: b.y), style: style,
-                isCross: fromElement != toElement, fromID: link.from, toID: link.to,
+                isCross: link.kind == .cross || fromElement != toElement, fromID: link.from, toID: link.to,
                 fromElement: fromElement, toElement: toElement
             ))
         }
-        // 静かなつながりを先に、灯ったつながりと糸をあとに描く
+        // 静かなつながりを先に、身についたつながりと糸をあとに描く
         edges.sort { order($0.style) < order($1.style) }
         let maxDepth = tree.depths.values.max() ?? 0
         let rings = (0...max(maxDepth, 1)).map { TreeLayout.ring(forDepth: $0) }
@@ -118,9 +138,10 @@ struct TreeScene {
     private static func order(_ style: Edge.Style) -> Int {
         switch style {
         case .quiet: 0
-        case .toBud: 1
-        case .lit: 2
-        case .tie: 3
+        case .spark: 1
+        case .toReady: 2
+        case .learned: 3
+        case .tie: 4
         }
     }
 }

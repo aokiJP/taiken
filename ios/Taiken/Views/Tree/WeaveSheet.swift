@@ -1,13 +1,13 @@
 import SwiftUI
 import TaikenCore
 
-/// 体験を編むときの行き先 (新しく編む・どこから伸ばすか・書き直す)
+/// 技を編むときの行き先 (新しく編む・どこから伸ばすか・書き直す)
 struct WeaveRoute: Identifiable, Hashable {
     let id = UUID()
     var growsFrom: String?
     /// はじめから選んでおく要素
     var elements: [String] = []
-    /// 書き直す体験
+    /// 書き直す技
     var revising: String?
 
     init(growsFrom: String? = nil, elements: [String] = []) {
@@ -20,8 +20,8 @@ struct WeaveRoute: Identifiable, Hashable {
     }
 }
 
-/// 体験を編む: 自分で見つけた体験を書いて、樹に植える。
-/// 名前と誘いかけと要素だけあればよい。見方と問いは、あれば。
+/// 技を編む: 暮らしの中で身につきかけている自分だけの見方や力に、名前をつけて樹に植える。
+/// 植えた技も、ほかの技と同じく芽を使って伸ばす (編んだだけでは、まだ身についていない)。
 struct WeaveSheet: View {
     let model: TreeViewModel
     let route: WeaveRoute
@@ -33,7 +33,7 @@ struct WeaveSheet: View {
     @FocusState private var focused: Field?
     @Environment(\.dismiss) private var dismiss
 
-    enum Field: Hashable { case title, invitation, perspective, question }
+    enum Field: Hashable { case title, ability, practice }
 
     private var isRevising: Bool { route.revising != nil }
 
@@ -42,8 +42,8 @@ struct WeaveSheet: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     Text(isRevising
-                        ? "名前・誘いかけ・要素を書き直せます。記した記録はそのまま残ります。"
-                        : "自分で見つけた体験を、樹に植えます。名前と誘いかけと要素があれば十分です。")
+                        ? "名前・できるようになること・稽古・要素を書き直せます。身についていれば、身についたままです。"
+                        : "暮らしの中で、身につきかけている自分だけの見方や力に、名前をつけて樹に植えます。植えた技は、ほかの技と同じく芽を使って伸ばします。")
                         .font(.footnote)
                         .foregroundStyle(Palette.ink2)
                         .fixedSize(horizontal: false, vertical: true)
@@ -53,18 +53,14 @@ struct WeaveSheet: View {
                         multiline: false, focus: .title
                     )
                     field(
-                        "誘いかけ", text: $draft.invitation,
-                        prompt: "例: 温かい飲み物の湯気が、どこで消えるか見届けてみませんか？",
-                        limit: WeaveDraft.invitationLimit, multiline: true, focus: .invitation
+                        "身につくと、できるようになること", text: $draft.ability,
+                        prompt: "例: 湯気が消えるところまで、見届けられる。",
+                        limit: WeaveDraft.abilityLimit, multiline: true, focus: .ability
                     )
                     field(
-                        "見方（なくてもよい）", text: $draft.perspective, prompt: "この体験で、いつものことがどう見えるか",
-                        limit: WeaveDraft.perspectiveLimit, multiline: true, focus: .perspective
-                    )
-                    field(
-                        "終わったあとの問い（なくてもよい）", text: $draft.reflectionQuestion,
-                        prompt: "例: 湯気は、どこで見えなくなりましたか？", limit: WeaveDraft.questionLimit,
-                        multiline: false, focus: .question
+                        "自分の稽古（なくてもよい）", text: $draft.practice,
+                        prompt: "例: 温かい飲み物を入れたら、湯気がどこで見えなくなるかを追ってみる",
+                        limit: WeaveDraft.practiceLimit, multiline: true, focus: .practice
                     )
 
                     elementPicker
@@ -83,7 +79,7 @@ struct WeaveSheet: View {
                         Button(isRevising ? "書き直す" : "樹に植える", action: save)
                             .buttonStyle(ShuButtonStyle())
                             .accessibilityIdentifier("weave.save")
-                        Text("編んだ体験は、この端末の中の樹に置かれます。体験帳と同じく、iCloud にも送りません。")
+                        Text("編んだ技は、この端末の中の樹に置かれます。体験帳と同じく、iCloud にも送りません。")
                             .font(.caption)
                             .foregroundStyle(Palette.ink3)
                             .fixedSize(horizontal: false, vertical: true)
@@ -93,7 +89,7 @@ struct WeaveSheet: View {
             }
             .scrollDismissesKeyboard(.interactively)
             .background(Palette.paper.ignoresSafeArea())
-            .navigationTitle(isRevising ? "書き直す" : "体験を編む")
+            .navigationTitle(isRevising ? "書き直す" : "技を編む")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -150,7 +146,7 @@ struct WeaveSheet: View {
 
     private var elementPicker: some View {
         VStack(alignment: .leading, spacing: 10) {
-            MiniHead("要素（3つまで。最初に選んだものが印の字になります）")
+            MiniHead("要素（\(WeaveDraft.elementLimit)つまで。最初に選んだものの段が、伸ばす条件になります）")
             FlowLayout(spacing: 8) {
                 ForEach(model.tree.elements) { element in
                     let order = draft.elements.firstIndex(of: element.id)
@@ -185,7 +181,7 @@ struct WeaveSheet: View {
     private func toggle(_ id: String) {
         if let index = draft.elements.firstIndex(of: id) {
             draft.elements.remove(at: index)
-        } else if draft.elements.count < 3 {
+        } else if draft.elements.count < WeaveDraft.elementLimit {
             draft.elements.append(id)
         }
     }
@@ -206,29 +202,24 @@ struct WeaveSheet: View {
             .padding(.horizontal, 6)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Palette.wash, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            Text("灯った体験から伸ばすと、その先の芽として樹に出ます。")
+            Text(draft.growsFrom == nil
+                ? "根から伸ばすと、主な要素が一段あれば伸ばせます。"
+                : "身についた技から伸ばすと、その先の技として樹に出ます。")
                 .font(.caption)
                 .foregroundStyle(Palette.ink3)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
-    /// 伸ばす元の候補: 灯った体験・編んだ体験・いま選ばれている体験
+    /// 伸ばす元の候補: 身についた技 (いま選んでいる元も)
     private var parentCandidates: [TreeNode] {
-        var seen = Set<String>()
-        var result: [TreeNode] = []
-        let woven = model.tree.nodes.filter { $0.kind == .woven }
-        let current = draft.growsFrom.flatMap { model.node($0) }.map { [$0] } ?? []
-        for node in current + model.tree.litNodes + woven where node.id != route.revising && seen.insert(node.id).inserted {
-            result.append(node)
-        }
-        return result
+        model.weaveParents(excluding: route.revising, current: draft.growsFrom)
     }
 
     // MARK: - 植える
 
     private var problems: [WeaveDraft.Problem] {
-        let titles = Set(model.tree.nodes.filter { $0.id != route.revising && !$0.id.hasPrefix("h-") }.map(\.title))
-        return draft.problems(existingTitles: titles)
+        model.problems(of: draft, revising: route.revising)
     }
 
     private func load() {
@@ -237,7 +228,7 @@ struct WeaveSheet: View {
         if let id = route.revising, let node = model.node(id) {
             draft = model.draft(for: node)
         } else {
-            draft = WeaveDraft(elements: route.elements, growsFrom: route.growsFrom)
+            draft = WeaveDraft(elements: Array(route.elements.prefix(WeaveDraft.elementLimit)), growsFrom: route.growsFrom)
             focused = .title
         }
     }

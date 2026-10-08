@@ -176,10 +176,10 @@ test('提案理由は、何を手がかりにしたかを正直に書く', () =>
   const daytime = { ...base, timeOfDay: 'daytime' as const };
   const bud = choose({ ...daytime, eventTitle: null, mood: null, buds: ['taste-water'] });
   assert.equal(bud.experience.id, 'taste-water');
-  assert.equal(reasonFor(bud, null, false, { title: 'ひと口目の観察' }), '前に記した「ひと口目の観察」の先にある体験です。');
-  assert.equal(reasonFor(bud, null, false, null), 'あなたの体験の樹の、芽のひとつです。');
+  assert.equal(reasonFor(bud, null, false, { title: 'ひと口目の観察' }), 'あなたの技の樹にある、技の稽古になる体験です。');
+  assert.equal(reasonFor(bud, null, false, null), 'あなたの技の樹にある、技の稽古になる体験です。');
   const root = choose({ ...daytime, eventTitle: null, mood: null, buds: ['root-see'] });
-  assert.equal(reasonFor(root, null, false, null), '「見る」の根にある、いちばん小さなかたちの体験です。');
+  assert.equal(reasonFor(root, null, false, null), '「見る」の、いちばん小さなかたちの体験です。');
 });
 
 test('全部除外されても何かは選ぶ (除外を外して選び直す)', () => {

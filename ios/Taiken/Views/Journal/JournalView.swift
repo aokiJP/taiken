@@ -4,11 +4,11 @@ import UniformTypeIdentifiers
 
 /// 体験帳 (指示書 §15, §16)。数を競わせない: 連続記録も「今日もやろう」も出さない。
 /// いつ何をしたかを、月の暦に押された印と、日ごとの記録で見る。
-/// 体験どうしのつながりは、体験の樹で見る (記録からも樹へ渡れる)。
+/// 要素ごとの段と技は、技の樹で見る (記録からも樹へ渡れる)。
 struct JournalView: View {
     let model: HistoryViewModel
     let goHome: @MainActor () -> Void
-    /// 体験の樹をひらく (体験の id があれば、そこを中心に)
+    /// 技の樹をひらく (技の id があれば、そこを中心に)
     let openTree: @MainActor (String?) -> Void
 
     @State private var exportData: Data?
@@ -21,7 +21,9 @@ struct JournalView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 26) {
                     header
-                    ElementsTouched(touched: model.stats.elements) { openTree(nil) }
+                    RanksPanel(progress: model.progress, learnedCount: model.learnedCount) { id in
+                        openTree(id.map { ExperienceTree.rootID($0) })
+                    }
                     MonthCalendar(model: model) { day in
                         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.4)) {
                             proxy.scrollTo(day, anchor: .top)
@@ -67,7 +69,8 @@ struct JournalView: View {
         .navigationDestination(for: HistoryEntry.self) { entry in
             EntryDetailView(
                 entry: entry,
-                openTree: { openTree(model.nodeID(of: entry)) },
+                skills: model.grownSkills(of: entry),
+                openTree: { openTree(model.treeFocus(of: entry)) },
                 onDelete: { delete(entry) }
             )
             .navigationTransition(.zoom(sourceID: entry.id, in: zoom))
@@ -94,7 +97,9 @@ struct JournalView: View {
                 .font(.displayTitle)
                 .foregroundStyle(Palette.ink)
                 .accessibilityAddTraits(.isHeader)
-            Text("記した体験 \(model.stats.lived) ・ 今月 \(model.stats.thisMonth)")
+            Text(model.stats.selfRecorded > 0
+                ? "記した体験 \(model.stats.lived) ・ 今月 \(model.stats.thisMonth) ・ 自分で見つけた \(model.stats.selfRecorded)"
+                : "記した体験 \(model.stats.lived) ・ 今月 \(model.stats.thisMonth)")
                 .font(.footnote)
                 .monospacedDigit()
                 .foregroundStyle(Palette.ink2)
@@ -112,11 +117,11 @@ struct JournalView: View {
                 Text("まだ印はありません。")
                     .font(.sectionTitle)
                     .foregroundStyle(Palette.ink)
-                Text("ホームで「やってみる」を選んで、終えたら記してみてください。\n最初の印が、ここに押されます。")
+                Text("いつもの一日で体験したことを、ホームの「体験を記す」から、ひとこと記してみてください。\n最初の印が、ここに押されます。")
                     .font(.footnote)
                     .foregroundStyle(Palette.ink2)
                     .multilineTextAlignment(.center)
-                Button("最初の体験を受け取りに行く", action: goHome)
+                Button("ホームへ", action: goHome)
                     .buttonStyle(QuietButtonStyle())
                     .padding(.top, 4)
             }
@@ -329,59 +334,67 @@ private struct DayHeader: View {
     }
 }
 
-// MARK: - 触れた要素
+// MARK: - 要素の段
 
-/// 10の要素のうち、記した体験のある要素に朱の印。数や割合は出さない。押すと体験の樹がひらく
-private struct ElementsTouched: View {
-    let touched: Set<String>
-    let openTree: @MainActor () -> Void
+/// 十の要素の段と、身についた技の数。押すと技の樹がひらく (要素を押すと、その要素の根へ)
+private struct RanksPanel: View {
+    let progress: [ElementProgress]
+    let learnedCount: Int
+    let openTree: @MainActor (String?) -> Void
 
     var body: some View {
-        Button(action: openTree) {
-            VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 12) {
+            Button {
+                openTree(nil)
+            } label: {
                 HStack {
-                    MiniHead("触れた要素")
+                    MiniHead("要素の段")
                     Spacer()
                     HStack(spacing: 4) {
-                        Text("体験の樹をひらく")
+                        Text(learnedCount > 0 ? "身についた技 \(learnedCount) ・ 技の樹をひらく" : "技の樹をひらく")
                         Image(systemName: "chevron.right")
                             .font(.caption2.weight(.semibold))
                     }
                     .font(.caption)
                     .foregroundStyle(Palette.ink2)
                 }
-                HStack(spacing: 0) {
-                    ForEach(TaikenContent.shared.elements) { element in
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(learnedCount > 0 ? "技の樹をひらく。身についた技 \(learnedCount)" : "技の樹をひらく")
+            .accessibilityIdentifier("journal.tree")
+
+            HStack(spacing: 0) {
+                ForEach(TaikenContent.shared.elements) { element in
+                    let rank = progress.first { $0.element == element.id }?.rank ?? 0
+                    Button {
+                        openTree(element.id)
+                    } label: {
                         VStack(spacing: 5) {
                             SealView(
                                 character: element.glyph, size: 26,
-                                style: touched.contains(element.id) ? .outlined : .ghost, rotation: 0
+                                style: rank > 0 ? .outlined : .ghost, rotation: 0
                             )
                             Text(element.label)
                                 .font(.system(size: 9))
-                                .foregroundStyle(touched.contains(element.id) ? Palette.ink2 : Palette.ink3)
+                                .foregroundStyle(rank > 0 ? Palette.ink2 : Palette.ink3)
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.7)
+                            Text(rank > 0 ? Ranks.kanji(rank) : "・")
+                                .font(Typeface.fixedMincho(11))
+                                .foregroundStyle(rank > 0 ? Palette.ink : Palette.ink3)
                         }
                         .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(element.label)、\(Ranks.label(rank))")
+                    .accessibilityHint("技の樹で、この要素の根をひらきます")
                 }
             }
-            .padding(16)
-            .background(Palette.wash, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
-            .contentShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         }
-        .buttonStyle(.plain)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(accessibilityText)
-        .accessibilityHint("体験の樹をひらきます")
-        .accessibilityAddTraits(.isButton)
-        .accessibilityIdentifier("journal.tree")
-    }
-
-    private var accessibilityText: String {
-        let names = TaikenContent.shared.elements.filter { touched.contains($0.id) }.map(\.label)
-        return names.isEmpty ? "触れた要素は、まだありません" : "触れた要素: \(names.joined(separator: "、"))"
+        .padding(16)
+        .background(Palette.wash, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
     }
 }
 
@@ -397,13 +410,16 @@ struct EntryRow: View {
             )
             .padding(.top, 2)
             VStack(alignment: .leading, spacing: 5) {
-                Text(entry.title)
+                Text(entry.isSelfRecorded ? "「\(entry.title)」" : entry.title)
                     .font(.experienceTitle)
                     .foregroundStyle(Palette.ink)
-                Text(entry.invitation)
-                    .font(.footnote)
-                    .foregroundStyle(Palette.ink2)
-                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+                if !entry.isSelfRecorded {
+                    Text(entry.invitation)
+                        .font(.footnote)
+                        .foregroundStyle(Palette.ink2)
+                        .lineLimit(2)
+                }
                 if let note = entry.note {
                     Text("「\(note)」")
                         .font(Typeface.mincho(14))
@@ -414,6 +430,8 @@ struct EntryRow: View {
                     Text(entry.createdAt.formatted(date: .omitted, time: .shortened))
                     if entry.status == .active {
                         Text("体験中").foregroundStyle(Palette.shu)
+                    } else if entry.isSelfRecorded {
+                        Text("自分で記した")
                     } else if let rating = entry.rating {
                         Label(rating.label, systemImage: rating.symbolName)
                     }
