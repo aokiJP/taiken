@@ -66,10 +66,10 @@ public enum Mood: String, Codable, Sendable, CaseIterable, Identifiable {
     }
 }
 
-/// 体験の樹のいま (体験帳から計算する。「体験帳と反応を提案に使う」を許可しているときだけ送る)。
-/// 提案を、灯った体験の先へ自然に伸ばすために使う
+/// 技の樹のいま (体験帳と自分の樹から計算する。「体験帳と反応をきっかけに使う」を許可しているときだけ送る)。
+/// きっかけを、その人の技の稽古や、記してきた体験の近くから選ぶために使う
 public struct TreeContext: Codable, Hashable, Sendable {
-    /// 灯った体験 (最近のものから)
+    /// 記したことのある体験ライブラリの体験 (最近のものから。自分で見つけて記した体験は自分の言葉なので入れない)
     public struct LivedNode: Codable, Hashable, Sendable {
         /// ライブラリの体験の id、または自分で編んだ・見つけた体験の id
         public let id: String
@@ -85,7 +85,8 @@ public struct TreeContext: Codable, Hashable, Sendable {
     }
 
     public let lived: [LivedNode]
-    /// 芽 (灯った体験からつながっている、まだやっていない体験の id)
+    /// 技の稽古: 身についた技・育てられる技の稽古になる体験ライブラリの id (何も身についていなければ要素の根の体験)。
+    /// 3.0 では「灯った体験の先の芽」だった。形と、受け取る側の扱い (少しだけ前に出す) は同じ
     public let buds: [String]
 
     public init(lived: [LivedNode], buds: [String]) {
@@ -168,7 +169,7 @@ public struct Experience: Codable, Hashable, Sendable {
     public let nodeID: String?
     /// 要素の id (先頭が主な要素)。古い応答には無い
     public let elements: [String]
-    /// この体験が伸びている、灯った体験の id (体験の樹の上での親)
+    /// この体験が伸びている、記した体験の id (リクエストの tree.lived にあるものだけ)
     public let growsFrom: String?
 
     public init(
@@ -340,7 +341,7 @@ public struct ExperienceRequest: Codable, Sendable, Equatable {
     public let allowWebSearch: Bool
     /// ユーザーがその場で選んだ気分 (選んでいなければキーごと送らない)
     public let mood: Mood?
-    /// 体験の樹のいま (体験帳を使う許可があるときだけ。無ければキーごと送らない)
+    /// 技の樹のいま (体験帳を使う許可があるときだけ。無ければキーごと送らない)
     public let tree: TreeContext?
 
     public init(

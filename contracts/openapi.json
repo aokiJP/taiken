@@ -3,7 +3,7 @@
   "info": {
     "title": "Taiken Backend API",
     "version": "3.0.0",
-    "description": "体験生成AIのBackend。iOSアプリだけが呼ぶ前提の非公開API。キーは snake_case。このファイルが契約の正であり、Backend と iOS (TaikenCore) の両方のテストがフィクスチャと実際の出力をこのスキーマで検証する。3.0.0 で体験の node_id・elements・grows_from と、リクエストの tree (体験の樹のいま) を追加し、季節 (season) を廃止 (送られても無視する)。"
+    "description": "体験生成AIのBackend。iOSアプリだけが呼ぶ前提の非公開API。キーは snake_case。このファイルが契約の正であり、Backend と iOS (TaikenCore) の両方のテストがフィクスチャと実際の出力をこのスキーマで検証する。3.0.0 で体験の node_id・elements・grows_from と、リクエストの tree を追加し、季節 (season) を廃止 (送られても無視する)。アプリ 4.0 (技の樹) でも形は変えていない。tree.buds に入るのが「技の稽古」になった (受け取る側の扱いは同じ)。"
   },
   "servers": [{ "url": "http://localhost:8787" }],
   "security": [{ "bearer": [] }],
@@ -107,12 +107,12 @@
         "enum": ["see", "hear", "smell", "taste", "touch", "move", "pause", "think", "word", "people"]
       },
       "NodeId": {
-        "description": "体験の樹の上の体験の id。体験ライブラリの id (例: meal-first-bite)、または端末で編んだ・見つけた体験の id (例: w-1a2b3c4d5e6f)",
+        "description": "体験ライブラリの体験の id (例: meal-first-bite)、または端末で編んだ技の id (例: w-1a2b3c4d5e6f)",
         "type": "string",
         "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"
       },
       "TreeContext": {
-        "description": "体験の樹のいま。体験帳から端末で計算し、ユーザーが「体験帳と反応を提案に使う」を許可しているときだけ送る",
+        "description": "技の樹のいま。体験帳と自分の樹から端末で計算し、ユーザーが「体験帳と反応をきっかけに使う」を許可しているときだけ送る",
         "type": "object",
         "additionalProperties": false,
         "required": ["lived", "buds"],
@@ -120,7 +120,7 @@
           "lived": {
             "type": "array",
             "maxItems": 12,
-            "description": "灯った体験 (最近記したものから)",
+            "description": "記したことのある体験ライブラリの体験 (最近記したものから)。自分で見つけて記した体験は含めない",
             "items": {
               "type": "object",
               "additionalProperties": false,
@@ -135,7 +135,7 @@
           "buds": {
             "type": "array",
             "maxItems": 16,
-            "description": "芽 (灯った体験からつながっている、まだやっていない体験の id)",
+            "description": "技の稽古: ユーザーが身につけた技・伸ばせる技の稽古になる体験ライブラリの id (何も身についていなければ要素の根の体験)。選ぶときに少しだけ前に出す",
             "items": { "$ref": "#/components/schemas/NodeId" }
           }
         }
@@ -192,7 +192,7 @@
           },
           "grows_from": {
             "anyOf": [{ "$ref": "#/components/schemas/NodeId" }, { "type": "null" }],
-            "description": "この体験が伸びている、灯った体験の id (リクエストの tree.lived にあるものだけ)"
+            "description": "この体験が伸びている、記した体験の id (リクエストの tree.lived にあるものだけ)"
           }
         }
       },
@@ -263,7 +263,7 @@
           },
           "tree": {
             "anyOf": [{ "$ref": "#/components/schemas/TreeContext" }, { "type": "null" }],
-            "description": "体験の樹のいま。送らないときは省略"
+            "description": "技の樹のいま。送らないときは省略"
           }
         }
       },

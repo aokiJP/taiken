@@ -141,7 +141,7 @@ struct OnboardingView: View {
                     )
                     Divider().overlay(Palette.line)
                     PermissionRow(
-                        title: "朝の便り", detail: "朝に一度だけ、きっかけをひとつ届けます", isOn: $morningLetter
+                        title: "朝の便り", detail: "朝に一度だけ、短いひとことを届けます", isOn: $morningLetter
                     )
                 }
             }

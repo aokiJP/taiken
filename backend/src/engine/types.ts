@@ -46,11 +46,11 @@ export interface Area {
 /** 体験の要素 */
 export type Element = 'see' | 'hear' | 'smell' | 'taste' | 'touch' | 'move' | 'pause' | 'think' | 'word' | 'people';
 
-/** 体験の樹のいま (iOS が体験帳から計算する。体験帳を使う許可があるときだけ届く) */
+/** 技の樹のいま (iOS が体験帳と自分の樹から計算する。体験帳を使う許可があるときだけ届く) */
 export interface TreeContext {
-  /** 灯った体験 (最近のものから) */
+  /** 記したことのある体験ライブラリの体験 (最近のものから) */
   lived: { id: string; title: string; elements: Element[] }[];
-  /** 芽 (灯った体験からつながっている、まだやっていない体験の id) */
+  /** 技の稽古: ユーザーが身につけた技・伸ばせる技の稽古になる体験の id (少しだけ前に出す) */
   buds: string[];
 }
 
@@ -101,7 +101,7 @@ export interface Experience {
   node_id: string | null;
   /** 要素 (先頭が主な要素) */
   elements: Element[];
-  /** この体験が伸びている、灯った体験の id (tree.lived にあるものだけ) */
+  /** この体験が伸びている、記した体験の id (tree.lived にあるものだけ) */
   grows_from: string | null;
 }
 

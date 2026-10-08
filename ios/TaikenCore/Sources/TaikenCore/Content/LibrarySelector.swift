@@ -18,7 +18,7 @@ public struct LibrarySelector: Sendable {
         public var recentTitles: Set<String>
         /// 今回は出さない (別の提案で見たもの)
         public var excludeTitles: Set<String>
-        /// 体験の樹の「芽」(灯った体験からつながっている、まだやっていない体験の id)。少しだけ前に出す
+        /// 技の樹の稽古 (身についた技・育てられる技の稽古になる体験の id)。少しだけ前に出す
         public var buds: Set<String>
 
         public init(
@@ -47,7 +47,7 @@ public struct LibrarySelector: Sendable {
         public let mood: Mood?
         /// 気分をユーザーが自分で選んだか
         public let moodWasChosen: Bool
-        /// 体験の樹の芽から選んだか
+        /// 技の稽古 (buds) から選んだか
         public let isBud: Bool
 
         /// 予定の内容に合わせて選んだか
