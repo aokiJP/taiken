@@ -1,0 +1,1007 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>body{margin:0}</style>
+</head>
+<body>
+<title>体験 プロトタイプ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Layout: the app is the hero — a phone-shaped screen whose ground is the sky at this hour,
+   beside a narrow column of design notes, a sky switcher and a lock-screen preview. */
+@property --s1 { syntax: "<color>"; inherits: true; initial-value: #cbe3f1; }
+@property --s2 { syntax: "<color>"; inherits: true; initial-value: #e6f1f1; }
+@property --s3 { syntax: "<color>"; inherits: true; initial-value: #f8f4ea; }
+
+:root {
+  --ink: #1c2131;          /* 藍墨 — text on panels */
+  --ink-2: #525a70;
+  --ink-3: #868ca0;
+  --panel: rgba(255, 255, 255, 0.72);    /* 障子 — light through paper */
+  --panel-solid: #f7f8fb;
+  --line: rgba(28, 33, 49, 0.11);
+  --shadow: rgba(28, 33, 49, 0.28);
+  --shu: #cc3a2c;          /* 朱肉 — the seal, and only the seal-worthy action */
+  --shu-soft: rgba(204, 58, 44, 0.10);
+  --shu-on: #fff7f3;
+  --page: #e7eaf2;         /* the desk around the phone */
+  --page-ink: #262b3b;
+  --page-ink-2: #5d6478;
+  --bezel: #0e111b;
+  --focus: #2f6fe4;
+  --font-display: "Shippori Mincho", "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", serif;
+  --font-ui: "Zen Kaku Gothic New", "Hiragino Sans", "Noto Sans CJK JP", "Noto Sans JP", system-ui, sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #eceef6; --ink-2: #aab0c4; --ink-3: #7c839a;
+    --panel: rgba(23, 28, 47, 0.62); --panel-solid: #1a1f33;
+    --line: rgba(236, 238, 246, 0.13); --shadow: rgba(0, 0, 0, 0.55);
+    --shu: #ec5b4b; --shu-soft: rgba(236, 91, 75, 0.14); --shu-on: #fff5f2;
+    --page: #0d101b; --page-ink: #e6e8f1; --page-ink-2: #9aa1b6;
+    --bezel: #05070d; --focus: #7aa7ff;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ink: #eceef6; --ink-2: #aab0c4; --ink-3: #7c839a;
+  --panel: rgba(23, 28, 47, 0.62); --panel-solid: #1a1f33;
+  --line: rgba(236, 238, 246, 0.13); --shadow: rgba(0, 0, 0, 0.55);
+  --shu: #ec5b4b; --shu-soft: rgba(236, 91, 75, 0.14); --shu-on: #fff5f2;
+  --page: #0d101b; --page-ink: #e6e8f1; --page-ink-2: #9aa1b6;
+  --bezel: #05070d; --focus: #7aa7ff;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { background: var(--page); color: var(--page-ink); font-family: var(--font-ui); -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+.stage {
+  display: flex; gap: 48px; justify-content: center; align-items: flex-start;
+  padding-inline: 16px; padding-block: 32px 48px; max-width: 1080px; margin-inline: auto;
+}
+
+/* ---------- device ---------- */
+.device { flex: 0 0 auto; width: 400px; padding: 10px; border-radius: 54px; background: var(--bezel);
+  box-shadow: 0 40px 80px -40px var(--shadow), 0 0 0 1px var(--line); }
+.app { position: relative; width: 380px; height: 800px; max-height: calc(100svh - 84px); min-height: 640px; border-radius: 44px; overflow: hidden;
+  color: var(--ink); isolation: isolate; transition: --s1 1.4s ease, --s2 1.4s ease, --s3 1.4s ease; }
+.app[data-ondark="true"] { --on-sky: #f3f1ec; --on-sky-2: rgba(243, 241, 236, 0.72); }
+.app[data-ondark="false"] { --on-sky: #1c2131; --on-sky-2: rgba(28, 33, 49, 0.64); }
+.app[data-lamplight="true"] { --panel: rgba(251, 250, 247, 0.9); }
+
+.sky { position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, var(--s1) 0%, var(--s2) 58%, var(--s3) 100%); }
+.sky::before { content: ""; position: absolute; inset: -25%;
+  background:
+    radial-gradient(38% 28% at 28% 22%, color-mix(in oklab, var(--s2) 60%, white 40%), transparent 70%),
+    radial-gradient(34% 26% at 78% 64%, color-mix(in oklab, var(--s3) 55%, white 45%), transparent 72%);
+  opacity: .55; animation: drift 46s ease-in-out infinite alternate; }
+.app[data-ondark="true"] .sky::before { opacity: .22; }
+@keyframes drift { from { transform: translate3d(-3%, -2%, 0) scale(1); } to { transform: translate3d(4%, 3%, 0) scale(1.08); } }
+.stars { position: absolute; left: 0; top: 0; width: 1px; height: 1px; border-radius: 50%; opacity: 0; transition: opacity 1.4s; }
+.app[data-stars="true"] .stars { opacity: 1; animation: twinkle 6s ease-in-out infinite alternate; }
+.stars.b { animation-delay: -3s !important; }
+@keyframes twinkle { from { opacity: .45; } to { opacity: 1; } }
+
+.topbar { position: absolute; top: 0; left: 0; right: 0; z-index: 5; display: flex; justify-content: space-between; align-items: center;
+  padding: 18px 16px 8px; pointer-events: none; }
+.topbar > * { pointer-events: auto; }
+.icon-btn { width: 40px; height: 40px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer;
+  background: color-mix(in oklab, var(--panel) 80%, transparent); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 0 0 1px var(--line); color: var(--ink); }
+.icon-btn svg { width: 19px; height: 19px; }
+
+.screen { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; padding: 66px 18px 120px; scrollbar-width: none; }
+.screen::-webkit-scrollbar { display: none; }
+.home { display: flex; flex-direction: column; gap: 16px; }
+
+/* ---------- header: date, and the micro-season as a vertical tanzaku ---------- */
+.head { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: start; color: var(--on-sky); padding-inline: 4px; }
+.head .date { font-size: 12.5px; letter-spacing: .08em; color: var(--on-sky-2); font-feature-settings: "palt"; }
+.head .greet { margin: 6px 0 0; font-family: var(--font-display); font-weight: 500; font-size: 21px; line-height: 1.5; text-wrap: balance; }
+.head .meaning { margin: 8px 0 0; font-size: 12.5px; line-height: 1.7; color: var(--on-sky-2); }
+.head .meaning b { font-weight: 500; color: var(--on-sky); }
+.tanzaku { writing-mode: vertical-rl; font-family: var(--font-display); font-weight: 700; font-size: 25px; letter-spacing: .18em; line-height: 1;
+  padding: 12px 9px 14px; border: 1px solid color-mix(in oklab, var(--on-sky) 26%, transparent); border-radius: 3px;
+  background: color-mix(in oklab, var(--on-sky) 6%, transparent); color: var(--on-sky); cursor: pointer; display: flex; gap: 10px; align-items: center; }
+.tanzaku.compact { font-size: 22px; padding: 10px 8px; letter-spacing: .14em; }
+.tanzaku small { font-family: var(--font-ui); font-weight: 400; font-size: 10px; letter-spacing: .12em; color: var(--on-sky-2); }
+
+/* ---------- panels ---------- */
+.card { position: relative; background: var(--panel); backdrop-filter: blur(22px) saturate(1.25); -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  border-radius: 28px; box-shadow: 0 0 0 1px var(--line), 0 22px 44px -30px var(--shadow); padding: 20px 20px 18px; }
+.card-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.eyebrow { font-size: 11px; letter-spacing: .16em; color: var(--ink-3); font-weight: 500; display: inline-flex; align-items: center; gap: 8px; }
+.chip-src { font-size: 10.5px; letter-spacing: .06em; padding: 3px 8px; border-radius: 99px; background: var(--line); color: var(--ink-2); }
+.invitation { margin: 14px 0 0; font-family: var(--font-display); font-weight: 500; font-size: 21px; line-height: 1.75; letter-spacing: .02em;
+  line-break: strict; text-wrap: pretty; }
+.signature { margin: 14px 0 0; display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 14.5px; color: var(--ink-2); }
+.signature::before { content: ""; width: 22px; height: 1px; background: currentColor; opacity: .5; }
+.perspective { margin: 8px 0 0; font-size: 13px; line-height: 1.8; color: var(--ink-2); line-break: strict; }
+.tags { margin: 14px 0 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.tag { font-size: 11px; padding: 4px 9px; border-radius: 99px; box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-2); }
+.why { margin: 12px 0 0; font-size: 12.5px; color: var(--ink-2); }
+.why summary { cursor: pointer; list-style: none; display: inline-flex; gap: 6px; align-items: center; color: var(--ink-3); }
+.why summary::-webkit-details-marker { display: none; }
+.why summary::before { content: "＋"; font-size: 11px; }
+.why[open] summary::before { content: "－"; }
+.why p { margin: 8px 0 0; line-height: 1.8; }
+
+.actions { margin-top: 16px; display: grid; gap: 10px; }
+.actions-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn { border: 0; border-radius: 16px; padding: 14px 12px; font-size: 14.5px; font-weight: 500; cursor: pointer; display: inline-flex;
+  align-items: center; justify-content: center; gap: 8px; transition: transform .12s ease, background .2s; }
+.btn:active { transform: scale(.97); }
+.btn svg { width: 16px; height: 16px; }
+.btn-shu { background: var(--shu); color: var(--shu-on); box-shadow: 0 10px 22px -12px var(--shu); font-weight: 700; letter-spacing: .08em; }
+.btn-quiet { background: color-mix(in oklab, var(--ink) 6%, transparent); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+.btn-text { background: none; color: var(--ink-3); padding: 8px; font-size: 13px; }
+.btn[disabled] { opacity: .45; cursor: default; }
+
+.card.leaving { animation: leave .26s ease forwards; }
+.card.entering { animation: enter .5s cubic-bezier(.2, .8, .2, 1) both; }
+@keyframes leave { to { opacity: 0; transform: translateX(-28px) rotate(-1.2deg); } }
+@keyframes enter { from { opacity: 0; transform: translateX(26px) rotate(1deg); } }
+.reveal { animation: ink 0.8s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes ink { from { opacity: 0; filter: blur(7px); transform: translateY(8px); } }
+.d1 { animation-delay: .06s; } .d2 { animation-delay: .28s; } .d3 { animation-delay: .42s; }
+
+/* loading: three drops of ink */
+.loading { display: grid; place-items: center; gap: 16px; min-height: 260px; text-align: center; }
+.drops { display: flex; gap: 9px; }
+.drops i { width: 9px; height: 9px; border-radius: 50%; background: var(--shu); animation: drop 1.2s ease-in-out infinite; }
+.drops i:nth-child(2) { animation-delay: .18s; } .drops i:nth-child(3) { animation-delay: .36s; }
+@keyframes drop { 0%, 100% { transform: scale(.55); opacity: .35; } 45% { transform: scale(1); opacity: 1; } }
+.loading p { margin: 0; font-family: var(--font-display); font-size: 15px; color: var(--ink-2); }
+
+/* active */
+.card.is-active { box-shadow: 0 0 0 1.5px var(--shu), 0 24px 48px -28px var(--shu); animation: breathe 5s ease-in-out infinite; }
+@keyframes breathe { 50% { box-shadow: 0 0 0 1.5px var(--shu), 0 28px 60px -24px var(--shu); } }
+.active-label { color: var(--shu); font-weight: 700; letter-spacing: .14em; }
+.since { font-size: 11.5px; color: var(--ink-3); }
+.question { margin: 16px 0 0; padding: 14px 16px; border-radius: 18px; background: var(--shu-soft); }
+.question span { display: block; font-size: 11px; letter-spacing: .1em; color: var(--ink-3); }
+.question p { margin: 6px 0 0; font-family: var(--font-display); font-size: 16px; line-height: 1.7; }
+.toggle-row { margin-top: 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 13px; color: var(--ink-2); }
+.switch { width: 46px; height: 28px; border-radius: 99px; border: 0; background: var(--line); position: relative; cursor: pointer; flex: 0 0 auto; transition: background .2s; }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: var(--panel-solid);
+  box-shadow: 0 1px 3px var(--shadow); transition: transform .2s; }
+.switch[aria-checked="true"] { background: var(--shu); }
+.switch[aria-checked="true"]::after { transform: translateX(18px); }
+
+/* seal — the one loud thing */
+.seal { --size: 40px; width: var(--size); height: var(--size); flex: 0 0 auto; display: inline-grid; place-items: center; border-radius: calc(var(--size) * .2);
+  transform: rotate(var(--rot, -4deg)); font-family: var(--font-display); font-weight: 800; font-size: calc(var(--size) * .58); line-height: 1;
+  color: var(--shu); box-shadow: inset 0 0 0 calc(var(--size) * .075) var(--shu);
+  -webkit-mask-image: var(--ink-mask); mask-image: var(--ink-mask); -webkit-mask-size: 160px; mask-size: 160px; }
+.seal.filled { background: var(--shu); color: var(--shu-on); box-shadow: none; }
+.seal.ghost { color: var(--ink-3); box-shadow: inset 0 0 0 1px var(--line); -webkit-mask-image: none; mask-image: none; font-weight: 500; }
+.stamp-wrap { display: grid; place-items: center; padding: 10px 0 4px; }
+.stamp { --size: 96px; animation: stamp .62s cubic-bezier(.3, 1.6, .5, 1) both; }
+@keyframes stamp { 0% { transform: scale(2.1) rotate(-16deg); opacity: 0; } 55% { transform: scale(.92) rotate(-5deg); opacity: 1; } 100% { transform: scale(1) rotate(-6deg); } }
+.thump { animation: thump .5s .3s ease-out both; }
+@keyframes thump { 0%, 100% { transform: translate(0, 0); } 30% { transform: translate(0, 2px); } 60% { transform: translate(0, -1px); } }
+.completed h3, .resting h3 { margin: 14px 0 0; font-family: var(--font-display); font-weight: 700; font-size: 20px; text-align: center; }
+.completed .sub, .resting .sub { margin: 8px 0 0; text-align: center; font-size: 13px; color: var(--ink-2); line-height: 1.8; }
+.note-quote { margin: 14px auto 0; max-width: 28em; font-family: var(--font-display); font-size: 15px; line-height: 1.8; text-align: center; color: var(--ink); }
+
+/* moods */
+.moods { display: flex; flex-direction: column; gap: 8px; }
+.moods-label { font-size: 11.5px; letter-spacing: .1em; color: var(--on-sky-2); padding-left: 4px; }
+.mood-row { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding: 2px 2px 4px; }
+.mood-row::-webkit-scrollbar { display: none; }
+.mood { flex: 0 0 auto; border: 0; border-radius: 99px; padding: 9px 14px; font-size: 13px; cursor: pointer; color: var(--ink);
+  background: var(--panel); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); box-shadow: 0 0 0 1px var(--line); transition: background .2s, color .2s; }
+.mood[aria-pressed="true"] { background: var(--ink); color: var(--panel-solid); box-shadow: none; }
+
+.today { display: flex; flex-direction: column; gap: 10px; }
+.today-row { display: flex; gap: 10px; align-items: center; padding: 12px 14px; }
+.today-row .t { font-family: var(--font-display); font-weight: 700; font-size: 14px; }
+.today-row .m { font-size: 11.5px; color: var(--ink-3); }
+.section-label { font-size: 11.5px; letter-spacing: .12em; color: var(--on-sky-2); padding-left: 4px; }
+.notice { font-size: 12px; color: var(--on-sky-2); padding-left: 4px; }
+
+.app.onboarding .dock, .app.onboarding .topbar { display: none; }
+.dock { position: absolute; left: 0; right: 0; bottom: 0; z-index: 5; display: flex; justify-content: center; padding: 14px 16px 22px; pointer-events: none; }
+.talk { pointer-events: auto; border: 0; border-radius: 99px; padding: 13px 22px; display: inline-flex; gap: 10px; align-items: center; cursor: pointer;
+  font-size: 14px; color: var(--ink); background: var(--panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 0 0 1px var(--line), 0 14px 30px -18px var(--shadow); }
+.talk svg { width: 18px; height: 18px; }
+
+/* ---------- sheets ---------- */
+.scrim { position: absolute; inset: 0; z-index: 20; background: rgba(8, 10, 18, .32); opacity: 0; pointer-events: none; transition: opacity .3s; }
+.scrim.on { opacity: 1; pointer-events: auto; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 21; max-height: 90%; overflow-y: auto; background: var(--panel-solid); color: var(--ink);
+  border-radius: 30px 30px 0 0; padding: 10px 22px 28px; transform: translateY(105%); transition: transform .42s cubic-bezier(.2, .8, .2, 1);
+  box-shadow: 0 -20px 40px -24px var(--shadow); scrollbar-width: none; }
+.sheet.on { transform: translateY(0); }
+.grabber { width: 38px; height: 5px; border-radius: 9px; background: var(--line); margin: 0 auto 14px; }
+.sheet h2 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 19px; }
+.sheet .lead { margin: 6px 0 0; font-size: 12.5px; color: var(--ink-3); }
+.sheet-head { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.sheet-head .icon-btn { background: var(--line); box-shadow: none; width: 34px; height: 34px; flex: 0 0 auto; }
+
+.reflect-q { margin: 18px 0 0; font-family: var(--font-display); font-weight: 500; font-size: 22px; line-height: 1.7; line-break: strict; }
+.ratings { margin-top: 18px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.rating { border: 0; border-radius: 18px; padding: 16px 6px 12px; cursor: pointer; display: grid; gap: 8px; justify-items: center; font-size: 13px;
+  background: color-mix(in oklab, var(--ink) 5%, transparent); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink-2); }
+.rating svg { width: 30px; height: 30px; }
+.rating[aria-pressed="true"] { background: var(--shu-soft); color: var(--shu); box-shadow: inset 0 0 0 1.5px var(--shu); font-weight: 700; }
+.field { margin-top: 16px; display: grid; gap: 6px; font-size: 12px; color: var(--ink-3); }
+.field textarea { font: inherit; font-size: 14px; color: var(--ink); background: color-mix(in oklab, var(--ink) 5%, transparent); border: 0;
+  border-radius: 14px; padding: 12px 14px; min-height: 64px; resize: none; box-shadow: inset 0 0 0 1px var(--line); }
+
+.obs { margin-top: 14px; display: grid; gap: 10px; }
+.ob { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: baseline; font-size: 13px; line-height: 1.7; }
+.basis { font-size: 10.5px; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.basis.fact { background: var(--shu-soft); color: var(--shu); }
+.basis.guess { background: var(--line); color: var(--ink-2); }
+.ob.guess span:last-child { font-style: italic; color: var(--ink-2); }
+.kv { margin-top: 16px; display: grid; gap: 0; border-radius: 16px; overflow: hidden; box-shadow: inset 0 0 0 1px var(--line); }
+.kv div { display: grid; grid-template-columns: 6.5em 1fr; gap: 10px; padding: 10px 14px; font-size: 12.5px; line-height: 1.6; border-top: 1px solid var(--line); }
+.kv div:first-child { border-top: 0; }
+.kv dt { color: var(--ink-3); }
+.kv dd { margin: 0; min-width: 0; }
+.mini-head { margin: 22px 0 0; font-size: 12px; letter-spacing: .1em; color: var(--ink-3); }
+
+/* chat */
+.chat { display: flex; flex-direction: column; height: 100%; }
+.chat-log { display: flex; flex-direction: column; gap: 12px; padding: 14px 0 10px; }
+.msg { max-width: 86%; font-size: 14px; line-height: 1.75; }
+.msg.ai { align-self: flex-start; display: flex; gap: 10px; }
+.msg.ai p { margin: 0; }
+.msg.me { align-self: flex-end; background: color-mix(in oklab, var(--shu) 12%, transparent); padding: 10px 14px; border-radius: 18px 18px 6px 18px; }
+.typing { display: inline-flex; gap: 5px; padding: 8px 2px; }
+.typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--ink-3); animation: drop 1s ease-in-out infinite; }
+.typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+.quick { display: flex; flex-wrap: wrap; gap: 8px; }
+.quick button { border: 0; border-radius: 99px; padding: 8px 12px; font-size: 12.5px; cursor: pointer; background: var(--line); color: var(--ink); }
+.sugg { margin-top: 8px; padding: 14px 16px; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--line); background: color-mix(in oklab, var(--ink) 3%, transparent); }
+.sugg p { margin: 0; font-family: var(--font-display); font-size: 15px; line-height: 1.75; }
+.sugg .signature { margin-top: 8px; font-size: 13px; }
+.sugg .row { display: flex; gap: 8px; margin-top: 10px; }
+.sugg .row .btn { padding: 9px 14px; font-size: 13px; border-radius: 12px; }
+.care { margin-top: 8px; padding: 14px 16px; border-radius: 18px; background: var(--shu-soft); font-size: 12.5px; line-height: 1.8; }
+.care strong { display: block; font-size: 13px; color: var(--ink); }
+.composer { position: sticky; bottom: 0; display: flex; gap: 8px; padding-top: 10px; background: var(--panel-solid); }
+.composer input { flex: 1; min-width: 0; font: inherit; font-size: 14px; color: var(--ink); background: color-mix(in oklab, var(--ink) 5%, transparent);
+  border: 0; border-radius: 99px; padding: 12px 16px; box-shadow: inset 0 0 0 1px var(--line); }
+.composer .btn { border-radius: 99px; padding: 0 16px; }
+
+/* ---------- journal ---------- */
+.journal { position: absolute; inset: 0; z-index: 12; overflow-y: auto; background: var(--panel-solid); color: var(--ink); transform: translateX(102%);
+  transition: transform .45s cubic-bezier(.2, .8, .2, 1); padding: 18px 18px 40px; scrollbar-width: none; }
+.journal.on { transform: translateX(0); }
+.journal-top { display: flex; justify-content: space-between; align-items: center; }
+.journal-top .icon-btn { background: var(--line); box-shadow: none; }
+.journal h2 { margin: 18px 0 0; font-family: var(--font-display); font-weight: 800; font-size: 30px; letter-spacing: .06em; }
+.stats { margin: 8px 0 0; font-size: 12.5px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.ring-wrap { margin: 18px 0 0; display: grid; place-items: center; position: relative; }
+.ring-wrap svg { width: 100%; max-width: 300px; height: auto; display: block; }
+.ring-center { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; pointer-events: none; }
+.ring-center b { display: block; font-family: var(--font-display); font-weight: 800; font-size: 26px; letter-spacing: .1em; }
+.ring-center span { display: block; font-size: 11px; color: var(--ink-3); margin-top: 4px; }
+.ring-cap { margin: 10px 0 0; font-size: 12px; color: var(--ink-3); text-align: center; line-height: 1.7; }
+.month { margin-top: 26px; }
+.month-head { display: flex; justify-content: space-between; align-items: center; font-family: var(--font-display); font-weight: 700; font-size: 16px; }
+.month-head button { border: 0; background: none; cursor: pointer; color: var(--ink-2); font-size: 18px; width: 36px; height: 36px; border-radius: 50%; }
+.month-head button[disabled] { opacity: .25; cursor: default; }
+.grid7 { margin-top: 10px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.grid7 .wd { font-size: 10.5px; text-align: center; color: var(--ink-3); padding-bottom: 4px; }
+.day { aspect-ratio: 1 / 1.08; max-width: 100%; border-radius: 10px; display: grid; place-items: center; position: relative; font-size: 11px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.day.out { opacity: .32; }
+.day.today { box-shadow: inset 0 0 0 1px var(--ink-3); }
+.day .num { position: absolute; top: 3px; left: 5px; font-size: 9.5px; }
+.day .seal { --size: 22px; }
+.entries { margin-top: 26px; display: grid; gap: 12px; }
+.entry { display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 14px; border-radius: 20px; box-shadow: inset 0 0 0 1px var(--line); }
+.entry .t { font-family: var(--font-display); font-weight: 700; font-size: 15px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.entry .inv { margin: 4px 0 0; font-size: 12.5px; line-height: 1.7; color: var(--ink-2); }
+.entry .note { margin: 6px 0 0; font-family: var(--font-display); font-size: 13.5px; line-height: 1.7; }
+.entry .meta { margin: 6px 0 0; font-size: 11px; color: var(--ink-3); display: flex; gap: 10px; flex-wrap: wrap; }
+.sample { font-family: var(--font-ui); font-weight: 500; font-size: 10px; padding: 2px 7px; border-radius: 99px; background: var(--line); color: var(--ink-3); letter-spacing: .06em; }
+.trend { margin-top: 22px; display: grid; gap: 6px; font-size: 12.5px; color: var(--ink-2); line-height: 1.7; }
+
+/* ---------- onboarding ---------- */
+.onb { position: absolute; inset: 0; z-index: 30; display: flex; flex-direction: column; padding: 70px 26px 30px; color: var(--on-sky); }
+.onb[hidden] { display: none !important; }
+.onb-body { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 18px; }
+.onb h1 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 30px; line-height: 1.55; letter-spacing: .03em; text-wrap: balance; }
+.onb p { margin: 0; font-size: 14px; line-height: 1.95; color: var(--on-sky-2); line-break: strict; }
+.onb p b { color: var(--on-sky); font-weight: 500; }
+.onb .tanzaku { align-self: flex-start; font-size: 34px; padding: 16px 12px; }
+.onb-foot { display: grid; gap: 14px; }
+.dots { display: flex; gap: 6px; justify-content: center; }
+.dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--on-sky-2); opacity: .4; transition: opacity .3s, width .3s; }
+.dots i.on { opacity: 1; width: 18px; border-radius: 9px; }
+.pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pills span { font-size: 12.5px; padding: 8px 12px; border-radius: 99px; background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+.pills span.shu { background: var(--shu); color: var(--shu-on); box-shadow: none; }
+.perm { display: grid; gap: 10px; }
+.perm .row { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 20px; color: var(--ink);
+  background: var(--panel); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 0 0 1px var(--line); }
+.perm .row b { display: block; font-size: 14px; font-weight: 700; }
+.perm .row span { display: block; margin-top: 2px; font-size: 12px; line-height: 1.6; color: var(--ink-2); }
+.onb .fine { font-size: 12px; }
+
+/* ---------- side column ---------- */
+.side { flex: 1 1 360px; max-width: 440px; min-width: 0; display: grid; gap: 28px; padding-top: 24px; }
+.brand { display: flex; gap: 16px; align-items: flex-start; }
+.brand h1 { margin: 0; font-family: var(--font-display); font-weight: 800; font-size: 44px; letter-spacing: .12em; line-height: 1; color: var(--page-ink); }
+.brand p { margin: 10px 0 0; font-size: 14px; line-height: 1.9; color: var(--page-ink-2); max-width: 30em; }
+.side h2 { margin: 0 0 10px; font-size: 12px; letter-spacing: .14em; font-weight: 500; color: var(--page-ink-2); }
+.skies { display: flex; flex-wrap: wrap; gap: 8px; }
+.sky-btn { border: 0; border-radius: 99px; padding: 8px 12px 8px 8px; cursor: pointer; font-size: 12.5px; display: inline-flex; gap: 8px; align-items: center;
+  color: var(--page-ink); background: color-mix(in oklab, var(--page-ink) 6%, transparent); box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--page-ink) 12%, transparent); }
+.sky-btn i { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--page-ink) 15%, transparent); }
+.sky-btn[aria-pressed="true"] { background: var(--page-ink); color: var(--page); }
+.tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.tools button { border: 0; background: none; color: var(--page-ink-2); font-size: 12.5px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; padding: 4px 0; margin-right: 14px; }
+.principles { display: grid; gap: 14px; }
+.principle { display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }
+.principle .seal { --size: 30px; --rot: -3deg; }
+.principle div > b { display: block; font-size: 14px; color: var(--page-ink); }
+.principle div > span { display: block; margin-top: 3px; font-size: 12.5px; line-height: 1.75; color: var(--page-ink-2); }
+.lock { border-radius: 26px; padding: 20px 18px 18px; color: #f2f1ee; background: linear-gradient(170deg, #233056, #3b3550 60%, #57434a); box-shadow: 0 24px 50px -32px var(--shadow); }
+.lock .clock { text-align: center; font-size: 46px; font-weight: 500; letter-spacing: .02em; line-height: 1; font-variant-numeric: tabular-nums; }
+.lock .ldate { text-align: center; font-size: 12.5px; opacity: .8; margin-top: 6px; }
+.la { margin-top: 18px; padding: 14px; border-radius: 20px; background: rgba(12, 14, 24, .55); backdrop-filter: blur(10px); display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; }
+.la .seal { --size: 34px; color: #ff7c6b; box-shadow: inset 0 0 0 2.5px #ff7c6b; }
+.la .k { font-size: 11px; letter-spacing: .12em; opacity: .7; }
+.la .v { margin-top: 3px; font-family: var(--font-display); font-size: 14px; line-height: 1.6; }
+.lock-cap { margin: 8px 0 0; font-size: 12px; color: var(--page-ink-2); line-height: 1.7; }
+
+/* ---------- phone width: the app becomes the page ---------- */
+@media (max-width: 760px) {
+  .stage { flex-direction: column; align-items: center; gap: 32px; padding-block: 0 40px; }
+  .side { padding-top: 0; max-width: 520px; width: 100%; }
+}
+@media (max-width: 520px) {
+  .stage { padding-inline: 0; }
+  .device { width: 100%; padding: 0; border-radius: 0; box-shadow: none; background: none; }
+  .app { width: 100%; height: 100svh; max-height: none; min-height: 560px; border-radius: 0; }
+  .side { padding-inline: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+</style>
+
+<div class="stage" lang="ja">
+  <div class="device">
+    <div class="app" id="app" data-ondark="false">
+      <div class="sky" aria-hidden="true"><span class="stars a" id="starsA"></span><span class="stars b" id="starsB"></span></div>
+
+      <div class="topbar">
+        <button class="icon-btn" data-action="journal" aria-label="体験帳">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 0 6.5 23H20v-5"/><path d="M9 7h7"/></svg>
+        </button>
+        <button class="icon-btn" data-action="settings" aria-label="設定">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg>
+        </button>
+      </div>
+
+      <main class="screen" id="screen"><div class="home" id="home"></div></main>
+
+      <div class="dock">
+        <button class="talk" data-action="chat">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a7.5 7.5 0 0 1-11 6.6L4 20l1.4-4.4A7.5 7.5 0 1 1 20 12z"/></svg>
+          話しかける
+        </button>
+      </div>
+
+      <section class="journal" id="journal" aria-label="体験帳"></section>
+
+      <div class="scrim" id="scrim" data-action="close-sheet"></div>
+      <section class="sheet" id="sheet" role="dialog" aria-modal="true"></section>
+
+      <section class="onb" id="onb" hidden></section>
+    </div>
+  </div>
+
+  <aside class="side">
+    <div class="brand">
+      <span class="seal filled" style="--size:52px;--rot:-5deg" aria-hidden="true">体</span>
+      <div>
+        <h1>体験</h1>
+        <p>AIが人生を代わりに生きるのではなく、日常の中から「次の体験」を見つけ、あなた自身がそれを生きる。iOS アプリの体験を、ここで触って確かめられます。</p>
+      </div>
+    </div>
+
+    <section>
+      <h2>空の時間帯</h2>
+      <div class="skies" id="skies"></div>
+      <div class="tools">
+        <button data-action="restart">はじめの案内から見る</button>
+        <button data-action="reset-day">今日をやり直す</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>ロック画面とウィジェット</h2>
+      <div class="lock" id="lock"></div>
+      <p class="lock-cap" id="lockCap"></p>
+    </section>
+
+    <section>
+      <h2>このアプリが大事にしていること</h2>
+      <div class="principles">
+        <div class="principle"><span class="seal" aria-hidden="true">一</span><div><b>一度にひとつ</b><span>提案はいつもひとつだけ。流れてくるフィードは作りません。</span></div></div>
+        <div class="principle"><span class="seal" aria-hidden="true">断</span><div><b>いつでも断れる</b><span>「今はやらない」は「やってみる」と同じ場所に置きます。断ったあとは、しばらく提案しません。</span></div></div>
+        <div class="principle"><span class="seal" aria-hidden="true">印</span><div><b>節目に小さな儀式を</b><span>提案はにじむように現れ、終えた体験には朱の印が押されます。</span></div></div>
+        <div class="principle"><span class="seal" aria-hidden="true">候</span><div><b>数で急かさない</b><span>連続記録やバッジは作りません。代わりに、七十二候の輪に体験が少しずつ重なっていきます。</span></div></div>
+        <div class="principle"><span class="seal" aria-hidden="true">見</span><div><b>見たものを見せる</b><span>何を手がかりに選んだか、AIに何を渡すかは、いつでも確かめられます。</span></div></div>
+      </div>
+    </section>
+  </aside>
+</div>
+
+<script>
+const CONTENT = {"solar_terms":[{"name":"立春","reading":"りっしゅん"},{"name":"雨水","reading":"うすい"},{"name":"啓蟄","reading":"けいちつ"},{"name":"春分","reading":"しゅんぶん"},{"name":"清明","reading":"せいめい"},{"name":"穀雨","reading":"こくう"},{"name":"立夏","reading":"りっか"},{"name":"小満","reading":"しょうまん"},{"name":"芒種","reading":"ぼうしゅ"},{"name":"夏至","reading":"げし"},{"name":"小暑","reading":"しょうしょ"},{"name":"大暑","reading":"たいしょ"},{"name":"立秋","reading":"りっしゅう"},{"name":"処暑","reading":"しょしょ"},{"name":"白露","reading":"はくろ"},{"name":"秋分","reading":"しゅうぶん"},{"name":"寒露","reading":"かんろ"},{"name":"霜降","reading":"そうこう"},{"name":"立冬","reading":"りっとう"},{"name":"小雪","reading":"しょうせつ"},{"name":"大雪","reading":"たいせつ"},{"name":"冬至","reading":"とうじ"},{"name":"小寒","reading":"しょうかん"},{"name":"大寒","reading":"だいかん"}],"micro_seasons":[{"name":"東風解凍","reading":"はるかぜこおりをとく","meaning":"春の風が、川や湖の氷を解かし始める頃"},{"name":"黄鶯睍睆","reading":"うぐいすなく","meaning":"山里で鶯が鳴き始める頃"},{"name":"魚上氷","reading":"うおこおりをいずる","meaning":"割れた氷の間から、魚が跳ねる頃"},{"name":"土脉潤起","reading":"つちのしょううるおいおこる","meaning":"雨が降って、土がしっとりと潤い始める頃"},{"name":"霞始靆","reading":"かすみはじめてたなびく","meaning":"霞がたなびき始める頃"},{"name":"草木萌動","reading":"そうもくめばえいずる","meaning":"草木が芽吹き始める頃"},{"name":"蟄虫啓戸","reading":"すごもりむしとをひらく","meaning":"冬ごもりの虫が、土から出てくる頃"},{"name":"桃始笑","reading":"ももはじめてさく","meaning":"桃の花が咲き始める頃"},{"name":"菜虫化蝶","reading":"なむしちょうとなる","meaning":"青虫が羽化して、紋白蝶になる頃"},{"name":"雀始巣","reading":"すずめはじめてすくう","meaning":"雀が巣を作り始める頃"},{"name":"桜始開","reading":"さくらはじめてひらく","meaning":"桜の花が咲き始める頃"},{"name":"雷乃発声","reading":"かみなりすなわちこえをはっす","meaning":"遠くで雷の音がし始める頃"},{"name":"玄鳥至","reading":"つばめきたる","meaning":"燕が南からやってくる頃"},{"name":"鴻雁北","reading":"こうがんかえる","meaning":"雁が北へ帰っていく頃"},{"name":"虹始見","reading":"にじはじめてあらわる","meaning":"雨のあとに、虹が出始める頃"},{"name":"葭始生","reading":"あしはじめてしょうず","meaning":"水辺の葦が芽吹き始める頃"},{"name":"霜止出苗","reading":"しもやみてなえいずる","meaning":"霜が終わり、稲の苗が育つ頃"},{"name":"牡丹華","reading":"ぼたんはなさく","meaning":"牡丹の花が咲く頃"},{"name":"蛙始鳴","reading":"かわずはじめてなく","meaning":"蛙が鳴き始める頃"},{"name":"蚯蚓出","reading":"みみずいずる","meaning":"みみずが地上に出てくる頃"},{"name":"竹笋生","reading":"たけのこしょうず","meaning":"筍が生えてくる頃"},{"name":"蚕起食桑","reading":"かいこおきてくわをはむ","meaning":"蚕が桑の葉を盛んに食べ始める頃"},{"name":"紅花栄","reading":"べにばなさかう","meaning":"紅花が盛んに咲く頃"},{"name":"麦秋至","reading":"むぎのときいたる","meaning":"麦が熟して、収穫の時期を迎える頃"},{"name":"蟷螂生","reading":"かまきりしょうず","meaning":"蟷螂が卵からかえる頃"},{"name":"腐草為螢","reading":"くされたるくさほたるとなる","meaning":"蛍が飛び交い始める頃"},{"name":"梅子黄","reading":"うめのみきばむ","meaning":"梅の実が黄ばんで熟す頃"},{"name":"乃東枯","reading":"なつかれくさかるる","meaning":"夏枯草(うつぼぐさ)が枯れていく頃"},{"name":"菖蒲華","reading":"あやめはなさく","meaning":"あやめの花が咲く頃"},{"name":"半夏生","reading":"はんげしょうず","meaning":"半夏(からすびしゃく)が生える頃"},{"name":"温風至","reading":"あつかぜいたる","meaning":"夏の暖かい風が吹いてくる頃"},{"name":"蓮始開","reading":"はすはじめてひらく","meaning":"蓮の花が開き始める頃"},{"name":"鷹乃学習","reading":"たかすなわちわざをならう","meaning":"鷹の幼鳥が、飛ぶことを覚える頃"},{"name":"桐始結花","reading":"きりはじめてはなをむすぶ","meaning":"桐の実がなり始める頃"},{"name":"土潤溽暑","reading":"つちうるおうてむしあつし","meaning":"土がしめって、蒸し暑くなる頃"},{"name":"大雨時行","reading":"たいうときどきふる","meaning":"時として大雨が降る頃"},{"name":"涼風至","reading":"すずかぜいたる","meaning":"涼しい風が立ち始める頃"},{"name":"寒蝉鳴","reading":"ひぐらしなく","meaning":"ひぐらしが鳴き始める頃"},{"name":"蒙霧升降","reading":"ふかききりまとう","meaning":"深い霧が立ちこめる頃"},{"name":"綿柎開","reading":"わたのはなしべひらく","meaning":"綿を包むがくが開く頃"},{"name":"天地始粛","reading":"てんちはじめてさむし","meaning":"ようやく暑さがおさまる頃"},{"name":"禾乃登","reading":"こくものすなわちみのる","meaning":"稲が実る頃"},{"name":"草露白","reading":"くさのつゆしろし","meaning":"草に降りた露が、白く光る頃"},{"name":"鶺鴒鳴","reading":"せきれいなく","meaning":"せきれいが鳴き始める頃"},{"name":"玄鳥去","reading":"つばめさる","meaning":"燕が南へ帰っていく頃"},{"name":"雷乃収声","reading":"かみなりすなわちこえをおさむ","meaning":"雷が鳴らなくなる頃"},{"name":"蟄虫坏戸","reading":"むしかくれてとをふさぐ","meaning":"虫が土の中に隠れ、入り口をふさぐ頃"},{"name":"水始涸","reading":"みずはじめてかるる","meaning":"田の水を落とし、稲刈りに備える頃"},{"name":"鴻雁来","reading":"こうがんきたる","meaning":"雁が北から渡ってくる頃"},{"name":"菊花開","reading":"きくのはなひらく","meaning":"菊の花が咲く頃"},{"name":"蟋蟀在戸","reading":"きりぎりすとにあり","meaning":"戸口で秋の虫が鳴く頃"},{"name":"霜始降","reading":"しもはじめてふる","meaning":"霜が降り始める頃"},{"name":"霎時施","reading":"こさめときどきふる","meaning":"小雨がしとしと降る頃"},{"name":"楓蔦黄","reading":"もみじつたきばむ","meaning":"楓や蔦が色づく頃"},{"name":"山茶始開","reading":"つばきはじめてひらく","meaning":"山茶花が咲き始める頃"},{"name":"地始凍","reading":"ちはじめてこおる","meaning":"大地が凍り始める頃"},{"name":"金盞香","reading":"きんせんかさく","meaning":"水仙の花が咲く頃"},{"name":"虹蔵不見","reading":"にじかくれてみえず","meaning":"虹を見かけなくなる頃"},{"name":"朔風払葉","reading":"きたかぜこのはをはらう","meaning":"北風が木の葉を吹き払う頃"},{"name":"橘始黄","reading":"たちばなはじめてきばむ","meaning":"橘の実が黄色く色づき始める頃"},{"name":"閉塞成冬","reading":"そらさむくふゆとなる","meaning":"空が重く閉ざされ、冬となる頃"},{"name":"熊蟄穴","reading":"くまあなにこもる","meaning":"熊が冬ごもりのために穴に入る頃"},{"name":"鱖魚群","reading":"さけのうおむらがる","meaning":"鮭が群がって川を上る頃"},{"name":"乃東生","reading":"なつかれくさしょうず","meaning":"夏枯草が芽を出す頃"},{"name":"麋角解","reading":"さわしかのつのおつる","meaning":"大鹿の角が抜け落ちる頃"},{"name":"雪下出麦","reading":"ゆきわたりてむぎのびる","meaning":"雪の下で麦が芽を出す頃"},{"name":"芹乃栄","reading":"せりすなわちさかう","meaning":"芹がよく育つ頃"},{"name":"水泉動","reading":"しみずあたたかをふくむ","meaning":"地中で凍った泉が動き始める頃"},{"name":"雉始雊","reading":"きじはじめてなく","meaning":"雄の雉が鳴き始める頃"},{"name":"款冬華","reading":"ふきのはなさく","meaning":"蕗の薹が顔を出す頃"},{"name":"水沢腹堅","reading":"さわみずこおりつめる","meaning":"沢の水が厚く凍る頃"},{"name":"鶏始乳","reading":"にわとりはじめてとやにつく","meaning":"鶏が卵を産み始める頃"}],"themes":[{"id":"study","keywords":["課題","宿題","勉強","授業","試験","テスト","レポート","講義","復習","予習","ゼミ","塾","自習","受験","問題集","研究"]},{"id":"work","keywords":["会議","ミーティング","MTG","打ち合わせ","仕事","作業","資料","締切","締め切り","レビュー","商談","1on1","出社","研修","面接","プレゼン","業務","定例"]},{"id":"commute","keywords":["移動","通勤","通学","電車","バス","出発","空港","駅","新幹線","飛行機","帰省","出張"]},{"id":"meal","keywords":["ランチ","昼食","夕食","朝食","ごはん","ご飯","食事","ディナー","弁当","お昼","カフェ"]},{"id":"housework","keywords":["掃除","洗濯","片付け","片づけ","料理","家事","ゴミ","皿洗い","整理"]},{"id":"shopping","keywords":["買い物","スーパー","買い出し","ショッピング","コンビニ"]},{"id":"people","keywords":["電話","面談","飲み会","友達","家族","会う","デート","誕生日","約束","食事会","お茶","同窓会"]},{"id":"body","keywords":["ジム","ランニング","ヨガ","運動","部活","練習","筋トレ","ストレッチ","散歩","ウォーキング","試合","プール"]},{"id":"rest","keywords":[]},{"id":"morning","keywords":[]},{"id":"night","keywords":[]},{"id":"outdoors","keywords":[]},{"id":"general","keywords":[]}],"moods":[{"id":"tired","keywords":["疲れ","つかれ","しんどい","だるい","眠い","ねむい","面倒","めんどう","めんどくさ","寝不足","ぐったり"]},{"id":"bored","keywords":["暇","ひま","退屈","たいくつ","つまらない","やることない"]},{"id":"focus","keywords":["集中","がんば","頑張","やらなきゃ","終わらせ","進めたい"]},{"id":"refresh","keywords":["気分転換","気分を変え","リフレッシュ","モヤモヤ","もやもや","煮詰ま","行き詰ま"]}],"experiences":[{"id":"study-stumble","title":"つまずきの観察","perspective":"課題を「終わらせる作業」ではなく、自分がどこで手を止めるかを観察する時間として捉える。","invitation":"今日の勉強で、いちばん手が止まった瞬間をひとつだけ覚えておいてみませんか？","reflection_question":"手が止まったとき、何が引っかかっていましたか？","tags":["new_perspective","observation","short"],"themes":["study"],"moods":["tired","focus"],"times":[],"effort":"low","solar_terms":[]},{"id":"study-yesterday","title":"昨日の自分への問い","perspective":"量をこなす時間ではなく、昨日の自分には分からなかったことをひとつ見つける時間として捉える。","invitation":"今日は「昨日の自分なら分からなかったこと」をひとつ探すつもりで取り組んでみませんか？","reflection_question":"昨日より、何が分かるようになっていましたか？","tags":["question","reflection"],"themes":["study"],"moods":["focus","bored"],"times":[],"effort":"low","solar_terms":[]},{"id":"study-explain","title":"一言で説明するなら","perspective":"覚えるための勉強ではなく、誰かに伝えるための準備として向き合ってみる。","invitation":"今日やるところを、あとで誰かに一言で説明するとしたら…と考えながら進めてみませんか？","reflection_question":"一言にすると、どんな言葉になりましたか？","tags":["new_perspective","question"],"themes":["study"],"moods":["bored","focus"],"times":[],"effort":"medium","solar_terms":[]},{"id":"study-why","title":"一問だけの探偵","perspective":"全部を片づけるのではなく、一問を「なぜこの答えになるのか」を探る対象として見る。","invitation":"今日の中から気になる一問だけ選んで、「なぜ？」を一段深く掘ってみませんか？","reflection_question":"その「なぜ」の先に、何が見えましたか？","tags":["question","small_challenge","short"],"themes":["study"],"moods":["bored","focus","refresh"],"times":[],"effort":"low","solar_terms":[]},{"id":"study-first-step","title":"最初のひと区切り","perspective":"「全部やらなきゃ」ではなく、最初の小さなひと区切りだけに向き合う時間として捉える。","invitation":"重く感じるときは、最初のひと区切りだけを丁寧にやるつもりで始めてみませんか？","reflection_question":"始めてみて、気持ちはどう変わりましたか？","tags":["small_challenge","short"],"themes":["study","work"],"moods":["tired"],"times":[],"effort":"low","solar_terms":[]},{"id":"work-one-question","title":"ひとつの問いを持ち込む","perspective":"予定をこなす場ではなく、ひとつの疑問の答えを探しに行く場として捉える。","invitation":"この予定に「今日これだけは知りたい」という問いをひとつだけ持って臨んでみませんか？","reflection_question":"その問いの答えは、見つかりましたか？","tags":["question","new_perspective"],"themes":["work"],"moods":["focus","bored"],"times":[],"effort":"low","solar_terms":[]},{"id":"work-one-word","title":"心に残る一言","perspective":"打ち合わせを情報を受け取る時間ではなく、誰かの言葉に耳を澄ます時間として捉える。","invitation":"次の打ち合わせで、いちばん心に残った誰かの一言を、ひとつだけ持ち帰ってみませんか？","reflection_question":"なぜその一言が残ったのだと思いますか？","tags":["observation","social"],"themes":["work","people"],"moods":["tired","bored"],"times":[],"effort":"low","solar_terms":[]},{"id":"work-desk-map","title":"机の上の地図","perspective":"作業スペースを「片づけるべき場所」ではなく、今の自分の頭の中が映った地図として見る。","invitation":"作業を始める前に、机の上を一度だけ眺めて、今の自分が何を抱えているか読み取ってみませんか？","reflection_question":"机の上から、どんなことが読み取れましたか？","tags":["observation","reflection","short"],"themes":["work","study"],"moods":["focus","refresh"],"times":[],"effort":"low","solar_terms":[]},{"id":"work-small-craft","title":"小さな工夫を見つける","perspective":"業務のやりとりを、相手のさりげない工夫に気づく機会として捉える。","invitation":"今日のやりとりの中で、誰かの小さな工夫をひとつ見つけて、短く伝えてみませんか？","reflection_question":"伝えたとき、相手はどんな様子でしたか？","tags":["social","small_challenge","short"],"themes":["work","people"],"moods":["bored","refresh"],"times":[],"effort":"medium","solar_terms":[]},{"id":"work-one-line","title":"終わりの一行","perspective":"一日の作業を「やり残し」で閉じるのではなく、進んだことを確かめて閉じる時間にする。","invitation":"今日の作業の終わりに、「今日進んだこと」を一行だけ書き留めてみませんか？","reflection_question":"書いてみて、どんな一日だったと感じましたか？","tags":["reflection","short"],"themes":["work","study"],"moods":["tired","focus"],"times":["daytime","evening","night"],"effort":"low","solar_terms":[]},{"id":"commute-change","title":"移動の中の変化","perspective":"移動を「空白の時間」ではなく、昨日との違いを見つける時間として捉える。","invitation":"次の移動で、昨日までは気づかなかったものをひとつ見つけてみませんか？","reflection_question":"何が目に留まりましたか？","tags":["observation","sensory","short"],"themes":["commute"],"moods":["tired","bored"],"times":[],"effort":"low","solar_terms":[]},{"id":"commute-sounds","title":"三つの音","perspective":"移動中を、景色ではなく音で味わう時間として捉える。","invitation":"次の移動で、聞こえてくる音を三つだけ聞き分けてみませんか？","reflection_question":"いちばん意外だった音は何でしたか？","tags":["sensory","observation","short"],"themes":["commute"],"moods":["tired","refresh"],"times":[],"effort":"low","solar_terms":[]},{"id":"commute-color","title":"今日の色をさがす","perspective":"いつもの道を、ひとつの色を探す小さな宝探しとして歩いてみる。","invitation":"移動の途中で「今日の色」をひとつ決めて、その色を探しながら進んでみませんか？","reflection_question":"その色は、どこで見つかりましたか？","tags":["observation","creative","short"],"themes":["commute","outdoors"],"moods":["bored","refresh"],"times":[],"effort":"low","solar_terms":[]},{"id":"commute-stories","title":"すれ違う物語","perspective":"人の流れを、それぞれの一日が交差する場面として眺める。","invitation":"移動の途中で、すれ違う誰かの「このあと」を、ひとつだけ想像してみませんか？","reflection_question":"どんな「このあと」を想像しましたか？","tags":["creative","new_perspective","short"],"themes":["commute"],"moods":["bored"],"times":[],"effort":"low","solar_terms":[]},{"id":"commute-another-way","title":"ひと筋ちがう道","perspective":"決まった道順を、まだ知らない街の一部に出会う機会として捉える。","invitation":"時間と安全に余裕があれば、いつもと一本ちがう道を選んでみませんか？","reflection_question":"ちがう道には、何がありましたか？","tags":["small_challenge","new_perspective"],"themes":["commute","outdoors"],"moods":["bored","refresh"],"times":["morning","daytime","evening"],"effort":"medium","solar_terms":[]},{"id":"meal-first-bite","title":"ひと口目の観察","perspective":"食事を「済ませるもの」ではなく、味や食感に気づく時間として捉える。","invitation":"次の食事で、ひと口目にどんな味がしたかを少しだけ意識してみませんか？","reflection_question":"ひと口目は、どんな味でしたか？","tags":["sensory","short"],"themes":["meal"],"moods":["tired","focus","refresh"],"times":[],"effort":"low","solar_terms":[]},{"id":"meal-journey","title":"一皿の旅","perspective":"目の前の一皿を、遠くの土地や誰かの手からつながってきたものとして眺める。","invitation":"次の食事で、食材のひとつが「どこから来たのか」を想像してみませんか？","reflection_question":"想像した道のりは、どんなものでしたか？","tags":["new_perspective","reflection","short"],"themes":["meal"],"moods":["bored"],"times":[],"effort":"low","solar_terms":[]},{"id":"meal-screen-down","title":"画面を置くひととき","perspective":"食事の時間を、何かをしながらではなく、食べることだけに使う時間にしてみる。","invitation":"次の食事の最初の数口だけ、画面を置いて食べることに向き合ってみませんか？","reflection_question":"画面を置いたら、何に気づきましたか？","tags":["sensory","small_challenge","short"],"themes":["meal"],"moods":["tired","refresh"],"times":[],"effort":"low","solar_terms":[]},{"id":"meal-new-taste","title":"知らない一品","perspective":"いつもの選択を、まだ知らない味に出会うきっかけとして捉える。","invitation":"次に何かを選ぶとき、ひとつだけ「食べたことのないもの」を選んでみませんか？","reflection_question":"初めての味は、どうでしたか？","tags":["small_challenge","new_perspective"],"themes":["meal","shopping"],"moods":["bored","refresh"],"times":[],"effort":"medium","solar_terms":[]},{"id":"meal-texture","title":"食感をことばに","perspective":"味ではなく、食感に耳を澄ますように食べてみる。","invitation":"次の食事で、「ほろっ」「しゃきっ」のように食感をひとつ言葉にしてみませんか？","reflection_question":"どんな言葉が見つかりましたか？","tags":["sensory","creative","short"],"themes":["meal"],"moods":["tired","bored"],"times":[],"effort":"low","solar_terms":[]},{"id":"house-before-after","title":"ビフォーアフターを見る","perspective":"家事を「やらされること」ではなく、空間が変わっていく様子を見る時間として捉える。","invitation":"家事のあと、始める前と何が変わったかを一度だけ眺めてみませんか？","reflection_question":"何がいちばん変わっていましたか？","tags":["observation","reflection","short"],"themes":["housework"],"moods":["tired","focus"],"times":[],"effort":"low","solar_terms":[]},{"id":"house-rhythm","title":"家事のリズム","perspective":"くり返しの作業を、音とリズムのある時間として捉える。","invitation":"次の家事で、手の動きや音にリズムを見つけてみませんか？","reflection_question":"どんなリズムが見つかりましたか？","tags":["sensory","creative","short"],"themes":["housework"],"moods":["bored","refresh"],"times":[],"effort":"low","solar_terms":[]},{"id":"house-one-thing","title":"ひとつと向き合う","perspective":"片づけを「全部やる」ことではなく、ひとつの物と向き合う時間として捉える。","invitation":"目に入ったものをひとつだけ手に取って、「今の自分に必要か」を考えてみませんか？","reflection_question":"その物について、何を思いましたか？","tags":["reflection","small_challenge","short"],"themes":["housework"],"moods":["refresh","focus"],"times":[],"effort":"low","solar_terms":[]},{"id":"house-aroma","title":"香りの変わり目","perspective":"料理を手順ではなく、香りが移り変わっていく時間として捉える。","invitation":"次に料理をするとき、香りがふっと変わる瞬間をひとつ見つけてみませんか？","reflection_question":"どの瞬間に香りが変わりましたか？","tags":["sensory","observation"],"themes":["housework","meal"],"moods":["tired","refresh"],"times":["morning","daytime","evening","night"],"effort":"low","solar_terms":[]},{"id":"shop-other-shelf","title":"いつもと違う棚","perspective":"買い物を用事の消化ではなく、普段通らない場所を知る機会として捉える。","invitation":"次の買い物で、いつもは見ない棚をひとつだけ覗いてみませんか？","reflection_question":"その棚で、何を見つけましたか？","tags":["new_perspective","small_challenge","short"],"themes":["shopping"],"moods":["bored","refresh"],"times":[],"effort":"low","solar_terms":[]},{"id":"shop-season","title":"店先の季節","perspective":"店先を、季節の移り変わりがいちばん早く現れる場所として眺める。","invitation":"次の買い物で、「今の季節」を感じるものをひとつ探してみませんか？","reflection_question":"どんなところに季節を感じましたか？","tags":["observation","sensory","short"],"themes":["shopping"],"moods":["tired","bored"],"times":[],"effort":"low","solar_terms":[]},{"id":"shop-why","title":"選んだ理由","perspective":"何気ない選択を、自分の好みを知る手がかりとして捉える。","invitation":"次に何かを選ぶとき、「なぜこれにしたのか」を一言で言ってみませんか？","reflection_question":"選んだ理由から、自分について何が分かりましたか？","tags":["reflection","question","short"],"themes":["shopping"],"moods":["focus","bored"],"times":[],"effort":"low","solar_terms":[]},{"id":"people-new-question","title":"まだ聞いていない質問","perspective":"会話を情報交換ではなく、相手について新しく知る機会として捉える。","invitation":"次に話す人に、まだ聞いたことのない質問をひとつしてみませんか？","reflection_question":"相手の答えで、意外だったことは何でしたか？","tags":["social","question"],"themes":["people"],"moods":["bored","refresh"],"times":[],"effort":"medium","solar_terms":[]},{"id":"people-listen","title":"最後まで聞く","perspective":"会話を、話す番を待つ時間ではなく、相手の言葉を味わう時間として捉える。","invitation":"次の会話で、相手の話を最後まで聞いてから話すことを、一度だけ試してみませんか？","reflection_question":"最後まで聞いてみて、何が違いましたか？","tags":["social","small_challenge"],"themes":["people","work"],"moods":["focus","tired"],"times":[],"effort":"low","solar_terms":[]},{"id":"people-words","title":"その人らしい言葉","perspective":"身近な人を、まだ知らないところのある人として見てみる。","invitation":"今日話す誰かの、言葉の選び方にひとつ気づいてみませんか？","reflection_question":"どんな言葉に、その人らしさを感じましたか？","tags":["observation","social","short"],"themes":["people"],"moods":["bored","tired"],"times":[],"effort":"low","solar_terms":[]},{"id":"people-message","title":"思い出した人へ","perspective":"ふと浮かぶ誰かを、今日の小さなつながりのきっかけとして捉える。","invitation":"最近ふと思い出した人に、短いメッセージを送ってみませんか？","reflection_question":"送ってみて、どんな気持ちになりましたか？","tags":["social","small_challenge","short"],"themes":["people"],"moods":["bored","refresh"],"times":["morning","daytime","evening","night"],"effort":"low","solar_terms":[]},{"id":"people-expression","title":"表情が動く瞬間","perspective":"会話を言葉だけでなく、表情の動きも含めて受け取る時間として捉える。","invitation":"次の会話で、相手の表情がふっと変わった瞬間をひとつ覚えておいてみませんか？","reflection_question":"その瞬間、何が話されていましたか？","tags":["observation","social"],"themes":["people"],"moods":["focus"],"times":[],"effort":"low","solar_terms":[]},{"id":"body-breath","title":"呼吸の深さ","perspective":"体を動かす時間を回数や距離ではなく、呼吸の変化を感じる時間として捉える。","invitation":"次に体を動かすとき、呼吸がいちばん深くなった瞬間に気づいてみませんか？","reflection_question":"どんなときに呼吸が深くなりましたか？","tags":["sensory","observation"],"themes":["body"],"moods":["focus","refresh"],"times":[],"effort":"low","solar_terms":[]},{"id":"body-scenery","title":"景色をひとつ持ち帰る","perspective":"走ったり歩いたりする時間を、景色の移り変わりを集める時間として捉える。","invitation":"体を動かす途中で、心に残った景色をひとつだけ持ち帰ってみませんか？","reflection_question":"持ち帰った景色は、どんなものでしたか？","tags":["observation","sensory"],"themes":["body","outdoors"],"moods":["refresh","bored"],"times":[],"effort":"low","solar_terms":[]},{"id":"body-after","title":"終わったあとの体","perspective":"体を動かしたあとを、体がどう変わったかを確かめる時間として捉える。","invitation":"体を動かしたあと、どこがいちばん軽く感じるかを確かめてみませんか？","reflection_question":"どこが変わったと感じましたか？","tags":["sensory","reflection","short"],"themes":["body"],"moods":["tired","focus"],"times":[],"effort":"low","solar_terms":[]},{"id":"rest-pause","title":"手を止める一瞬","perspective":"次から次へ進む一日の中に、自分が何を感じているかに気づく間をつくる。","invitation":"次の切り替わりの前に、今の自分の感覚を一度だけ確かめてみませんか？","reflection_question":"確かめてみて、どんな感覚がありましたか？","tags":["reflection","short"],"themes":["rest"],"moods":["tired","focus"],"times":[],"effort":"low","solar_terms":[]},{"id":"rest-far","title":"いちばん遠くを見る","perspective":"休憩を「何もしない時間」ではなく、遠くを見る時間として捉える。","invitation":"少し手を止めて、窓の外のいちばん遠くにあるものを眺めてみませんか？","reflection_question":"いちばん遠くに、何が見えましたか？","tags":["sensory","observation","short"],"themes":["rest"],"moods":["tired","refresh"],"times":["dawn","morning","daytime","evening"],"effort":"low","solar_terms":[]},{"id":"rest-warm-cup","title":"温かい一杯","perspective":"飲み物を、温度と香りを手のひらで感じる時間として味わう。","invitation":"次に何かを飲むとき、器の温度と香りを、最初のひと口まで感じてみませんか？","reflection_question":"最初のひと口は、どんな感じでしたか？","tags":["sensory","short"],"themes":["rest"],"moods":["tired"],"times":[],"effort":"low","solar_terms":[]},{"id":"rest-nothing","title":"何もしない時間","perspective":"休むことを、時間の無駄ではなく、ひとつの体験として捉える。","invitation":"次のすき間で、何もしない時間を少しだけ過ごしてみませんか？","reflection_question":"何もしない時間に、何が浮かびましたか？","tags":["reflection","sensory","short"],"themes":["rest"],"moods":["tired","refresh"],"times":[],"effort":"low","solar_terms":[]},{"id":"morning-light","title":"今朝の光","perspective":"朝の支度を、その日の光を確かめる時間として捉える。","invitation":"支度の途中で、今朝の光がどんな色かを一度だけ確かめてみませんか？","reflection_question":"今朝の光は、どんな色でしたか？","tags":["sensory","observation","short"],"themes":["morning"],"moods":["tired","refresh"],"times":["dawn","morning"],"effort":"low","solar_terms":[]},{"id":"morning-word","title":"今日のひと言","perspective":"一日の始まりを、予定の確認ではなく、今日の自分に言葉をかける時間にする。","invitation":"朝のうちに、「今日を表す一言」をひとつ決めてみませんか？","reflection_question":"一日の終わりに、その一言はどうでしたか？","tags":["reflection","creative","short"],"themes":["morning"],"moods":["focus","bored"],"times":["dawn","morning"],"effort":"low","solar_terms":[]},{"id":"morning-slow","title":"ひとつだけゆっくり","perspective":"急ぎがちな朝の中に、ひとつだけ丁寧にする動作をつくる。","invitation":"朝の動作の中からひとつだけ選んで、いつもよりゆっくりやってみませんか？","reflection_question":"ゆっくりやってみて、何に気づきましたか？","tags":["sensory","small_challenge","short"],"themes":["morning"],"moods":["tired","focus"],"times":["dawn","morning"],"effort":"low","solar_terms":[]},{"id":"night-good-thing","title":"今日の小さなよかった","perspective":"一日の終わりを、反省ではなく、小さなよかったを拾う時間にする。","invitation":"寝る前に、今日の小さな「よかった」をひとつだけ思い出してみませんか？","reflection_question":"どんな「よかった」が浮かびましたか？","tags":["reflection","short"],"themes":["night"],"moods":["tired"],"times":["night","lateNight"],"effort":"low","solar_terms":[]},{"id":"night-sky","title":"夜空のいちばん","perspective":"夜を一日の残り時間ではなく、空の暗さを感じる時間として捉える。","invitation":"今夜、少しだけ空を見上げて、いちばん明るく見えるものを探してみませんか？","reflection_question":"何がいちばん明るく見えましたか？","tags":["sensory","observation","short"],"themes":["night","outdoors"],"moods":["refresh","tired"],"times":["evening","night"],"effort":"low","solar_terms":[]},{"id":"night-tomorrow","title":"明日のひとつの楽しみ","perspective":"明日を予定の並びではなく、小さな楽しみのある一日として思い描く。","invitation":"寝る前に、明日の小さな楽しみをひとつだけ決めてみませんか？","reflection_question":"決めた楽しみは、何でしたか？","tags":["reflection","creative","short"],"themes":["night"],"moods":["tired","bored"],"times":["night","lateNight"],"effort":"low","solar_terms":[]},{"id":"night-quiet-sound","title":"いちばん小さな音","perspective":"静かな時間を、昼には聞こえない音に耳を澄ます時間として捉える。","invitation":"今夜、部屋の中で聞こえるいちばん小さな音を探してみませんか？","reflection_question":"いちばん小さな音は、何でしたか？","tags":["sensory","observation","short"],"themes":["night"],"moods":["tired","refresh"],"times":["night","lateNight"],"effort":"low","solar_terms":[]},{"id":"daily-difference","title":"いつもの中の違い","perspective":"何気ない時間を、昨日との小さな違いを見つける時間として捉える。","invitation":"今日のどこかで、昨日とは少し違うことをひとつ見つけてみませんか？","reflection_question":"どんな違いが見つかりましたか？","tags":["observation","short"],"themes":["general"],"moods":[],"times":["dawn","morning","daytime","evening"],"effort":"low","solar_terms":[]},{"id":"daily-hands","title":"手が覚えていること","perspective":"日常の動作を、手が覚えていることに気づく時間として捉える。","invitation":"今日、無意識にしている動作をひとつだけ、意識してやってみませんか？","reflection_question":"意識してみて、何が違いましたか？","tags":["sensory","new_perspective","short"],"themes":["general"],"moods":["focus","tired"],"times":[],"effort":"low","solar_terms":[]},{"id":"daily-one-photo","title":"一枚だけの写真","perspective":"撮る枚数を減らすことで、本当に残したいものを選ぶ時間にする。","invitation":"今日、写真を一枚だけ撮るとしたら何を撮るか、選んでみませんか？","reflection_question":"選んだ一枚には、何が写っていましたか？","tags":["creative","observation"],"themes":["general"],"moods":["bored","refresh"],"times":["morning","daytime","evening"],"effort":"low","solar_terms":[]},{"id":"daily-other-hand","title":"利き手じゃない方","perspective":"慣れた動作を、少しだけ新鮮にする小さな実験として捉える。","invitation":"安全なことをひとつだけ、利き手と反対の手でやってみませんか？","reflection_question":"反対の手でやってみて、どうでしたか？","tags":["small_challenge","sensory","short"],"themes":["general"],"moods":["bored"],"times":[],"effort":"low","solar_terms":[]},{"id":"daily-nameless","title":"名前を知らないもの","perspective":"見慣れた景色の中の、名前を知らないものに目を向ける。","invitation":"今日、名前を知らない植物や鳥や道具をひとつ見つけてみませんか？","reflection_question":"見つけたものに名前をつけるとしたら、何にしますか？","tags":["observation","question"],"themes":["general","outdoors"],"moods":["bored","refresh"],"times":["morning","daytime","evening"],"effort":"low","solar_terms":[]},{"id":"daily-scent","title":"今日の匂い","perspective":"一日を、匂いで記憶してみる。","invitation":"今日のどこかで、ふと感じた匂いをひとつ覚えておいてみませんか？","reflection_question":"その匂いは、何を思い出させましたか？","tags":["sensory","short"],"themes":["general"],"moods":["tired","refresh"],"times":[],"effort":"low","solar_terms":[]},{"id":"season-risshun","title":"春のきざし","perspective":"まだ寒い日々を、春の気配を探す期間として捉える。","invitation":"今日、寒さの中にある「春のきざし」をひとつ探してみませんか？","reflection_question":"どこに春のきざしがありましたか？","tags":["observation","sensory"],"themes":["outdoors"],"moods":["bored","refresh","tired"],"times":["morning","daytime","evening"],"effort":"low","solar_terms":[0]},{"id":"season-usui","title":"土と雨のにおい","perspective":"雪が雨に変わる頃の、足もとの変化に気づく。","invitation":"外に出たとき、土や雨のにおいを一度だけ確かめてみませんか？","reflection_question":"どんなにおいがしましたか？","tags":["sensory","short"],"themes":["outdoors"],"moods":["tired","refresh"],"times":["morning","daytime","evening"],"effort":"low","solar_terms":[1]},{"id":"season-keichitsu","title":"動き出したもの","perspective":"虫が土から出てくる頃。冬のあいだ止まっていたものの動きに目を向ける。","invitation":"今日、冬のあいだ止まっていて、また動き出したものをひとつ見つけてみませんか？","reflection_question":"何が動き出していましたか？","tags":["observation","new_perspective"],"themes":["outdoors","general"],"moods":["bored","refresh"],"times":[],"effort":"low","solar_terms":[2]},{"id":"season-shunbun","title":"日の長さ","perspective":"昼と夜がほぼ同じ長さになる頃。光の長さそのものを味わう。","invitation":"今日は、日が沈む時刻を少しだけ気にしてみませんか？","reflection_question":"日の長さに、何を感じましたか？","tags":["observation","reflection","short"],"themes":["outdoors"],"moods":["tired","focus","refresh"],"times":["daytime","evening"],"effort":"low","solar_terms":[3]},{"id":"season-seimei","title":"花の名前","perspective":"万物が清らかで明るい頃。見かけた花を、名前のある存在として知る。","invitation":"今日見かけた花をひとつ、名前を調べてみませんか？","reflection_question":"その花の名前は何でしたか？","tags":["observation","question","short"],"themes":["outdoors"],"moods":["bored","refresh"],"times":["morning","daytime","evening"],"effort":"low","solar_terms":[4]},{"id":"season-kokuu","title":"雨のあとの景色","perspective":"穀物をうるおす春の雨。雨上がりを、景色が洗われた時間として眺める。","invitation":"雨が上がったあと、景色が少し変わって見えるところを探してみませんか？","reflection_question":"雨のあと、何が違って見えましたか？","tags":["observation","sensory"],"themes":["outdoors"],"moods":["tired","refresh"],"times":[],"effort":"low","solar_terms":[5]},{"id":"season-rikka","title":"三つの緑","perspective":"夏の始まり。緑が深まっていく季節を、色のちがいで味わう。","invitation":"今日、ちがう緑を三つ見つけてみませんか？","reflection_question":"いちばん好きな緑は、どれでしたか？","tags":["observation","sensory"],"themes":["outdoors"],"moods":["bored","refresh"],"times":["morning","daytime","evening"],"effort":"low","solar_terms":[6]},{"id":"season-shoman","title":"育っているもの","perspective":"草木が育ち、満ちていく頃。少しずつ大きくなるものに目を向ける。","invitation":"草木でも自分のことでも、今少しずつ育っているものをひとつ見つけてみませんか？","reflection_question":"何が育っていましたか？","tags":["reflection","observation"],"themes":["general"],"moods":["focus","tired"],"times":[],"effort":"low","solar_terms":[7]},{"id":"season-boshu","title":"雨音の場所","perspective":"梅雨の始まり。雨の日を、音を味わう日として捉える。","invitation":"雨の日には、雨音がいちばん心地よく聞こえる場所を探してみませんか？","reflection_question":"どこで聞く雨音がよかったですか？","tags":["sensory"],"themes":["general"],"moods":["tired","refresh"],"times":[],"effort":"low","solar_terms":[8]},{"id":"season-geshi","title":"長い夕方","perspective":"一年で昼がいちばん長い頃。夕方の光の長さを味わう。","invitation":"今日、夕方の光がいつまで残っているか、少しだけ気にしてみませんか？","reflection_question":"長い夕方に、何をしていましたか？","tags":["observation","reflection"],"themes":["outdoors"],"moods":["tired","refresh"],"times":["daytime","evening"],"effort":"low","solar_terms":[9]},{"id":"season-shousho","title":"風の通り道","perspective":"暑さが本格的になる頃。涼しさを、自分で見つけるものとして捉える。","invitation":"今日、いちばん涼しい風が通る場所を見つけてみませんか？","reflection_question":"どこに風の通り道がありましたか？","tags":["sensory","observation"],"themes":["general"],"moods":["tired","refresh"],"times":[],"effort":"low","solar_terms":[10]},{"id":"season-taisho","title":"夏の音","perspective":"暑さがいちばん厳しい頃。夏を、音で感じる季節として捉える。","invitation":"涼しい場所から、「夏らしい音」をひとつ聞き分けてみませんか？","reflection_question":"どんな夏の音が聞こえましたか？","tags":["sensory","short"],"themes":["general"],"moods":["tired","bored"],"times":[],"effort":"low","solar_terms":[11]},{"id":"season-risshu","title":"秋の気配","perspective":"暦の上では秋。まだ暑い中に、次の季節の兆しを探す。","invitation":"暑さの中に、ほんの少しの「秋の気配」を探してみませんか？","reflection_question":"どこに秋の気配を感じましたか？","tags":["observation","sensory"],"themes":["general"],"moods":["bored","refresh"],"times":[],"effort":"low","solar_terms":[12]},{"id":"season-shosho","title":"夕暮れの色","perspective":"暑さがおさまり始める頃。夕暮れを、色が移り変わる時間として眺める。","invitation":"今日、夕暮れの空の色が変わっていくところを、少しだけ眺めてみませんか？","reflection_question":"どんな色の変化がありましたか？","tags":["sensory","observation"],"themes":["outdoors"],"moods":["tired","refresh"],"times":["daytime","evening"],"effort":"low","solar_terms":[13]},{"id":"season-hakuro","title":"朝の露","perspective":"草に露が光り始める頃。朝の小さな光を探す。","invitation":"朝、草や窓に光る露を探してみませんか？","reflection_question":"露は、どんなふうに光っていましたか？","tags":["observation","sensory","short"],"themes":["outdoors","morning"],"moods":["tired","refresh"],"times":["dawn","morning"],"effort":"low","solar_terms":[14]},{"id":"season-shubun","title":"影の長さ","perspective":"昼と夜が同じ長さになり、ここから夜が長くなる頃。影で季節を知る。","invitation":"今日、自分の影の長さを少しだけ気にしてみませんか？","reflection_question":"影を見て、何に気づきましたか？","tags":["observation","new_perspective","short"],"themes":["outdoors"],"moods":["bored","refresh"],"times":["morning","daytime","evening"],"effort":"low","solar_terms":[15]},{"id":"season-kanro","title":"渡っていくもの","perspective":"雁が北から渡ってくる頃。見上げた空を、季節が移動していく場所として眺める。","invitation":"移動の途中で一度だけ空を見上げて、渡っていくものを探してみませんか？","reflection_question":"空には、何が渡っていましたか？","tags":["observation","sensory","short"],"themes":["outdoors","commute"],"moods":["tired","refresh","bored"],"times":["morning","daytime","evening"],"effort":"low","solar_terms":[16]},{"id":"season-soko","title":"色づく葉","perspective":"楓や蔦が色づく頃。一枚の葉を、季節の移り変わりの記録として見る。","invitation":"今日、色が変わり始めた葉をひとつ見つけてみませんか？","reflection_question":"その葉は、どんな色でしたか？","tags":["observation","sensory","short"],"themes":["outdoors"],"moods":["bored","refresh","tired"],"times":["morning","daytime","evening"],"effort":"low","solar_terms":[17]},{"id":"season-ritto","title":"冬のはじまりの空気","perspective":"冬の始まり。空気の冷たさを、季節が変わった合図として受け取る。","invitation":"外に出たとき、空気の冷たさや匂いの変化を確かめてみませんか？","reflection_question":"冬の始まりは、どんな空気でしたか？","tags":["sensory","short"],"themes":["outdoors"],"moods":["tired","refresh"],"times":[],"effort":"low","solar_terms":[18]},{"id":"season-shosetsu","title":"手のひらの温度","perspective":"わずかに雪が降り始める頃。温かさを、手で見つけるものとして捉える。","invitation":"今日、手のひらで「温かい」と感じるものをひとつ見つけてみませんか？","reflection_question":"何がいちばん温かかったですか？","tags":["sensory","short"],"themes":["general"],"moods":["tired"],"times":[],"effort":"low","solar_terms":[19]},{"id":"season-taisetsu","title":"白い息","perspective":"雪が本格的に降り始める頃。吐く息の白さで、冬を目に見えるものにする。","invitation":"寒い朝や夜に、自分の吐く息の白さを眺めてみませんか？","reflection_question":"白い息を見て、何を思いましたか？","tags":["sensory","observation","short"],"themes":["outdoors"],"moods":["tired","refresh"],"times":["dawn","morning","evening","night"],"effort":"low","solar_terms":[20]},{"id":"season-toji","title":"長い夜の灯り","perspective":"一年で夜がいちばん長い頃。ここから日が延びていく夜を、ゆっくり過ごす。","invitation":"今夜は、いちばん長い夜を過ごすつもりで、灯りをひとつ選んでみませんか？","reflection_question":"選んだ灯りの下で、どう過ごしましたか？","tags":["sensory","reflection"],"themes":["night"],"moods":["tired","refresh"],"times":["evening","night","lateNight"],"effort":"low","solar_terms":[21]},{"id":"season-shokan","title":"冬の音","perspective":"寒の入り。冷たく澄んだ空気の中の、音の聞こえ方に気づく。","invitation":"冷たい空気の中で、音がどう聞こえるか確かめてみませんか？","reflection_question":"冬の空気の中の音は、どうでしたか？","tags":["sensory"],"themes":["outdoors"],"moods":["tired","refresh"],"times":[],"effort":"low","solar_terms":[22]},{"id":"season-daikan","title":"寒さの底で","perspective":"寒さがいちばん厳しい頃。ここから春へ向かう、小さな変化を探す。","invitation":"寒さの中で、少しだけ日が長くなったことに気づいてみませんか？","reflection_question":"どこで日が長くなったと感じましたか？","tags":["observation","reflection"],"themes":["general"],"moods":["tired","focus"],"times":["daytime","evening"],"effort":"low","solar_terms":[23]}]};
+
+// ---------------------------------------------------------------- ink texture for seals
+(function inkMask() {
+  const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' seed='7'/>" +
+    "<feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 -14 9.3'/></filter><rect width='160' height='160' filter='url(%23n)'/></svg>";
+  document.documentElement.style.setProperty("--ink-mask", 'url("data:image/svg+xml;utf8,' + svg + '")');
+})();
+
+// ---------------------------------------------------------------- time, season (same algorithm as TaikenCore)
+function solarLongitude(date) {
+  const jd = date.getTime() / 86400000 + 2440587.5, t = (jd - 2451545) / 36525;
+  const L0 = 280.46646 + 36000.76983 * t + 0.0003032 * t * t;
+  const M = (357.52911 + 35999.05029 * t - 0.0001537 * t * t) * Math.PI / 180;
+  const C = (1.914602 - 0.004817 * t - 0.000014 * t * t) * Math.sin(M) + (0.019993 - 0.000101 * t) * Math.sin(2 * M) + 0.000289 * Math.sin(3 * M);
+  const om = (125.04 - 1934.136 * t) * Math.PI / 180;
+  return ((L0 + C - 0.00569 - 0.00478 * Math.sin(om)) % 360 + 360) % 360;
+}
+function koIndexOn(date) {
+  const end = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59);
+  return Math.min(71, Math.floor(((solarLongitude(end) - 315) % 360 + 360) % 360 / 5));
+}
+function seasonOf(date) {
+  const i = koIndexOn(date), m = CONTENT.micro_seasons[i], t = CONTENT.solar_terms[Math.floor(i / 3)];
+  return { index: i, name: m.name, reading: m.reading, meaning: m.meaning, term: t.name, termIndex: Math.floor(i / 3), position: ["初候", "次候", "末候"][i % 3] };
+}
+const TOD = ["dawn", "morning", "daytime", "evening", "night", "lateNight"];
+const TOD_LABEL = { dawn: "夜明け", morning: "朝", daytime: "昼", evening: "夕方", night: "夜", lateNight: "深夜" };
+const TOD_HOUR = { dawn: 5, morning: 8, daytime: 13, evening: 18, night: 21, lateNight: 1 };
+function timeOfDayOf(h) { return h >= 4 && h < 6 ? "dawn" : h >= 6 && h < 10 ? "morning" : h >= 10 && h < 16 ? "daytime" : h >= 16 && h < 19 ? "evening" : h >= 19 ? "night" : "lateNight"; }
+function now() { const d = new Date(); if (state.tod) d.setHours(TOD_HOUR[state.tod]); return d; }
+function dayNumber(d) { return Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / 86400000); }
+const pad = (n) => String(n).padStart(2, "0");
+const hm = (d) => `${d.getHours()}:${pad(d.getMinutes())}`;
+const WEEK = ["日", "月", "火", "水", "木", "金", "土"];
+
+const SKIES = {
+  light: { dawn: ["#c3cde6", "#efd3d6", "#fbe6d6", 0], morning: ["#cbe3f1", "#e6f1f1", "#f8f4ea", 0], daytime: ["#b9d8ee", "#e2eff5", "#f6f5ef", 0],
+           evening: ["#8798c2", "#eeb39e", "#f9dfcb", 0], night: ["#1a2140", "#2b3356", "#46445f", 1], lateNight: ["#0e1327", "#19203e", "#252a48", 1] },
+  dark: { dawn: ["#1d2238", "#382c44", "#4a3640", 1], morning: ["#172538", "#1e2f40", "#2a3442", 1], daytime: ["#14273b", "#1a3045", "#233548", 1],
+          evening: ["#181d38", "#3c2a3e", "#583a39", 1], night: ["#0d1225", "#161f40", "#22294b", 1], lateNight: ["#090d1c", "#101732", "#19203f", 1] },
+};
+function isDark() {
+  const t = document.documentElement.getAttribute("data-theme");
+  return t ? t === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
+// ---------------------------------------------------------------- library selection (identical to iOS / backend)
+const SPECIFIC = new Set(["study", "work", "commute", "meal", "housework", "shopping", "people", "body"]);
+function fnv1a(text) { let h = 0x811c9dc5; for (const b of new TextEncoder().encode(text)) { h ^= b; h = Math.imul(h, 0x01000193) >>> 0; } return h >>> 0; }
+const jitter = (id, day) => (fnv1a(`${id}#${day}`) % 1000) / 1000 * 0.9;
+function detectThemes(texts) { const f = new Set(); for (const t of CONTENT.themes) if (t.keywords.some((k) => texts.some((x) => x.includes(k)))) f.add(t.id); return f; }
+function detectMood(texts) { for (const m of CONTENT.moods) if (m.keywords.some((k) => texts.some((x) => x.includes(k)))) return m.id; return null; }
+function choose(input) {
+  const fromEvent = detectThemes(input.eventTitle ? [input.eventTitle] : []), fromMessages = detectThemes(input.messages);
+  const detected = new Set([...fromEvent, ...fromMessages]);
+  const mood = input.mood || detectMood(input.messages);
+  const tod = input.timeOfDay, timeTheme = tod === "dawn" || tod === "morning" ? "morning" : tod === "night" || tod === "lateNight" ? "night" : null;
+  const recent = new Set(input.recentTitles), exclude = new Set(input.excludeTitles);
+  const eligible = (e, useEx) => !(useEx && exclude.has(e.title)) && !(e.solar_terms.length && !e.solar_terms.includes(input.solarTerm)) && !(e.times.length && !e.times.includes(tod));
+  const score = (e) => {
+    let s = 0;
+    if (e.themes.some((t) => detected.has(t))) s += 4; else if (e.themes.every((t) => SPECIFIC.has(t))) s -= 2;
+    if (mood && e.moods.includes(mood)) s += 2.5;
+    if (e.solar_terms.length) s += 3;
+    if (timeTheme && e.themes.includes(timeTheme)) s += 1.5;
+    for (const tag of e.tags) for (const f of input.feedback) if (f.tag === tag) s += (f.rating === "positive" ? 1 : f.rating === "negative" ? -1.5 : 0) * f.weight;
+    if (recent.has(e.title)) s -= 3;
+    if (mood === "tired" && e.effort === "medium") s -= 2;
+    return s + jitter(e.id, input.day);
+  };
+  let pool = CONTENT.experiences.filter((e) => eligible(e, true));
+  if (!pool.length) pool = CONTENT.experiences.filter((e) => eligible(e, false));
+  if (!pool.length) pool = CONTENT.experiences;
+  let best = pool[0], bestScore = -Infinity;
+  for (const e of pool) { const s = score(e); if (s > bestScore) { best = e; bestScore = s; } }
+  return { experience: best, fromEvent, fromMessages, mood, moodWasChosen: !!input.mood };
+}
+const MOODS = [["tired", "疲れぎみ"], ["bored", "ひま"], ["focus", "集中したい"], ["refresh", "気分転換"]];
+const moodLabel = (id) => (MOODS.find((m) => m[0] === id) || [])[1];
+const MOOD_REASON = { tired: "負担の少ないものを選びました。", bored: "小さな遊び心のあるものを選びました。", focus: "取り組んでいることを、少し違う角度から見るものにしました。", refresh: "感覚や視点を少し切り替えるものを選びました。" };
+function reasonFor(ch, event, term) {
+  const hit = (set) => ch.experience.themes.some((t) => set.has(t));
+  if (ch.moodWasChosen) return `「${moodLabel(ch.mood)}」とのことなので、${MOOD_REASON[ch.mood]}`;
+  if (event && hit(ch.fromEvent)) return `「${event.title}」の予定があるので、その時間の見方を少し変える提案にしました。`;
+  if (ch.mood === "tired") return "疲れていると話していたので、負担の少ないものを選びました。";
+  if (hit(ch.fromMessages)) return "話していたことから選びました。";
+  if (ch.experience.solar_terms.length) return `今は「${term}」の頃。季節の小さな変化に目を向ける提案です。`;
+  return "特別な予定がなくても、いつもの時間の中に体験は見つけられます。";
+}
+const TAG_LABEL = { new_perspective: "新しい視点", question: "問い", small_challenge: "小さな挑戦", observation: "観察", sensory: "五感", reflection: "ふり返り", social: "人との関わり", creative: "つくること", competitive: "競う要素", short: "短い時間", long_duration: "長い時間" };
+const SEAL = { new_perspective: "新", question: "問", small_challenge: "試", observation: "観", sensory: "感", reflection: "思", social: "縁", creative: "創", competitive: "競", short: "刻", long_duration: "久" };
+const sealChar = (tags) => SEAL[tags.find((t) => t !== "short" && t !== "long_duration") || tags[0]] || "体";
+
+// ---------------------------------------------------------------- state
+const STORE = "taiken.prototype.v2";
+const state = {
+  onboarded: false, onbStep: 0, calendar: true, letter: false, presence: true, tod: null,
+  stage: "loading", proposal: null, mood: null, exclude: [], active: null, completed: null, restUntil: null,
+  journal: [], declined: [], chat: [], said: [], sheet: null, journalOpen: false, month: null, rating: null,
+};
+function save() {
+  const keep = ({ onboarded, calendar, letter, presence, journal, declined, active, restUntil, samplesCleared }) => ({ onboarded, calendar, letter, presence, journal, declined, active, restUntil, samplesCleared });
+  try { localStorage.setItem(STORE, JSON.stringify(keep(state))); } catch (e) { /* per-viewer convenience only */ }
+}
+function load() {
+  try { const raw = localStorage.getItem(STORE); if (raw) Object.assign(state, JSON.parse(raw)); } catch (e) { /* start fresh */ }
+  if (!state.journal.length && !state.samplesCleared) state.journal = sampleJournal();
+}
+function sampleJournal() {
+  const picks = [[1, "meal-first-bite", "positive", "味噌汁が思ったより甘かった"], [2, "commute-sounds", "neutral", null], [4, "study-stumble", "positive", "同じところで三回止まっていた"],
+    [6, "night-good-thing", "positive", null], [9, "people-new-question", "negative", null], [12, "rest-far", "positive", "遠くの鉄塔に初めて気づいた"], [15, "shop-other-shelf", "neutral", null], [21, "daily-scent", "positive", "金木犀"]];
+  const today = new Date();
+  return picks.map(([days, id, rating, note]) => {
+    const e = CONTENT.experiences.find((x) => x.id === id), d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - days, 17, 40);
+    return { id: "s-" + id, title: e.title, invitation: e.invitation, tags: e.tags, question: e.reflection_question, at: d.getTime(), rating, note, sample: true };
+  });
+}
+
+// ---------------------------------------------------------------- proposals
+function sampleEvent(d, tod) {
+  if (!state.calendar) return null;
+  const at = new Date(d.getTime() + 50 * 60000);
+  const title = { dawn: "通学", morning: "通学", daytime: "打ち合わせ", evening: "数学の課題" }[tod];
+  return title ? { title, at } : null;
+}
+function feedback() {
+  const by = {};
+  for (const e of state.journal) for (const t of e.tags) { (by[t] ||= { sum: 0, n: 0 }); by[t].sum += e.rating === "positive" ? 1 : e.rating === "negative" ? -1 : 0; by[t].n += 1; }
+  return Object.entries(by).filter(([, v]) => v.n >= 2 && Math.abs(v.sum / v.n) >= .2)
+    .map(([tag, v]) => ({ tag, rating: v.sum > 0 ? "positive" : "negative", weight: Math.round(Math.min(1, Math.abs(v.sum / v.n) * Math.min(1, v.n / 3)) * 100) / 100 }));
+}
+function makeProposal() {
+  const d = now(), tod = timeOfDayOf(d.getHours()), s = seasonOf(d), ev = sampleEvent(d, tod);
+  const input = { day: dayNumber(d), timeOfDay: tod, solarTerm: s.termIndex, eventTitle: ev ? ev.title : null, messages: state.said.slice(-3), mood: state.mood,
+    feedback: feedback(), recentTitles: state.journal.slice().sort((a, b) => b.at - a.at).slice(0, 8).map((e) => e.title).concat(state.declined.slice(-8)), excludeTitles: state.exclude };
+  const ch = choose(input), e = ch.experience;
+  const obs = [];
+  if (ev) obs.push(["fact", "予定", `${hm(ev.at)}から「${ev.title}」の予定がある（見本の予定）`]);
+  if (state.mood) obs.push(["fact", "あなたの言葉", `いまの気分に「${moodLabel(state.mood)}」を選んでいた`]);
+  else if (ch.mood === "tired") { obs.push(["fact", "あなたの言葉", "疲れや面倒さを口にしていた"]); obs.push(["guess", "推測", "今日は負担の少ない提案が合うかもしれない"]); }
+  return { id: Math.random().toString(36).slice(2), exp: e, reason: reasonFor(ch, ev, s.term), obs, event: ev, input,
+    summary: ev ? `「${ev.title}」が控えている${TOD_LABEL[tod]}。` : `目立った予定は見当たらない${TOD_LABEL[tod]}。` };
+}
+
+// ---------------------------------------------------------------- actions
+let busy = false;
+function generate(animateOut) {
+  if (busy) return;
+  busy = true;
+  const card = document.querySelector("#home .card");
+  const go = () => {
+    if (!state.proposal) { state.stage = "loading"; render(); }
+    setTimeout(() => { state.proposal = makeProposal(); state.stage = "proposal"; state.restUntil = null; state.completed = null; busy = false; save(); render("enter"); }, state.proposal ? 120 : 1100);
+  };
+  if (animateOut && card) { card.classList.add("leaving"); setTimeout(go, 240); } else go();
+}
+const actions = {
+  "try"() {
+    const p = state.proposal; if (!p) return;
+    state.active = { id: p.id, title: p.exp.title, invitation: p.exp.invitation, tags: p.exp.tags, question: p.exp.reflection_question, at: Date.now() };
+    state.proposal = null; state.stage = "active"; state.exclude = []; save(); render("settle");
+  },
+  another() { if (!state.proposal) return; state.declined.push(state.proposal.exp.title); state.exclude.push(state.proposal.exp.title); generate(true); },
+  "not-now"() {
+    if (!state.proposal) return;
+    state.declined.push(state.proposal.exp.title); state.proposal = null; state.restUntil = Date.now() + 3 * 3600000; state.stage = "resting"; save(); render("enter");
+  },
+  mood(el) {
+    const m = el.dataset.mood; state.mood = state.mood === m ? null : m;
+    if (state.proposal) state.exclude.push(state.proposal.exp.title);
+    state.completed = null; state.restUntil = null; generate(!!state.proposal);
+  },
+  finish() { state.rating = null; openSheet("reflect"); },
+  rate(el) { state.rating = el.dataset.rating; document.querySelectorAll(".rating").forEach((b) => b.setAttribute("aria-pressed", String(b === el))); document.getElementById("record").disabled = false; },
+  record() {
+    const a = state.active; if (!a || !state.rating) return;
+    const note = (document.getElementById("note").value || "").trim().slice(0, 200) || null;
+    const entry = { ...a, rating: state.rating, note, at: a.at, finished: Date.now() };
+    state.journal.unshift(entry); state.completed = entry; state.active = null; state.mood = null;
+    state.restUntil = Date.now() + 3600000; state.stage = "completed"; closeSheet(); save(); render("stamp");
+  },
+  abandon() { state.active = null; state.stage = "idle"; save(); render("enter"); },
+  wake() { state.restUntil = null; state.completed = null; state.proposal = null; generate(false); },
+  presence(el) { state.presence = !state.presence; el.setAttribute("aria-checked", String(state.presence)); save(); renderLock(); },
+  journal() { state.journalOpen = true; state.month = null; renderJournal(); requestAnimationFrame(() => document.getElementById("journal").classList.add("on")); },
+  "close-journal"() { document.getElementById("journal").classList.remove("on"); state.journalOpen = false; },
+  "month-prev"() { state.month = shiftMonth(-1); renderJournal(); },
+  "month-next"() { state.month = shiftMonth(1); renderJournal(); },
+  "clear-samples"() { state.journal = state.journal.filter((e) => !e.sample); state.samplesCleared = true; save(); renderJournal(); render(); },
+  insight() { openSheet("insight"); },
+  settings() { openSheet("settings"); },
+  season() { openSheet("season"); },
+  chat() { if (!state.chat.length) state.chat = [{ who: "ai", text: greeting() }]; openSheet("chat"); },
+  "close-sheet"() { closeSheet(); },
+  quick(el) { sendChat(el.textContent); },
+  adopt(el) {
+    const msg = state.chat[Number(el.dataset.i)]; if (!msg || !msg.sugg || msg.done) return; msg.done = true;
+    const e = msg.sugg; state.active = { id: "c-" + e.id, title: e.title, invitation: e.invitation, tags: e.tags, question: e.reflection_question, at: Date.now() };
+    state.proposal = null; state.restUntil = null; state.completed = null; state.stage = "active";
+    state.chat.push({ who: "ai", text: "ホームの「体験中」に置いておきました。終わったら、体験帳に記してみてください。" });
+    save(); closeSheet(); render("settle");
+  },
+  dismiss(el) { const msg = state.chat[Number(el.dataset.i)]; if (msg) { msg.done = true; renderSheet(); } },
+  toggle(el) { const k = el.dataset.key; state[k] = !state[k]; el.setAttribute("aria-checked", String(state[k])); save(); if (k === "presence") renderLock(); if (k === "calendar") renderSheet(); },
+  "onb-next"() {
+    if (state.onbStep < 2) { state.onbStep += 1; renderOnboarding(); return; }
+    state.onboarded = true; save(); document.getElementById("onb").hidden = true; document.getElementById("app").classList.remove("onboarding"); generate(false);
+  },
+  "onb-toggle"(el) { const k = el.dataset.key; state[k] = !state[k]; el.setAttribute("aria-checked", String(state[k])); },
+  sky(el) { state.tod = el.dataset.tod || null; applySky(); renderSkies(); if (state.stage === "proposal" || state.stage === "loading") { state.exclude = []; state.proposal = null; generate(false); } else render(); renderLock(); },
+  restart() { state.onboarded = false; state.onbStep = 0; state.proposal = null; state.active = null; state.completed = null; state.restUntil = null; state.mood = null; state.exclude = []; save(); closeSheet(); actions["close-journal"](); boot(); },
+  "reset-day"() { state.proposal = null; state.active = null; state.completed = null; state.restUntil = null; state.mood = null; state.exclude = []; state.declined = []; save(); closeSheet(); actions["close-journal"](); generate(false); },
+};
+
+// ---------------------------------------------------------------- chat (same rules as the on-device companion)
+const CARE = ["死にたい|しにたい|死のう|消えたい|きえたい|いなくなりたい|生きていたくない|生きるのがつらい|生きてる意味", "自殺|自死|自傷|リスカ|リストカット|首をつ|飛び降り|オーバードーズ|OD(し|する|した)", "殺したい|ころしたい"].map((p) => new RegExp(p, "i"));
+const TIRED_R = ["そうなんですね。今は無理に何かしなくても大丈夫です。気が向いたら「何か提案して」と声をかけてください。", "おつかれさまです。休むのも、立派な過ごし方です。また話したくなったら、いつでもどうぞ。"];
+const LISTEN_R = ["聞かせてくれてありがとうございます。このあと、何か予定していることはありますか？", "なるほど。今日はこのあと、どんな時間になりそうですか？", "そうなんですね。よければ、もう少し聞かせてください。"];
+const IDEA_R = ["それなら、いつもの時間を少し違う角度から見る提案をひとつ。合わなければ流してください。", "こんな見方はどうでしょう。気が向いたらで大丈夫です。"];
+const QUICK = ["ちょっと疲れた", "ひまだな", "これから勉強する", "気分を変えたい", "何か提案して"];
+function greeting() {
+  return { dawn: "おはようございます。今日はどんな一日になりそうですか？", morning: "おはようございます。今日はどんな一日になりそうですか？", daytime: "こんにちは。いま、どんな感じですか？ 疲れた、ひま、面倒…なんでも大丈夫です。",
+    evening: "こんばんは。今日はどんな一日でしたか？", night: "おつかれさまです。今日のこと、少し話していきますか？", lateNight: "静かな夜ですね。少しだけ話してから、休みますか？" }[timeOfDayOf(now().getHours())];
+}
+function companion(text) {
+  const userTexts = state.chat.filter((m) => m.who === "me").map((m) => m.text).slice(-3);
+  if (userTexts.some((t) => CARE.some((p) => p.test(t)))) return { text: "話してくれてありがとうございます。とてもつらい気持ちを抱えているのかもしれません。ひとりで抱え込まずに、信頼できる人や専門の相談窓口に今の気持ちを話してみてください。下に相談先の案内を表示しています。", care: true };
+  const mood = detectMood([text]), themes = detectThemes([text]), pick = fnv1a(text) % 997;
+  const asks = themes.size > 0 || /暇|ひま|何か|なにか|何したら|何しよう|どうしよう|提案|おすすめ|アイデア|退屈/.test(text);
+  if (!asks) { const pool = mood === "tired" ? TIRED_R : LISTEN_R; return { text: pool[pick % pool.length] }; }
+  const d = now(), ch = choose({ day: dayNumber(d), timeOfDay: timeOfDayOf(d.getHours()), solarTerm: seasonOf(d).termIndex, eventTitle: null, messages: [text], mood, feedback: [], recentTitles: [], excludeTitles: state.active ? [state.active.title] : [] });
+  return { text: IDEA_R[pick % IDEA_R.length], sugg: ch.experience };
+}
+function sendChat(raw) {
+  const text = (raw || "").trim().slice(0, 500); if (!text || state.typing) return;
+  state.chat.push({ who: "me", text }); state.said.push(text); state.typing = true; renderSheet();
+  setTimeout(() => { state.typing = false; const r = companion(text); state.chat.push({ who: "ai", ...r }); renderSheet(); }, 850);
+}
+
+// ---------------------------------------------------------------- rendering
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const seal = (ch, cls = "", size = 40, rot = -4) => `<span class="seal ${cls}" style="--size:${size}px;--rot:${rot}deg" aria-hidden="true">${esc(ch)}</span>`;
+const icon = {
+  shuffle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>',
+  info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
+  close: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+  pos: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="16" cy="16" r="5"/><path d="M16 3v4M16 25v4M3 16h4M25 16h4M6.8 6.8l2.8 2.8M22.4 22.4l2.8 2.8M6.8 25.2l2.8-2.8M22.4 9.6l2.8-2.8"/></svg>',
+  mid: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="16" cy="16" r="9"/></svg>',
+  neg: '<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 22h14a5 5 0 0 0 .6-10A7 7 0 0 0 10 13.5 4.3 4.3 0 0 0 9 22z"/></svg>',
+};
+
+function render(effect) {
+  const d = now(), tod = timeOfDayOf(d.getHours()), s = seasonOf(d);
+  const head = `
+    <header class="head">
+      <div>
+        <div class="date">${d.getMonth() + 1}月${d.getDate()}日 ${WEEK[d.getDay()]}曜日 · ${TOD_LABEL[tod]}</div>
+        <p class="greet">${{ dawn: "おはようございます", morning: "おはようございます", daytime: "こんにちは", evening: "こんばんは", night: "こんばんは", lateNight: "静かな夜ですね" }[tod]}。<br>今日、何を体験できるか。</p>
+        <p class="meaning"><b>${esc(s.term)}・${esc(s.position)}</b>　${esc(s.meaning)}</p>
+      </div>
+      <button class="tanzaku compact" data-action="season" aria-label="七十二候 ${esc(s.name)}（${esc(s.reading)}）について">${esc(s.name)}</button>
+    </header>`;
+
+  let main = "";
+  const st = state.stage;
+  if (st === "loading") {
+    main = `<div class="card"><div class="loading"><div class="drops"><i></i><i></i><i></i></div><p id="loadingText">いつもの一日を眺めています…</p></div></div>`;
+  } else if (st === "proposal" && state.proposal) {
+    const p = state.proposal, e = p.exp, r = effect === "enter" ? "reveal" : "";
+    main = `<article class="card ${effect === "enter" ? "entering" : ""}" aria-live="polite">
+      <div class="card-head"><span class="eyebrow">今日の体験 <span class="chip-src">体験ライブラリ</span></span>
+        <button class="icon-btn" style="width:32px;height:32px;background:none;box-shadow:none" data-action="insight" aria-label="AIが見たこと">${icon.info}</button></div>
+      <p class="invitation ${r} d1">${esc(e.invitation)}</p>
+      <p class="signature ${r} d2">${esc(e.title)}</p>
+      <p class="perspective ${r} d3">${esc(e.perspective)}</p>
+      <details class="why"><summary>なぜ今？</summary><p>${esc(p.reason)}</p><div class="tags">${e.tags.map((t) => `<span class="tag">${esc(TAG_LABEL[t])}</span>`).join("")}</div></details>
+      <div class="actions">
+        <button class="btn btn-shu" data-action="try">やってみる</button>
+        <div class="actions-row">
+          <button class="btn btn-quiet" data-action="another">${icon.shuffle}別の視点</button>
+          <button class="btn btn-quiet" data-action="not-now">今はやらない</button>
+        </div>
+      </div>
+    </article>`;
+  } else if (st === "active" && state.active) {
+    const a = state.active;
+    main = `<article class="card is-active ${effect === "settle" ? "entering" : ""}">
+      <div class="card-head"><span class="eyebrow active-label">${seal(sealChar(a.tags), "filled", 22, -6)} 体験中</span><span class="since">${hm(new Date(a.at))}に始めました</span></div>
+      <p class="invitation">${esc(a.invitation)}</p>
+      <p class="signature">${esc(a.title)}</p>
+      ${a.question ? `<div class="question"><span>終わったら、思い出してみてください</span><p>${esc(a.question)}</p></div>` : ""}
+      <div class="toggle-row"><span>ロック画面に置いておく</span><button class="switch" role="switch" aria-checked="${state.presence}" aria-label="ロック画面に置いておく" data-action="presence"></button></div>
+      <div class="actions"><button class="btn btn-shu" data-action="finish">終えた — 記す</button><button class="btn btn-text" data-action="abandon">この体験をやめる</button></div>
+    </article>`;
+  } else if (st === "completed" && state.completed) {
+    const c = state.completed;
+    main = `<article class="card completed ${effect === "stamp" ? "thump" : ""}">
+      <div class="stamp-wrap">${seal(sealChar(c.tags), "filled stamp", 96, -6)}</div>
+      <h3>体験帳に記しました</h3>
+      <p class="sub">${esc(c.title)} · ${esc(seasonOf(new Date(c.at)).name)}の頃</p>
+      ${c.note ? `<p class="note-quote">「${esc(c.note)}」</p>` : ""}
+      <p class="sub">次の体験は、気が向いたときに。</p>
+      <div class="actions"><button class="btn btn-quiet" data-action="wake">もうひとつ受け取る</button><button class="btn btn-text" data-action="journal">体験帳をひらく</button></div>
+    </article>`;
+  } else if (st === "resting") {
+    const until = new Date(state.restUntil || Date.now() + 3 * 3600000);
+    main = `<article class="card resting ${effect === "enter" ? "entering" : ""}">
+      <div class="stamp-wrap">${seal("休", "ghost", 64, 0)}</div>
+      <h3>今は、ひと休み。</h3>
+      <p class="sub">断っても、何も減りません。<br>次の提案は ${hm(until)} ごろに用意しておきます。</p>
+      <div class="actions"><button class="btn btn-quiet" data-action="wake">今すぐ受け取る</button></div>
+    </article>`;
+  } else {
+    main = `<article class="card resting"><h3>また気が向いたら。</h3><p class="sub">提案はいつでも受け取れます。</p>
+      <div class="actions"><button class="btn btn-quiet" data-action="wake">提案を受け取る</button></div></article>`;
+  }
+
+  const showMoods = st !== "active";
+  const moods = showMoods ? `<div class="moods"><span class="moods-label">いまの気分で選び直す</span><div class="mood-row">${MOODS.map(([id, label]) =>
+    `<button class="mood" data-action="mood" data-mood="${id}" aria-pressed="${state.mood === id}">${label}</button>`).join("")}</div></div>` : "";
+
+  const today = state.journal.filter((e) => new Date(e.at).toDateString() === new Date().toDateString());
+  const todayHtml = today.length ? `<div class="today"><span class="section-label">今日の印</span>${today.map((e) =>
+    `<div class="card today-row">${seal(sealChar(e.tags), "", 34)}<div><div class="t">${esc(e.title)}</div><div class="m">${e.note ? "「" + esc(e.note) + "」" : esc(ratingLabel(e.rating))}</div></div></div>`).join("")}</div>` : "";
+
+  document.getElementById("home").innerHTML = head + main + moods + todayHtml;
+  if (effect) document.getElementById("screen").scrollTo({ top: 0, behavior: "smooth" });
+  if (st === "loading") cycleLoading();
+  renderLock();
+}
+const ratingLabel = (r) => ({ positive: "響いた", neutral: "ふつう", negative: "合わなかった" }[r] || "");
+let loadingTimer = null;
+function cycleLoading() {
+  clearInterval(loadingTimer);
+  const lines = ["いつもの一日を眺めています…", "予定のすき間を探しています…", "視点をひとつ選んでいます…"]; let i = 0;
+  loadingTimer = setInterval(() => { const el = document.getElementById("loadingText"); if (!el) return clearInterval(loadingTimer); i = (i + 1) % lines.length; el.textContent = lines[i]; }, 1600);
+}
+
+// sheets
+function openSheet(kind) { state.sheet = kind; renderSheet(); document.getElementById("scrim").classList.add("on"); requestAnimationFrame(() => document.getElementById("sheet").classList.add("on")); }
+function closeSheet() { state.sheet = null; document.getElementById("scrim").classList.remove("on"); document.getElementById("sheet").classList.remove("on"); }
+function sheetHead(title, lead) {
+  return `<div class="grabber"></div><div class="sheet-head"><div><h2>${title}</h2>${lead ? `<p class="lead">${lead}</p>` : ""}</div><button class="icon-btn" data-action="close-sheet" aria-label="閉じる">${icon.close}</button></div>`;
+}
+function renderSheet() {
+  const el = document.getElementById("sheet"), k = state.sheet;
+  if (!k) return;
+  if (k === "reflect") {
+    const a = state.active;
+    el.innerHTML = sheetHead(esc(a.title), "体験帳に記す") + `
+      <p class="reflect-q">${esc(a.question || "やってみて、どうでしたか？")}</p>
+      <div class="ratings" role="group" aria-label="どうでしたか">
+        <button class="rating" data-action="rate" data-rating="positive" aria-pressed="false">${icon.pos}響いた</button>
+        <button class="rating" data-action="rate" data-rating="neutral" aria-pressed="false">${icon.mid}ふつう</button>
+        <button class="rating" data-action="rate" data-rating="negative" aria-pressed="false">${icon.neg}合わなかった</button>
+      </div>
+      <label class="field" for="note">ひとこと残す（この端末だけに残ります）<textarea id="note" maxlength="200" placeholder="気づいたこと、ひとつだけ"></textarea></label>
+      <div class="actions"><button class="btn btn-shu" id="record" data-action="record" disabled>記す</button></div>`;
+  } else if (k === "insight") {
+    const p = state.proposal; if (!p) return closeSheet();
+    const s = seasonOf(now());
+    const facts = p.obs.length ? p.obs.map(([cls, label, text]) => `<div class="ob ${cls}"><span class="basis ${cls}">${label}</span><span>${esc(text)}</span></div>`).join("") : `<div class="ob"><span class="basis guess">なし</span><span>今回は、予定や発言の手がかりはありませんでした。</span></div>`;
+    el.innerHTML = sheetHead("AIが見たこと", "事実と推測を分けて表示しています") + `
+      <p class="mini-head">状況</p><p style="margin:6px 0 0;font-size:14px;line-height:1.8">${esc(p.summary)}</p>
+      <div class="obs">${facts}</div>
+      <p class="mini-head">選んだ理由</p><p style="margin:6px 0 0;font-size:13.5px;line-height:1.8">${esc(p.reason)}</p>
+      <p class="mini-head">次にAIへ渡す内容</p>
+      <dl class="kv">
+        <div><dt>時刻</dt><dd>${hm(now())}（Asia/Tokyo）</dd></div>
+        <div><dt>季節</dt><dd>${esc(s.term)}・${esc(s.name)} — ${esc(s.meaning)}</dd></div>
+        <div><dt>いまの気分</dt><dd>${state.mood ? esc(moodLabel(state.mood)) : "選んでいません"}</dd></div>
+        <div><dt>予定</dt><dd>${p.event ? `今日 ${hm(p.event.at)}〜 ${esc(p.event.title)}` : "送りません"}</dd></div>
+        <div><dt>最近の体験</dt><dd>${state.journal.slice(0, 3).map((e) => esc(e.title)).join("、") || "送りません"}</dd></div>
+        <div><dt>地域</dt><dd>送りません</dd></div>
+      </dl>
+      <p class="lead" style="margin-top:12px">このプロトタイプは端末内の体験ライブラリで動いています。アプリでは、自分のサーバーのAIや Apple Intelligence にも切り替わります。</p>`;
+  } else if (k === "season") {
+    const d = now(), s = seasonOf(d), next = CONTENT.micro_seasons[(s.index + 1) % 72], prev = CONTENT.micro_seasons[(s.index + 71) % 72];
+    el.innerHTML = sheetHead("七十二候", "一年を72に分けた、五日ほどずつの季節の名前") + `
+      <div class="ring-wrap" style="margin-top:8px">${ringSvg(new Set(), s.index)}<div class="ring-center"><div><b>${esc(s.name)}</b><span>${esc(s.reading)}</span></div></div></div>
+      <p style="margin:12px 0 0;text-align:center;font-family:var(--font-display);font-size:16px">${esc(s.meaning)}</p>
+      <dl class="kv"><div><dt>節気</dt><dd>${esc(s.term)}（${esc(s.position)}）</dd></div><div><dt>ひとつ前</dt><dd>${esc(prev.name)} — ${esc(prev.meaning)}</dd></div><div><dt>次の候</dt><dd>${esc(next.name)} — ${esc(next.meaning)}</dd></div></dl>
+      <p class="lead" style="margin-top:12px">日付から計算しています。体験づくりのきっかけに使いますが、予定や気分の方を優先します。</p>`;
+  } else if (k === "settings") {
+    el.innerHTML = sheetHead("設定") + `
+      <p class="mini-head">提案のしくみ</p><p style="margin:6px 0 0;font-size:13.5px;line-height:1.8">体験ライブラリ（端末内）。自分のサーバーに接続すると、その AI が提案します。iOS 26 以降の対応機種では Apple Intelligence も使えます。</p>
+      <p class="mini-head">AIに渡す情報</p>
+      <div class="toggle-row"><span>予定を体験づくりに使う（見本の予定）</span><button class="switch" role="switch" aria-checked="${state.calendar}" data-action="toggle" data-key="calendar" aria-label="予定を使う"></button></div>
+      <p class="mini-head">通知</p>
+      <div class="toggle-row"><span>朝の便り（8:00・季節のひと言と一緒に）</span><button class="switch" role="switch" aria-checked="${state.letter}" data-action="toggle" data-key="letter" aria-label="朝の便り"></button></div>
+      <p class="mini-head">ロック画面</p>
+      <div class="toggle-row"><span>体験中はロック画面に置いておく</span><button class="switch" role="switch" aria-checked="${state.presence}" data-action="toggle" data-key="presence" aria-label="ロック画面に置く"></button></div>
+      <p class="lead" style="margin-top:16px">会話は保存しません。体験の記録はこの端末の中だけにあります。</p>`;
+  } else if (k === "chat") {
+    const log = state.chat.map((m, i) => m.who === "me" ? `<div class="msg me">${esc(m.text)}</div>` :
+      `<div class="msg ai">${seal("体", "", 26, -4)}<div><p>${esc(m.text)}</p>${m.care ? `<div class="care"><strong>ひとりで抱えないでください</strong>電話・SNSで相談できる窓口が「まもろうよ こころ（厚生労働省）」にまとまっています。今すぐ危険がある場合は 119 / 110 へ。</div>` : ""}${m.sugg ? suggCard(m, i) : ""}</div></div>`).join("");
+    const quick = !state.chat.some((m) => m.who === "me") ? `<div class="quick">${QUICK.map((q) => `<button data-action="quick">${q}</button>`).join("")}</div>` : "";
+    el.innerHTML = `<div class="chat">${sheetHead("話す", "会話はこの端末にも保存されません")}<div class="chat-log" id="chatLog">${log}${state.typing ? `<div class="msg ai">${seal("体", "", 26, -4)}<span class="typing"><i></i><i></i><i></i></span></div>` : ""}</div>${quick}
+      <form class="composer" id="composer"><input id="chatInput" autocomplete="off" placeholder="いまの気分や、これからのこと" aria-label="メッセージ"><button class="btn btn-shu" aria-label="送る">${icon.up}</button></form></div>`;
+    const log2 = document.getElementById("chatLog"); el.scrollTop = el.scrollHeight;
+    document.getElementById("composer").addEventListener("submit", (ev) => { ev.preventDefault(); const i = document.getElementById("chatInput"); sendChat(i.value); });
+    if (log2) setTimeout(() => { el.scrollTop = el.scrollHeight; }, 30);
+  }
+}
+function suggCard(m, i) {
+  const e = m.sugg;
+  return `<div class="sugg"><p>${esc(e.invitation)}</p><p class="signature">${esc(e.title)}</p>${m.done ? "" : `<div class="row"><button class="btn btn-shu" data-action="adopt" data-i="${i}">やってみる</button><button class="btn btn-quiet" data-action="dismiss" data-i="${i}">今はいい</button></div>`}</div>`;
+}
+
+// journal
+function shiftMonth(delta) {
+  const base = state.month ? new Date(state.month) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  const next = new Date(base.getFullYear(), base.getMonth() + delta, 1), cur = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  return Math.min(next.getTime(), cur.getTime());
+}
+function ringSvg(lived, current) {
+  const cx = 150, cy = 150, r1 = 112, ticks = [];
+  for (let i = 0; i < 72; i++) {
+    const a = (i / 72) * Math.PI * 2 - Math.PI / 2 + (Math.PI / 72), major = i % 3 === 0, r0 = major ? 96 : 102;
+    const x0 = cx + Math.cos(a) * r0, y0 = cy + Math.sin(a) * r0, x1 = cx + Math.cos(a) * r1, y1 = cy + Math.sin(a) * r1;
+    const cls = lived.has(i) ? "lv" : "";
+    ticks.push(`<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" class="${cls}" stroke-width="${lived.has(i) ? 4 : major ? 1.6 : 1}"/>`);
+    if (i === current) { const xd = cx + Math.cos(a) * 124, yd = cy + Math.sin(a) * 124; ticks.push(`<circle cx="${xd.toFixed(1)}" cy="${yd.toFixed(1)}" r="4.5" class="now"/>`); }
+  }
+  const labels = [["春", 0], ["夏", 18], ["秋", 36], ["冬", 54]].map(([t, i]) => {
+    const a = ((i + 9) / 72) * Math.PI * 2 - Math.PI / 2, x = cx + Math.cos(a) * 140, y = cy + Math.sin(a) * 140;
+    return `<text x="${x.toFixed(1)}" y="${(y + 4).toFixed(1)}" text-anchor="middle">${t}</text>`;
+  }).join("");
+  return `<svg viewBox="0 0 300 300" role="img" aria-label="七十二候の輪"><style>line{stroke:var(--line)} line.lv{stroke:var(--shu)} circle.now{fill:var(--ink)} text{fill:var(--ink-3);font-size:12px;font-family:var(--font-display)}</style>${ticks.join("")}${labels}</svg>`;
+}
+function renderJournal() {
+  const el = document.getElementById("journal"), entries = state.journal.slice().sort((a, b) => b.at - a.at);
+  const cur = new Date(), monthStart = state.month ? new Date(state.month) : new Date(cur.getFullYear(), cur.getMonth(), 1);
+  const lived = new Set(entries.filter((e) => cur - e.at < 365 * 864e5).map((e) => koIndexOn(new Date(e.at))));
+  const thisMonth = entries.filter((e) => new Date(e.at) >= new Date(cur.getFullYear(), cur.getMonth(), 1)).length;
+  const s = seasonOf(now());
+  // month grid
+  const lead = monthStart.getDay(), days = new Date(monthStart.getFullYear(), monthStart.getMonth() + 1, 0).getDate(), total = Math.ceil((lead + days) / 7) * 7;
+  const cells = [];
+  for (let k = 0; k < total; k++) {
+    const d = new Date(monthStart.getFullYear(), monthStart.getMonth(), 1 - lead + k), list = entries.filter((e) => new Date(e.at).toDateString() === d.toDateString());
+    const out = d.getMonth() !== monthStart.getMonth(), isToday = d.toDateString() === cur.toDateString();
+    cells.push(`<div class="day ${out ? "out" : ""} ${isToday ? "today" : ""}" aria-label="${d.getMonth() + 1}月${d.getDate()}日${list.length ? " 体験あり" : ""}"><span class="num">${d.getDate()}</span>${list.length ? seal(sealChar(list[0].tags), "", 22, (d.getDate() % 5) - 3) : ""}</div>`);
+  }
+  const canNext = monthStart < new Date(cur.getFullYear(), cur.getMonth(), 1);
+  const fb = feedback();
+  const trends = fb.length ? `<div class="trend"><span class="mini-head" style="margin:0">最近の傾向</span>${fb.slice(0, 3).map((f) =>
+    `<span>「${esc(TAG_LABEL[f.tag])}」のある体験は、${f.rating === "positive" ? "最近よく響いています" : "最近は合わないことが多めです"}</span>`).join("")}<span style="font-size:11.5px;color:var(--ink-3)">最近の反応から計算した目安です。あなたがどんな人かを決めつけるものではありません。</span></div>` : "";
+  el.innerHTML = `
+    <div class="journal-top"><button class="icon-btn" data-action="close-journal" aria-label="戻る">${icon.back}</button><span class="eyebrow">この端末の中だけ</span></div>
+    <h2>体験帳</h2>
+    <p class="stats">記した体験 ${entries.length} ・ 今月 ${thisMonth} ・ この一年で出会った候 ${lived.size} / 72</p>
+    <div class="ring-wrap">${ringSvg(lived, s.index)}<div class="ring-center"><div><b>${lived.size}</b><span>候</span></div></div></div>
+    <p class="ring-cap">体験を記した候が、朱で灯ります。<br>点は今日の候（${esc(s.name)}）。</p>
+    <section class="month">
+      <div class="month-head"><button data-action="month-prev" aria-label="前の月">‹</button><span>${monthStart.getFullYear()}年${monthStart.getMonth() + 1}月</span><button data-action="month-next" aria-label="次の月" ${canNext ? "" : "disabled"}>›</button></div>
+      <div class="grid7">${WEEK.map((w) => `<span class="wd">${w}</span>`).join("")}${cells.join("")}</div>
+    </section>
+    ${trends}
+    <section class="entries">${entries.length ? entries.map((e) => {
+      const k = seasonOf(new Date(e.at)), d = new Date(e.at);
+      return `<article class="entry">${seal(sealChar(e.tags), "", 38, (d.getDate() % 5) - 3)}<div style="min-width:0">
+        <div class="t">${esc(e.title)}${e.sample ? '<span class="sample">見本</span>' : ""}</div>
+        <p class="inv">${esc(e.invitation)}</p>${e.note ? `<p class="note">「${esc(e.note)}」</p>` : ""}
+        <p class="meta"><span>${d.getMonth() + 1}月${d.getDate()}日</span><span>${esc(k.name)}の頃</span><span>${esc(ratingLabel(e.rating))}</span></p></div></article>`;
+    }).join("") : `<p class="lead">まだ印はありません。最初の体験を受け取りに行きましょう。</p>`}</section>
+    ${entries.some((e) => e.sample) ? `<div style="margin-top:16px"><button class="btn btn-text" data-action="clear-samples">見本の記録を消す</button></div>` : ""}`;
+}
+
+// onboarding
+function renderOnboarding() {
+  const s = seasonOf(now()), el = document.getElementById("onb"), step = state.onbStep;
+  const pages = [
+    `<span class="tanzaku" aria-hidden="true">${esc(s.name)}<small>${esc(s.reading)}</small></span>
+     <h1>いつもの一日に、<br>まだ見ていない<br>体験がある。</h1>
+     <p>今日は七十二候の<b>「${esc(s.name)}」</b>。${esc(s.meaning)}です。<br>体験は特別な場所ではなく、予定や移動や食事の中にあります。</p>`,
+    `<h1>AIは、視点を<br>ひとつ差し出すだけ。</h1>
+     <p>予定や気分から、いつもの行動を少し違う角度で見る提案をひとつ。やるかどうか、どう感じるかは、あなたが決めます。</p>
+     <div class="pills"><span class="shu">やってみる</span><span>別の視点</span><span>今はやらない</span></div>
+     <p class="fine">断っても、何も減りません。断ったあとは、しばらく提案を控えます。</p>`,
+    `<h1>使う情報は、<br>あなたが選ぶ。</h1>
+     <div class="perm">
+       <div class="row"><div><b>カレンダー</b><span>今日と明日の予定の、時間とタイトルだけ</span></div><button class="switch" role="switch" aria-checked="${state.calendar}" data-action="onb-toggle" data-key="calendar" aria-label="カレンダー"></button></div>
+       <div class="row"><div><b>朝の便り</b><span>朝に一度だけ。その日の季節のひと言と一緒に</span></div><button class="switch" role="switch" aria-checked="${state.letter}" data-action="onb-toggle" data-key="letter" aria-label="朝の便り"></button></div>
+     </div>
+     <p class="fine">会話は保存しません。体験の記録はこの端末の中だけにあります。</p>`,
+  ];
+  el.innerHTML = `<div class="onb-body reveal">${pages[step]}</div>
+    <div class="onb-foot"><div class="dots">${[0, 1, 2].map((i) => `<i class="${i === step ? "on" : ""}"></i>`).join("")}</div>
+    <button class="btn ${step === 2 ? "btn-shu" : "btn-quiet"}" style="${step === 2 ? "" : "background:var(--panel);backdrop-filter:blur(14px)"}" data-action="onb-next">${["はじめる", "つぎへ", "最初の体験を受け取る"][step]}</button></div>`;
+}
+
+// side: skies & lock screen
+function applySky() {
+  const tod = timeOfDayOf(now().getHours()), p = SKIES[isDark() ? "dark" : "light"][tod], app = document.getElementById("app");
+  app.style.setProperty("--s1", p[0]); app.style.setProperty("--s2", p[1]); app.style.setProperty("--s3", p[2]);
+  app.dataset.ondark = String(!!p[3]); app.dataset.stars = String(tod === "night" || tod === "lateNight");
+  app.dataset.lamplight = String(!isDark() && !!p[3]);
+}
+function renderSkies() {
+  const real = timeOfDayOf(new Date().getHours()), pal = SKIES[isDark() ? "dark" : "light"];
+  document.getElementById("skies").innerHTML = [`<button class="sky-btn" data-action="sky" data-tod="" aria-pressed="${!state.tod}"><i style="background:linear-gradient(${pal[real][0]},${pal[real][2]})"></i>いま</button>`]
+    .concat(TOD.map((t) => `<button class="sky-btn" data-action="sky" data-tod="${t}" aria-pressed="${state.tod === t}"><i style="background:linear-gradient(${pal[t][0]},${pal[t][2]})"></i>${TOD_LABEL[t]}</button>`)).join("");
+}
+function renderLock() {
+  const d = now(), s = seasonOf(d), el = document.getElementById("lock"), cap = document.getElementById("lockCap");
+  let body = "", text = "";
+  if (state.active && state.presence) {
+    body = `<div class="la">${seal(sealChar(state.active.tags), "", 34, -5)}<div><div class="k">体験中 · ${hm(new Date(state.active.at))}から</div><div class="v">${esc(state.active.invitation)}</div></div></div>`;
+    text = "Live Activity。体験中だけロック画面に置かれ、終えると消えます。";
+  } else if (state.proposal) {
+    body = `<div class="la">${seal(sealChar(state.proposal.exp.tags), "", 34, -5)}<div><div class="k">今日の体験 · ${esc(s.name)}</div><div class="v">${esc(state.proposal.exp.invitation)}</div></div></div>`;
+    text = "ウィジェット。今日の提案を、アプリを開かずに眺められます。";
+  } else {
+    body = `<div class="la">${seal("候", "", 34, -5)}<div><div class="k">${esc(s.term)} · ${esc(s.position)}</div><div class="v">${esc(s.name)} — ${esc(s.meaning)}</div></div></div>`;
+    text = "ウィジェット。提案がないときは、今日の季節だけを表示します。";
+  }
+  el.innerHTML = `<div class="clock">${d.getHours()}:${pad(d.getMinutes())}</div><div class="ldate">${d.getMonth() + 1}月${d.getDate()}日 ${WEEK[d.getDay()]}曜日</div>${body}`;
+  cap.textContent = text;
+}
+function stars() {
+  const make = (n, seed) => { let x = seed, out = []; const rnd = () => (x = (x * 16807) % 2147483647) / 2147483647;
+    for (let i = 0; i < n; i++) out.push(`${Math.round(rnd() * 520)}px ${Math.round(rnd() * 470)}px 0 ${rnd() < .15 ? 1 : 0}px rgba(255,255,255,${(.35 + rnd() * .6).toFixed(2)})`); return out.join(","); };
+  document.getElementById("starsA").style.boxShadow = make(46, 11);
+  document.getElementById("starsB").style.boxShadow = make(34, 29);
+}
+
+// ---------------------------------------------------------------- boot & events
+document.addEventListener("click", (ev) => {
+  const el = ev.target.closest("[data-action]");
+  if (!el) return;
+  const fn = actions[el.dataset.action];
+  if (fn) { ev.preventDefault(); fn(el); }
+});
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { applySky(); renderSkies(); });
+new MutationObserver(() => { applySky(); renderSkies(); }).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+setInterval(() => { renderLock(); }, 30000);
+
+function boot() {
+  applySky(); renderSkies(); stars();
+  if (state.restUntil && state.restUntil <= Date.now()) state.restUntil = null;
+  if (!state.onboarded) {
+    state.stage = "loading"; render(); const onb = document.getElementById("onb"); onb.hidden = false; renderOnboarding();
+    document.getElementById("app").classList.add("onboarding");
+    document.getElementById("home").innerHTML = ""; return;
+  }
+  document.getElementById("onb").hidden = true;
+  document.getElementById("app").classList.remove("onboarding");
+  if (state.active) { state.stage = "active"; render(); }
+  else if (state.restUntil) { state.stage = "resting"; render(); }
+  else generate(false);
+}
+load();
+boot();
+</script>
+
+</body>
+</html>

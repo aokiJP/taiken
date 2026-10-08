@@ -309,6 +309,31 @@ final class AppDependencies {
         rescheduleLetters()
     }
 
+    // MARK: - 起動
+
+    /// アプリの起動時に使う組み立て。UIテスト (DEBUG ビルドで `-UITesting` 付き) のときだけ、
+    /// 端末の状態に左右されない組み立て (メモリ上の保存先・見本の予定・端末内の体験ライブラリ) にする
+    static func make(arguments: [String] = ProcessInfo.processInfo.arguments) -> AppDependencies {
+        #if DEBUG
+        if arguments.contains("-UITesting") {
+            let deps = AppDependencies(
+                configuration: AppConfiguration(developmentBackendURL: nil),
+                inMemory: true,
+                calendarProvider: FixedCalendarProvider.sample(),
+                locationProvider: FixedLocationProvider(),
+                connectionStore: InMemoryConnectionStore(),
+                useOnDeviceAI: false
+            )
+            if arguments.contains("-UITestSeedJournal") {
+                for entry in HistoryEntry.sampleJournal() { try? deps.repository.add(entry) }
+                deps.history.reload()
+            }
+            return deps
+        }
+        #endif
+        return AppDependencies(configuration: .fromBundle())
+    }
+
     // MARK: - プレビュー
 
     static func preview(journal: Bool = true) -> AppDependencies {

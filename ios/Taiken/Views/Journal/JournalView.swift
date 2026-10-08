@@ -155,6 +155,7 @@ struct JournalView: View {
                                     .matchedTransitionSource(id: entry.id, in: zoom)
                             }
                             .buttonStyle(.plain)
+                            .accessibilityIdentifier("journal.entry")
                             .contextMenu {
                                 Button("削除", systemImage: "trash", role: .destructive) { pendingDeletion = entry }
                             }

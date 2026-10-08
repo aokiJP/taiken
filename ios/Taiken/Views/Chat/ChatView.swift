@@ -100,6 +100,7 @@ struct ChatView: View {
                 TextField("いまの気分や、これからのこと", text: $model.draft, axis: .vertical)
                     .lineLimit(1...5)
                     .focused($inputFocused)
+                    .accessibilityIdentifier("chat.input")
                     .padding(.horizontal, 16)
                     .padding(.vertical, 11)
                     .background(Palette.wash, in: RoundedRectangle(cornerRadius: 22, style: .continuous))

@@ -110,14 +110,29 @@ targets:
       base:
         GENERATE_INFOPLIST_FILE: YES
         PRODUCT_BUNDLE_IDENTIFIER: $(TAIKEN_BUNDLE_ID).tests
+  # 体験の流れを実際の画面でたどる UI テスト (各場面のスクリーンショットも残す)
+  TaikenUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - TaikenUITests
+    dependencies:
+      - target: Taiken
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        PRODUCT_BUNDLE_IDENTIFIER: $(TAIKEN_BUNDLE_ID).uitests
+        TEST_TARGET_NAME: Taiken
 schemes:
   Taiken:
     build:
       targets:
         Taiken: all
         TaikenTests: [test]
+        TaikenUITests: [test]
     test:
       gatherCoverageData: true
       coverageTargets: [Taiken]
       targets:
         - TaikenTests
+        - TaikenUITests

@@ -1,0 +1,116 @@
+name: Screens
+
+# 体験の流れを UI テストで最初から最後までたどり、各場面のスクリーンショットを残す。
+# - ライト表示は昼の空、ダーク表示は夜の空になるタイムゾーンで撮る
+# - 結果 (PNG・ログ) は ci-screens ブランチに置く
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: screens-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  screens:
+    name: 画面の流れ (UIテスト + スクリーンショット)
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Xcode を選ぶ (IPA と同じ)
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -n 1)
+          if [ -z "$XCODE" ]; then XCODE=$(ls -d /Applications/Xcode_16*.app 2>/dev/null | sort -V | tail -n 1); fi
+          if [ -n "$XCODE" ]; then sudo xcode-select -s "$XCODE/Contents/Developer"; fi
+          xcodebuild -version
+
+      - name: プロジェクトを生成
+        working-directory: ios
+        run: |
+          brew install xcodegen >/dev/null 2>&1 || brew upgrade xcodegen || true
+          xcodegen generate
+
+      - name: シミュレータを用意
+        run: |
+          UDID=$(python3 .github/scripts/pick_simulator.py)
+          test -n "$UDID"
+          echo "UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl list devices | grep "$UDID"
+          xcrun simctl boot "$UDID" || true
+          xcrun simctl bootstatus "$UDID" -b
+          echo "DAY_TZ=$(python3 .github/scripts/pick_timezone.py 10 16)" >> "$GITHUB_ENV"
+          echo "NIGHT_TZ=$(python3 .github/scripts/pick_timezone.py 20 24)" >> "$GITHUB_ENV"
+
+      - name: テスト用にビルド
+        working-directory: ios
+        run: |
+          set -o pipefail
+          mkdir -p build
+          xcodebuild build-for-testing -project Taiken.xcodeproj -scheme Taiken \
+            -destination "id=$UDID" -derivedDataPath build/dd CODE_SIGNING_ALLOWED=NO 2>&1 \
+            | tee build/build-for-testing.log | grep -E "error:|BUILD (SUCCEEDED|FAILED)|TEST BUILD" || true
+          grep -qE "TEST BUILD SUCCEEDED|BUILD SUCCEEDED" build/build-for-testing.log
+
+      - name: UIテスト (ライト・昼)
+        working-directory: ios
+        run: |
+          xcrun simctl ui "$UDID" appearance light
+          xcrun simctl status_bar "$UDID" override --time "$(TZ=$DAY_TZ date +%H:%M)" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
+          set -o pipefail
+          TEST_RUNNER_TAIKEN_SCREENSHOTS="$PWD/build/screens/light" TEST_RUNNER_TAIKEN_TZ="$DAY_TZ" \
+          xcodebuild test-without-building -project Taiken.xcodeproj -scheme Taiken \
+            -destination "id=$UDID" -derivedDataPath build/dd -only-testing:TaikenUITests \
+            -resultBundlePath build/ui-light.xcresult 2>&1 \
+            | tee build/ui-light.log | grep -E "error:|Test Case|TEST (SUCCEEDED|FAILED)|Executed" || true
+          grep -q "TEST SUCCEEDED" build/ui-light.log
+
+      - name: UIテスト (ダーク・夜)
+        if: always()
+        working-directory: ios
+        run: |
+          xcrun simctl ui "$UDID" appearance dark
+          xcrun simctl status_bar "$UDID" override --time "$(TZ=$NIGHT_TZ date +%H:%M)" --batteryState charged --batteryLevel 100 --cellularBars 4 --wifiBars 3 || true
+          set -o pipefail
+          TEST_RUNNER_TAIKEN_SCREENSHOTS="$PWD/build/screens/dark" TEST_RUNNER_TAIKEN_TZ="$NIGHT_TZ" \
+          xcodebuild test-without-building -project Taiken.xcodeproj -scheme Taiken \
+            -destination "id=$UDID" -derivedDataPath build/dd -only-testing:TaikenUITests \
+            -resultBundlePath build/ui-dark.xcresult 2>&1 \
+            | tee build/ui-dark.log | grep -E "error:|Test Case|TEST (SUCCEEDED|FAILED)|Executed" || true
+          grep -q "TEST SUCCEEDED" build/ui-dark.log
+
+      - name: 結果を ci-screens ブランチに置く
+        if: always()
+        working-directory: ios
+        run: |
+          set -u
+          OUT=/tmp/screens
+          mkdir -p "$OUT"
+          cp -R build/screens/. "$OUT/" 2>/dev/null || true
+          for MODE in light dark; do
+            if [ -d "build/ui-$MODE.xcresult" ] && [ -z "$(ls "$OUT/$MODE" 2>/dev/null)" ]; then
+              xcrun xcresulttool export attachments --path "build/ui-$MODE.xcresult" --output-path "$OUT/attachments-$MODE" || true
+            fi
+            [ -f "build/ui-$MODE.log" ] && grep -E "error:|failed|Test Case|Executed|TEST (SUCCEEDED|FAILED)" "build/ui-$MODE.log" > "$OUT/ui-$MODE.txt" || true
+          done
+          [ -f build/build-for-testing.log ] && grep -E "error:" build/build-for-testing.log | sort -u > "$OUT/build-errors.txt" || true
+          {
+            echo "commit: $GITHUB_SHA"
+            echo "run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "device: $(xcrun simctl list devices | grep "$UDID")"
+            echo "day: ${DAY_TZ:-} / night: ${NIGHT_TZ:-}"
+            xcodebuild -version | tr '\n' ' '; echo
+          } > "$OUT/info.txt"
+          cd "$OUT"
+          git init -q -b ci-screens
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -qm "screens for $GITHUB_SHA"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" ci-screens

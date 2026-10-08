@@ -7,7 +7,7 @@ import UserNotifications
 struct TaikenApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @Environment(\.scenePhase) private var scenePhase
-    @State private var dependencies = AppDependencies(configuration: .fromBundle())
+    @State private var dependencies = AppDependencies.make()
 
     var body: some Scene {
         WindowGroup {

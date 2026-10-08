@@ -1,3 +1,4 @@
+import Security
 import SwiftData
 import XCTest
 import TaikenCore
@@ -63,8 +64,20 @@ final class KeychainConnectionStoreTests: XCTestCase {
     private var defaults: UserDefaults!
     private let service = "com.example.taiken.tests.\(UUID().uuidString)"
 
-    override func setUp() {
+    override func setUpWithError() throws {
         defaults = UserDefaults(suiteName: "KeychainConnectionStoreTests-\(UUID().uuidString)")
+        // 署名なしでビルドしたテスト (CI のシミュレータ) ではキーチェーンの権限が無い。その場合は確かめられないので飛ばす
+        let probe: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: "probe",
+            kSecValueData as String: Data("probe".utf8),
+        ]
+        let status = SecItemAdd(probe as CFDictionary, nil)
+        SecItemDelete(probe as CFDictionary)
+        if status == errSecMissingEntitlement {
+            throw XCTSkip("キーチェーンを使う権限が無い (署名なしのテスト)")
+        }
     }
 
     func testSavesTokenInKeychainAndURLInDefaults() throws {

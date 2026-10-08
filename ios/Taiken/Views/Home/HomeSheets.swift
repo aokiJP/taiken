@@ -44,6 +44,7 @@ struct ReflectionSheet: View {
                         .font(Typeface.mincho(16))
                         .lineLimit(2...5)
                         .focused($noteFocused)
+                        .accessibilityIdentifier("reflection.note")
                         .padding(14)
                         .background(Palette.wash, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
                         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Palette.line, lineWidth: 1))
