@@ -42,7 +42,7 @@ struct SettingsView: View {
             }
             .scrollContentBackground(.hidden)
             .background(Palette.paper.ignoresSafeArea())
-            .tint(Palette.ink)
+            .tint(Palette.toggle)
             .navigationTitle("設定")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

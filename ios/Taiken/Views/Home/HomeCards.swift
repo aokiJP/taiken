@@ -229,7 +229,7 @@ struct ActiveCard: View {
                         .font(.footnote)
                         .foregroundStyle(Palette.ink2)
                 }
-                .tint(Palette.ink)
+                .tint(Palette.toggle)
                 .padding(.top, 14)
                 .onChange(of: presenceEnabled) { _, enabled in presenceChanged(enabled) }
 

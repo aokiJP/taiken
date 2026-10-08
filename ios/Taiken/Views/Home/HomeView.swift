@@ -14,7 +14,6 @@ struct HomeView: View {
     let livedSeasons: @MainActor () -> Set<Int>
 
     @State private var sheet: HomeSheet?
-    @State private var lived: Set<Int> = []
     /// 振り返りのシートが閉じきってから印を押す (押す瞬間を見てもらうため)
     @State private var pendingRecord: PendingRecord?
     @Environment(\.colorScheme) private var colorScheme
@@ -39,7 +38,6 @@ struct HomeView: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         SeasonHeader(date: timeline.date, time: time, season: model.season, palette: palette) {
-                            lived = livedSeasons()
                             sheet = .season
                         }
                         if let notice = model.notice {
@@ -94,7 +92,7 @@ struct HomeView: View {
                     }
                 }
             case .season:
-                SeasonSheet(season: model.season, lived: lived)
+                SeasonSheet(season: model.season, loadLived: livedSeasons)
             }
         }
         // 触覚: 気分を選ぶ (軽く)、体験を始める (確かに)、印を押す (重く)

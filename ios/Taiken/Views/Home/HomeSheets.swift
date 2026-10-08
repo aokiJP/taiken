@@ -339,7 +339,9 @@ struct RequestPreviewView: View {
 
 struct SeasonSheet: View {
     let season: MicroSeason
-    let lived: Set<Int>
+    /// この一年で体験を記した候。シートが開いてから読む (開いた瞬間の体験帳を映す)
+    let loadLived: @MainActor () -> Set<Int>
+    @State private var lived: Set<Int> = []
 
     var body: some View {
         ScrollView {
@@ -386,6 +388,10 @@ struct SeasonSheet: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
         .presentationBackground(Palette.paper)
+        .task {
+            let value = loadLived()
+            withAnimation(.easeOut(duration: 0.6)) { lived = value }
+        }
     }
 
     private var periodText: String {

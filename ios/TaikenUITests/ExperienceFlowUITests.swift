@@ -148,13 +148,10 @@ final class ExperienceFlowUITests: XCTestCase {
 
     private func launch(onboarded: Bool, seedJournal: Bool) -> XCUIApplication {
         let app = XCUIApplication()
-        // `-キー 値` は UserDefaults の引数ドメインになる (はじめの案内を見終えたか・言語と地域)
-        app.launchArguments = [
-            "-UITesting",
-            "-onboarding.completed", onboarded ? "YES" : "NO",
-            "-AppleLanguages", "(ja)",
-            "-AppleLocale", "ja_JP",
-        ]
+        // `-キー 値` は UserDefaults の引数ドメインになる (言語と地域・はじめの案内を見終えたか)。
+        // 案内から試すときは引数で NO を固定せず (見終えた印を書けなくなる)、アプリに消してもらう
+        app.launchArguments = ["-UITesting", "-AppleLanguages", "(ja)", "-AppleLocale", "ja_JP"]
+        app.launchArguments += onboarded ? ["-onboarding.completed", "YES"] : ["-UITestResetOnboarding"]
         if seedJournal { app.launchArguments.append("-UITestSeedJournal") }
         // 空の時間帯をそろえるためのタイムゾーン (CI から TEST_RUNNER_TAIKEN_TZ で渡す)
         let zone = ProcessInfo.processInfo.environment["TAIKEN_TZ"] ?? ""

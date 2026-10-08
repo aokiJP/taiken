@@ -179,12 +179,18 @@ struct FloatingIconButton: View {
 
     var body: some View {
         Button(action: action) {
-            Image(systemName: systemImage)
-                .font(.system(size: 17, weight: .regular))
-                .foregroundStyle(Palette.ink)
-                .frame(width: 40, height: 40)
-                .background(.ultraThinMaterial, in: Circle())
-                .overlay(Circle().strokeBorder(Palette.line, lineWidth: 1))
+            if #available(iOS 26.0, *) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(Palette.ink)
+            } else {
+                Image(systemName: systemImage)
+                    .font(.system(size: 17, weight: .regular))
+                    .foregroundStyle(Palette.ink)
+                    .frame(width: 40, height: 40)
+                    .background(.ultraThinMaterial, in: Circle())
+                    .overlay(Circle().strokeBorder(Palette.line, lineWidth: 1))
+            }
         }
         .buttonStyle(.plain)
         .accessibilityLabel(label)

@@ -5,10 +5,13 @@ import TaikenCore
 /// HistoryRepository の SwiftData 実装。保存先は端末内のみ。
 @MainActor
 final class SwiftDataHistoryRepository: HistoryRepository {
+    /// ModelContext は container を強く参照しないので、ここで持っておく (先に解放されると使ったときに落ちる)
+    private let container: ModelContainer
     private let context: ModelContext
 
-    init(context: ModelContext) {
-        self.context = context
+    init(container: ModelContainer) {
+        self.container = container
+        context = container.mainContext
     }
 
     func add(_ entry: HistoryEntry) throws {

@@ -9,7 +9,7 @@ import TaikenCore
 @MainActor
 final class SwiftDataHistoryRepositoryTests: XCTestCase {
     private func makeRepository() -> SwiftDataHistoryRepository {
-        SwiftDataHistoryRepository(context: PersistenceFactory.makeContainer(inMemory: true).mainContext)
+        SwiftDataHistoryRepository(container: PersistenceFactory.makeContainer(inMemory: true))
     }
 
     private func entry(_ title: String, at date: Date, status: HistoryEntry.Status = .active) -> HistoryEntry {
@@ -173,7 +173,7 @@ final class SchemaMigrationTests: XCTestCase {
         var failure: Error?
         let container = PersistenceFactory.makeContainer(inMemory: false, storeURL: url) { failure = $0 }
         XCTAssertNil(failure)
-        let repo = SwiftDataHistoryRepository(context: container.mainContext)
+        let repo = SwiftDataHistoryRepository(container: container)
         let entry = try XCTUnwrap(repo.entry(id: id))
         XCTAssertEqual(entry.title, "ひと口目の味")
         XCTAssertEqual(entry.rating, .positive)

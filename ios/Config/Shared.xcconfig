@@ -6,3 +6,9 @@ TAIKEN_BUNDLE_ID = com.example.taiken.app
 TAIKEN_DEVELOPMENT_TEAM =
 // アプリとウィジェットが共有する App Group (署名の設定で同じ ID を有効にする)
 TAIKEN_APP_GROUP = group.$(TAIKEN_BUNDLE_ID)
+// App Group を使う entitlements。無料の Apple ID (Personal Team) などで App Group を有効にできないときは、
+// Local.xcconfig に次の2行を書くと App Group なしで署名できる (アプリは動き、ウィジェットには季節だけが出る)
+//   TAIKEN_APP_ENTITLEMENTS =
+//   TAIKEN_WIDGET_ENTITLEMENTS =
+TAIKEN_APP_ENTITLEMENTS = Taiken/Taiken.entitlements
+TAIKEN_WIDGET_ENTITLEMENTS = TaikenWidgets/TaikenWidgets.entitlements

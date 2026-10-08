@@ -136,7 +136,7 @@ struct EntryDetailView: View {
             if entry.note != nil {
                 Toggle("ひとことも載せる", isOn: $includeNote)
                     .font(.footnote)
-                    .tint(Palette.ink)
+                    .tint(Palette.toggle)
             }
             if let card {
                 ShareLink(item: card, preview: SharePreview(entry.title, image: card)) {
@@ -212,7 +212,7 @@ struct StampCard: View {
                     .foregroundStyle(Palette.ink3)
             }
             .padding(24)
-            .background(Color.white.opacity(0.84), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .background(Color(hex: 0xFBFAF7, opacity: 0.93), in: RoundedRectangle(cornerRadius: 22, style: .continuous))
             .padding(20)
         }
         .frame(width: Self.size.width, height: Self.size.height)

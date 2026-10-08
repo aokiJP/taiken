@@ -61,18 +61,34 @@ struct InkGrain: View {
 
     var body: some View {
         Canvas { context, canvasSize in
-            context.fill(Path(CGRect(origin: .zero, size: canvasSize)), with: .color(.white))
-            var random = SeededRandom(seed: seed)
-            context.blendMode = .clear
-            let count = Int(max(6, size * 0.9))
-            for _ in 0..<count {
-                let radius = CGFloat(random.next(in: 0.004...0.022)) * canvasSize.width
-                let x = CGFloat(random.next(in: 0...1)) * canvasSize.width
-                let y = CGFloat(random.next(in: 0...1)) * canvasSize.height
-                context.fill(Path(ellipseIn: CGRect(x: x - radius, y: y - radius, width: radius * 2, height: radius * 2)), with: .color(.white))
-            }
+            Self.draw(in: &context, size: canvasSize, seed: seed, points: size)
         }
         .frame(width: size, height: size)
+    }
+
+    /// 白で塗ってから、縁に近いところほど多く、小さな点を抜く
+    private static func draw(in context: inout GraphicsContext, size: CGSize, seed: UInt64, points: CGFloat) {
+        context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.white))
+        var random = SeededRandom(seed: seed)
+        context.blendMode = .clear
+        let width: CGFloat = size.width
+        let height: CGFloat = size.height
+        let count = Int(max(5, points * 0.32))
+        for index in 0..<count {
+            let radius: CGFloat = CGFloat(random.next(in: 0.0035...0.011)) * width
+            let along: CGFloat = CGFloat(random.next(in: 0...1))
+            let depth: CGFloat = CGFloat(abs(random.next(in: -1...1) * random.next(in: 0...1))) * 0.16
+            let x: CGFloat
+            let y: CGFloat
+            switch index % 4 {
+            case 0: x = along * width; y = depth * height
+            case 1: x = along * width; y = (1 - depth) * height
+            case 2: x = depth * width; y = along * height
+            default: x = (1 - depth) * width; y = along * height
+            }
+            let rect = CGRect(x: x - radius, y: y - radius, width: radius * 2, height: radius * 2)
+            context.fill(Path(ellipseIn: rect), with: .color(.white))
+        }
     }
 }
 

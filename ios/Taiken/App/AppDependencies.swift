@@ -129,7 +129,7 @@ final class AppDependencies {
         container = PersistenceFactory.makeContainer(inMemory: inMemory) { error in
             diagnostics.record("persistence.fallback_to_memory", ["error": String(describing: type(of: error))])
         }
-        repository = SwiftDataHistoryRepository(context: container.mainContext)
+        repository = SwiftDataHistoryRepository(container: container)
 
         // 端末内の提案: Apple Intelligence が使えればそれを、使えなければ体験ライブラリを使う。
         // 端末内のAIの出力にも、サーバーと同じ安全確認をかける (SafeguardedExperienceService)
@@ -316,8 +316,15 @@ final class AppDependencies {
     static func make(arguments: [String] = ProcessInfo.processInfo.arguments) -> AppDependencies {
         #if DEBUG
         if arguments.contains("-UITesting") {
+            // 前の実行の提案・ひと休みを持ち越さない。はじめの案内から試すときは、見終えた印も消す
+            let defaults = DefaultsStore()
+            defaults.removeAll()
+            if arguments.contains("-UITestResetOnboarding") {
+                defaults.defaults.removeObject(forKey: OnboardingKey.completed)
+            }
             let deps = AppDependencies(
                 configuration: AppConfiguration(developmentBackendURL: nil),
+                defaults: defaults,
                 inMemory: true,
                 calendarProvider: FixedCalendarProvider.sample(),
                 locationProvider: FixedLocationProvider(),

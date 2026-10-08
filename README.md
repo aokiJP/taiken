@@ -63,6 +63,13 @@ TAIKEN_DEVELOPMENT_TEAM = ABCDE12345
 TAIKEN_BUNDLE_ID = jp.yourname.taiken
 ```
 
+無料の Apple ID (Personal Team) で「App Groups に対応していない」と署名に失敗するときは、同じファイルに次の2行を足すと App Group なしで入れられます (アプリは動き、ウィジェットには季節だけが出ます)。
+
+```
+TAIKEN_APP_ENTITLEMENTS =
+TAIKEN_WIDGET_ENTITLEMENTS =
+```
+
 サーバーが無くても、体験ライブラリ (76の体験・七十二候) で動きます。iOS 26 以降の Apple Intelligence 対応機種では、端末内のAIが提案をつくります。
 
 ## 自分のサーバーのAIを使う (任意)

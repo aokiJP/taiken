@@ -55,6 +55,8 @@ enum Palette {
     /// シート・体験帳の地
     static let paper = Color.dynamic(light: UIColor(hex: 0xF7F8FB), dark: UIColor(hex: 0x1A1F33))
     static let shadow = Color.dynamic(light: UIColor(hex: 0x1C2131, alpha: 0.28), dark: UIColor(white: 0, alpha: 0.55))
+    /// トグルのオン (藍墨。ダーク表示では、白いつまみが沈まない明るさの藍)
+    static let toggle = Color.dynamic(light: UIColor(hex: 0x1C2131), dark: UIColor(hex: 0x6E7BAA))
 }
 
 // MARK: - 空

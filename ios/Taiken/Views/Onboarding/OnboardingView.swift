@@ -237,7 +237,7 @@ private struct PermissionRow: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
-        .tint(Palette.ink)
+        .tint(Palette.toggle)
     }
 }
 
