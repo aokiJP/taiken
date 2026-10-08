@@ -75,7 +75,7 @@ struct EntryDetailView: View {
                     } else if entry.isSelfRecorded {
                         Text(entry.elementLabels.isEmpty
                             ? "自分で見つけて、記した体験です。"
-                            : "自分で見つけて、記した体験です。\(entry.elementLabels.joined(separator: "・"))に、経験が積もりました。")
+                            : "自分で見つけて、記した体験です。\(entry.elementLabels.map { "「\($0)」" }.joined())に、経験が積もりました。")
                             .font(.footnote)
                             .foregroundStyle(Palette.ink2)
                             .fixedSize(horizontal: false, vertical: true)
@@ -174,7 +174,7 @@ struct EntryDetailView: View {
                 dismiss()
             }
         } message: {
-            Text("印と、ひとことが消えます。元に戻せません。")
+            Text("印と、ひとことが消えます。この記録で積もった経験も無くなります (身についた技は残ります)。元に戻せません。")
         }
     }
 

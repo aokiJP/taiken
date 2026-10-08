@@ -84,7 +84,7 @@ struct JournalView: View {
         ) { entry in
             Button("削除", role: .destructive) { delete(entry) }
         } message: { entry in
-            Text("「\(entry.title)」の印と、ひとことが消えます。元に戻せません。")
+            Text("「\(entry.title)」の印と、ひとことが消えます。この記録で積もった経験も無くなります (身についた技は残ります)。元に戻せません。")
         }
     }
 

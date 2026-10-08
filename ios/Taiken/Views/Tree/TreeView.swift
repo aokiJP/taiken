@@ -305,7 +305,7 @@ struct TreeView: View {
                         Button {
                             choose(element: element.id)
                         } label: {
-                            SkyCapsuleLabel(title: "芽を見る", systemImage: "leaf")
+                            SkyCapsuleLabel(title: "芽を見る", systemImage: "leaf.fill")
                         }
                         .buttonStyle(.plain)
                         .accessibilityHint("芽が出ている要素へ寄ります")
@@ -383,7 +383,7 @@ struct TreeView: View {
 
     private func learnButtonTitle(for node: TreeNode) -> String {
         if case .available(let charge) = model.tree.check(node.id), let element = model.tree.element(charge) {
-            return "\(element.label)の芽を使って伸ばす"
+            return "\(element.quoted)の芽を使って伸ばす"
         }
         return "伸ばす"
     }
@@ -613,6 +613,8 @@ struct SkyCapsuleLabel: View {
         Label(title, systemImage: systemImage)
             .font(.callout)
             .foregroundStyle(Palette.ink)
+            // 短い札なので、縮めて「芽を…」と切らない (並んだ札の幅の見積もりで、切れることがあった)
+            .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, 18)
             .padding(.vertical, 12)
             .background(.ultraThinMaterial, in: Capsule())

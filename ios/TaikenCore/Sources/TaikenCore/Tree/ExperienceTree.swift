@@ -180,7 +180,7 @@ public struct Requirement: Sendable, Equatable {
         ranks.map { "\($0.element.label) \(Ranks.label($0.need))" }.joined(separator: "・")
     }
 
-    /// 「『遠目』『棚の外』『色を拾う』のうち2つ」「『目を留める』」
+    /// 「『遠目』『隅々』『色を拾う』のうち2つ」「『目を留める』」
     public var afterText: String? {
         guard !after.isEmpty, needs > 0 else { return nil }
         let names = after.map { "「\($0.title)」" }.joined()

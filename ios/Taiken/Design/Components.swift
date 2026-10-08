@@ -108,40 +108,43 @@ struct FlowLayout: Layout {
     var spacing: CGFloat = 8
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let maxWidth = proposal.width ?? .infinity
+        arrange(subviews, maxWidth: proposal.width ?? .infinity).size
+    }
+
+    /// 測ったときと同じ幅で折り返す。置く枠の幅は、測った幅より画素の丸めでわずかに狭くなることがあり、
+    /// 枠の幅で折り返し直すと、測ったより一行多くなって下の文字に重なる (記したところの「経験」で起きていた)
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let rows = arrange(subviews, maxWidth: proposal.width ?? bounds.width)
+        for (index, subview) in subviews.enumerated() {
+            let origin = rows.origins[index]
+            subview.place(
+                at: CGPoint(x: bounds.minX + origin.x, y: bounds.minY + origin.y), proposal: ProposedViewSize(rows.sizes[index])
+            )
+        }
+    }
+
+    private func arrange(_ subviews: Subviews, maxWidth: CGFloat) -> (origins: [CGPoint], sizes: [CGSize], size: CGSize) {
+        var origins: [CGPoint] = []
+        var sizes: [CGSize] = []
         var x: CGFloat = 0
         var y: CGFloat = 0
         var rowHeight: CGFloat = 0
         var widest: CGFloat = 0
         for subview in subviews {
             let size = subview.sizeThatFits(.unspecified)
-            if x > 0, x + size.width > maxWidth {
+            // 半ポイントまでのはみ出しは、丸めの誤差として同じ行に置く
+            if x > 0, x + size.width > maxWidth + 0.5 {
                 y += rowHeight + spacing
                 x = 0
                 rowHeight = 0
             }
+            origins.append(CGPoint(x: x, y: y))
+            sizes.append(size)
             widest = max(widest, x + size.width)
             x += size.width + spacing
             rowHeight = max(rowHeight, size.height)
         }
-        return CGSize(width: widest, height: y + rowHeight)
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        var x = bounds.minX
-        var y = bounds.minY
-        var rowHeight: CGFloat = 0
-        for subview in subviews {
-            let size = subview.sizeThatFits(.unspecified)
-            if x > bounds.minX, x + size.width > bounds.maxX {
-                y += rowHeight + spacing
-                x = bounds.minX
-                rowHeight = 0
-            }
-            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
-            x += size.width + spacing
-            rowHeight = max(rowHeight, size.height)
-        }
+        return (origins, sizes, CGSize(width: widest, height: y + rowHeight))
     }
 }
 

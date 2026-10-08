@@ -112,7 +112,7 @@ struct SettingsView: View {
 
     private var consentSection: some View {
         Section {
-            Toggle("予定を体験づくりに使う", isOn: $useCalendar)
+            Toggle("予定をきっかけに使う", isOn: $useCalendar)
             Toggle("予定のタイトルも使う", isOn: $sendEventTitles)
                 .disabled(!useCalendar)
             Toggle("最近の会話をきっかけに使う", isOn: $useChatContext)

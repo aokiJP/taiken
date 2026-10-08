@@ -142,7 +142,7 @@ public final class TreeSource {
         public var errorDescription: String? {
             switch self {
             case .locked(let sentence): "まだ届きません。\(sentence)"
-            case .noSprout(let element): "\(element)の芽がありません。\(element)の段が上がると、芽が出ます。"
+            case .noSprout(let element): "「\(element)」の芽がありません。「\(element)」の段が上がると、芽が出ます。"
             case .unavailable: "この技は伸ばせません。"
             }
         }

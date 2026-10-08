@@ -73,6 +73,18 @@ struct HomeView: View {
                             MoodChips(selected: model.mood, palette: palette) { mood in
                                 Task { await model.choose(mood: mood) }
                             }
+                            // きっかけを見ているあいだも、自分で見つけた体験はいつでも記せる (断らなくてよい)
+                            Button {
+                                sheet = .record
+                            } label: {
+                                Label("自分で見つけた体験を記す", systemImage: "square.and.pencil")
+                                    .font(.footnote)
+                                    .foregroundStyle(palette.onSky)
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.leading, 4)
+                            .accessibilityHint("きっかけはそのままに、いつもの一日で体験したことを記します")
+                            .accessibilityIdentifier("home.record.aside")
                         }
                         if !model.todayEntries.isEmpty {
                             TodayStamps(entries: model.todayEntries, palette: palette, open: openJournal)
@@ -248,7 +260,8 @@ struct HomeHeader: View {
                     .font(.footnote)
                     .tracking(0.8)
                     .foregroundStyle(palette.onSkySecondary)
-                Text("\(time.greeting)。\nいつもの一日に、体験はある。")
+                // 「体験|はある」のように途中で折り返さないよう、句の切れ目で改行する
+                Text("\(time.greeting)。\nいつもの一日に、\n体験はある。")
                     .font(Typeface.mincho(21, relativeTo: .title2))
                     .lineSpacing(4)
                     .foregroundStyle(palette.onSky)

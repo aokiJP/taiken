@@ -19,6 +19,10 @@ public struct TaikenContent: Decodable, Sendable {
         public let root: String
         /// AIが作った体験の要素を推し量るための手がかり
         public let keywords: [String]
+
+        /// 文の中で使うときの名前 (「見る」)。要素の名前は「休む」「人と」のような動詞や助詞で終わるので、
+        /// 「に」「の」「が」を続けるときは鉤括弧でくくる (「人と」に芽が出ています)
+        public var quoted: String { "「\(label)」" }
     }
 
     public struct Theme: Decodable, Sendable, Hashable, Identifiable {
@@ -235,4 +239,12 @@ public struct TaikenContent: Decodable, Sendable {
         )
         return TaikenContent(version: 0, elements: [see], themes: [], moods: [], experiences: [everyday])
     }()
+}
+
+extension Array where Element == TaikenContent.Element {
+    /// 文の中で要素を並べるとき。二つまでは「見る」「聴く」、三つ以上は「五つの要素」(長い列にしない。どれかは印で見える)
+    public var phrase: String {
+        if count <= 2 { return map(\.quoted).joined() }
+        return count >= 10 ? "十の要素" : "\(Ranks.kanji(count))つの要素"
+    }
 }

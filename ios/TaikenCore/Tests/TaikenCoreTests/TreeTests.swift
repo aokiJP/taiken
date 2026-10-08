@@ -52,6 +52,17 @@ final class SkillBookTests: XCTestCase {
         XCTAssertEqual(book.skill("flash-tone")?.flash?.allElements, 1)
     }
 
+    /// 技は「やること」ではなく、身につく見方や力。稽古 (体験ライブラリの体験) と同じ名前にしない
+    func testSkillsAreNamedAsAbilitiesNotAsExperiences() {
+        let titles = Set(TaikenContent.shared.experiences.map(\.title))
+        for skill in SkillBook.shared.skills {
+            XCTAssertFalse(titles.contains(skill.name), "\(skill.id): 「\(skill.name)」は体験ライブラリの体験の名前")
+            XCTAssertTrue(skill.ability.hasSuffix("。"), skill.id)
+            XCTAssertNil(skill.ability.range(of: "[一二三四五六七八九十]段", options: .regularExpression), "\(skill.id): 段は要素の深さの言葉")
+        }
+        XCTAssertEqual(TaikenContent.shared.element("people")?.quoted, "「人と」")
+    }
+
     func testEmptyBookKeepsTheAppRunning() {
         let tree = TreeBuilder.build(book: .empty, garden: .empty, entries: [selfEntry("空", ["see"])], calendar: tokyoCalendar)
         XCTAssertEqual(tree.nodes.count, 10, "根だけになる")
@@ -189,7 +200,7 @@ final class TreeBuilderTests: XCTestCase {
         let entries = selfEntries(21, ["see"])
         let one = buildTree(entries, garden: Garden(learned: learned(["see-tomeru", "see-chigai", "see-toome"])))
         XCTAssertEqual(one.state(of: "see-manazashi"), .sensed)
-        XCTAssertEqual(one.requirement(of: "see-manazashi")?.afterText, "「遠目」「棚の外」「色を拾う」のうち二つ")
+        XCTAssertEqual(one.requirement(of: "see-manazashi")?.afterText, "「遠目」「隅々」「色を拾う」のうち二つ")
         let two = buildTree(entries, garden: Garden(learned: learned(["see-tomeru", "see-chigai", "see-toome", "see-tana"])))
         XCTAssertEqual(two.state(of: "see-manazashi"), .ready)
         XCTAssertEqual(two.node("see-manazashi")?.kindLabel, "奥義")
@@ -254,7 +265,7 @@ final class TreeBuilderTests: XCTestCase {
 
         let tree = buildTree([selfEntry("温かいお茶", ["taste", "smell", "touch"])])
         let flash = tree.node("flash-gokan")
-        XCTAssertEqual(flash?.found, "ひとつの体験で、三つの要素に触れたとき")
+        XCTAssertEqual(flash?.found, "ひとつの体験で、ふたつの感覚を含む三つの要素に触れたとき")
         XCTAssertEqual(tree.state(of: "flash-gokan"), .learned)
         XCTAssertEqual(tree.glyph(of: flash!), "閃")
         XCTAssertEqual(tree.hiddenFlashes, 8)
@@ -346,6 +357,27 @@ final class TreeBuilderTests: XCTestCase {
         let since = GrowthReport.since(nothing: after)
         XCTAssertEqual(since.rankUps.first(where: { $0.element.id == "see" })?.to, 2)
         XCTAssertTrue(GrowthReport.empty.isEmpty)
+    }
+
+    /// 記録を消して段が下がり、同じ段へ戻っても、その段の芽はもう使っているので新しくは出ない
+    func testRegainingARankAfterDeletingARecordBringsNoNewSprout() {
+        let garden = Garden(learned: learned(["see-tomeru", "see-chigai"]))
+        let three = selfEntries(3, ["see"])
+        XCTAssertEqual(buildTree(three, garden: garden).progress(of: "see").sprouts, 0, "二段の芽は二つとも使った")
+
+        let afterDeletion = Array(three.dropLast())
+        let before = buildTree(afterDeletion, garden: garden)
+        XCTAssertEqual(before.progress(of: "see").rank, 1)
+        XCTAssertEqual(before.state(of: "see-chigai"), .learned, "身についた技は、記録を消しても残る")
+
+        let entry = selfEntry("また遠くを眺めた", ["see"])
+        let after = buildTree(afterDeletion + [entry], garden: garden)
+        let report = GrowthReport.between(before, after, gained: entry.elements)
+        XCTAssertEqual(report.rankUps.map(\.to), [2])
+        XCTAssertEqual(report.rankUps.first?.sprouts, 0)
+
+        let fresh = GrowthReport.between(buildTree(selfEntries(2, ["hear"])), buildTree(selfEntries(3, ["hear"])), gained: ["hear"])
+        XCTAssertEqual(fresh.rankUps.first?.sprouts, 1)
     }
 }
 
@@ -751,7 +783,7 @@ final class TreeViewModelTests: XCTestCase {
         XCTAssertEqual(empty.summary, "まだ経験はありません。ホームから体験を記すと、触れた要素に経験が積もり、段が上がります。")
         XCTAssertTrue(empty.hasHiddenFlashes)
         let (sprouting, _) = make([selfEntry("空", ["see", "hear"])])
-        XCTAssertEqual(sprouting.summary, "見る・聴くに芽が出ています。どの技へ伸ばすかを、選べます。")
+        XCTAssertEqual(sprouting.summary, "「見る」「聴く」に芽が出ています。どの技へ伸ばすかを、選べます。")
         let (grown, _) = make([selfEntry("空", ["see"])], garden: Garden(learned: learned(["see-tomeru"])))
         XCTAssertEqual(grown.summary, "最近身についたのは「目を留める」。年輪は一。")
     }
@@ -775,8 +807,8 @@ final class TreeViewModelTests: XCTestCase {
         let model = TreeViewModel(source: trees, onStart: { _ in }, onChange: { changes += 1 })
         let now = referenceDate.addingTimeInterval(3600)
         XCTAssertEqual(model.caption(of: ExperienceTree.rootID("see")), "見る 二段 · 次の段まで あと3 · 芽 2")
-        XCTAssertEqual(model.caption(of: ExperienceTree.rootID("move")), "動くの根 · 記すと経験が積もります")
-        XCTAssertEqual(model.caption(of: "see-tomeru"), "伸ばせます · 見るの芽を使います")
+        XCTAssertEqual(model.caption(of: ExperienceTree.rootID("move")), "「動く」の根 · 記すと経験が積もります")
+        XCTAssertEqual(model.caption(of: "see-tomeru"), "伸ばせます · 「見る」の芽を使います")
         XCTAssertEqual(model.caption(of: "hear-sumasu"), "気配 · 聴く 一段")
         XCTAssertEqual(model.caption(of: "see-toome"), "霧の中 · 隣の技が身につくと、名前が見えてきます")
         XCTAssertEqual(model.caption(of: "flash-gokan", now: now, calendar: tokyoCalendar), "閃き · 7日前")
@@ -786,9 +818,9 @@ final class TreeViewModelTests: XCTestCase {
         XCTAssertEqual(model.caption(of: "see-tomeru"), "身についた技 · 守")
         XCTAssertEqual(model.caption(of: "see-toome"), "気配 · 見る 三段、「目を留める」が身についていること")
         XCTAssertTrue(model.learn("see-chigai"))
-        XCTAssertEqual(model.caption(of: "see-hikari"), "条件はそろいました · 見るの段が上がると、芽が出ます")
+        XCTAssertEqual(model.caption(of: "see-hikari"), "条件はそろいました · 「見る」の段が上がると、芽が出ます")
         XCTAssertFalse(model.learn("see-hikari"))
-        XCTAssertEqual(model.errorMessage, "見るの芽がありません。見るの段が上がると、芽が出ます。")
+        XCTAssertEqual(model.errorMessage, "「見る」の芽がありません。「見る」の段が上がると、芽が出ます。")
         XCTAssertEqual(model.practices(of: "see-tomeru").map(\.id), ["root-see", "work-desk-map"])
         XCTAssertTrue(model.practices(of: "see-toome").isEmpty == false, "気配の技の稽古は見られる")
         XCTAssertTrue(model.practices(of: "see-manazashi").isEmpty, "霧の中の技の稽古は見せない")
@@ -861,7 +893,7 @@ final class VaultExportTests: XCTestCase {
         XCTAssertTrue(page.contains("[[違いの目]] — 見ること"))
         XCTAssertTrue(page.contains("窓の外をじっと眺めた"))
         XCTAssertTrue(page.contains("「水滴が地図みたい」"))
-        XCTAssertNil(byPath["技/棚の外.md"], "霧の中の技は書き出さない")
+        XCTAssertNil(byPath["技/隅々.md"], "霧の中の技は書き出さない")
         let day = try XCTUnwrap(byPath["体験帳/2026-10-07.md"])
         XCTAssertTrue(day.contains("窓の外をじっと眺めた — [[見る]] · 技: [[目を留める]]"))
         XCTAssertEqual(Set(files.map(\.path)).count, files.count, "同じパスは無い")

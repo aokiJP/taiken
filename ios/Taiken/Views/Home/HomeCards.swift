@@ -374,7 +374,7 @@ struct TreeStatusCard: View {
     private var headline: String {
         let sprouting = tree.sproutingElements
         if !sprouting.isEmpty {
-            return "\(sprouting.map(\.label).joined(separator: "・"))に、芽が出ています。"
+            return "\(sprouting.phrase)に、芽が出ています。"
         }
         if tree.totalRank == 0 {
             return "体験は、もう一日の中にある。"
@@ -593,7 +593,7 @@ struct CompletedCard: View {
 
                 VStack(spacing: 6) {
                     if let element = sproutToUse {
-                        Button("\(element.label)の芽を使って、技を伸ばす") {
+                        Button("\(element.quoted)の芽を使って、技を伸ばす") {
                             openTree(ExperienceTree.rootID(element.id))
                         }
                         .buttonStyle(ShuButtonStyle(compact: true))
@@ -649,12 +649,14 @@ struct CompletedCard: View {
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
                     ElementMark(glyph: up.element.glyph, size: 22, color: Palette.shu)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("\(up.element.label)が\(Ranks.label(up.to))に")
+                        Text("\(up.element.quoted)が\(Ranks.label(up.to))に")
                             .font(.experienceTitle)
                             .foregroundStyle(Palette.ink)
-                        Text(up.to - up.from > 1 ? "芽が\(Ranks.kanji(up.to - up.from))つ出ました。" : "芽がひとつ出ました。")
-                            .font(.caption)
-                            .foregroundStyle(Palette.shu)
+                        if up.sprouts > 0 {
+                            Text(up.sprouts > 1 ? "芽が\(Ranks.kanji(up.sprouts))つ出ました。" : "芽がひとつ出ました。")
+                                .font(.caption)
+                                .foregroundStyle(Palette.shu)
+                        }
                     }
                     Spacer(minLength: 0)
                 }

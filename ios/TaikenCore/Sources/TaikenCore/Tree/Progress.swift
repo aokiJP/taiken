@@ -104,6 +104,15 @@ public struct GrowthReport: Sendable, Equatable {
         public let element: ExperienceElement
         public let from: Int
         public let to: Int
+        /// この段で新しく出た芽。記録を消したあとに同じ段へ戻ったときは、その段の芽をもう使っているので 0
+        public let sprouts: Int
+
+        public init(element: ExperienceElement, from: Int, to: Int, sprouts: Int? = nil) {
+            self.element = element
+            self.from = from
+            self.to = to
+            self.sprouts = max(0, sprouts ?? (to - from))
+        }
     }
 
     public struct Deepened: Sendable, Equatable, Identifiable {
@@ -145,9 +154,11 @@ public struct GrowthReport: Sendable, Equatable {
         let gains = after.content.knownElements(elements).compactMap { after.element($0) }
         var rankUps: [RankUp] = []
         for element in after.elements {
-            let old = before.progress(of: element.id).rank
-            let new = after.progress(of: element.id).rank
-            if new > old { rankUps.append(RankUp(element: element, from: old, to: new)) }
+            let old = before.progress(of: element.id)
+            let new = after.progress(of: element.id)
+            if new.rank > old.rank {
+                rankUps.append(RankUp(element: element, from: old.rank, to: new.rank, sprouts: new.sprouts - old.sprouts))
+            }
         }
         let flashes = after.nodes.filter { $0.kind == .flash && before.node($0.id) == nil }
         var deepened: [Deepened] = []
@@ -167,8 +178,8 @@ public struct GrowthReport: Sendable, Equatable {
         GrowthReport(
             gains: [],
             rankUps: tree.elements.compactMap { element in
-                let rank = tree.progress(of: element.id).rank
-                return rank > 0 ? RankUp(element: element, from: 0, to: rank) : nil
+                let progress = tree.progress(of: element.id)
+                return progress.rank > 0 ? RankUp(element: element, from: 0, to: progress.rank, sprouts: progress.sprouts) : nil
             },
             flashes: tree.nodes.filter { $0.kind == .flash },
             deepened: [],

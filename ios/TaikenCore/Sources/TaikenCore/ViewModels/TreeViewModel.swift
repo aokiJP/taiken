@@ -95,8 +95,7 @@ public final class TreeViewModel {
     public var summary: String {
         let sprouting = tree.sproutingElements
         if !sprouting.isEmpty {
-            let names = sprouting.map(\.label).joined(separator: "・")
-            return "\(names)に芽が出ています。どの技へ伸ばすかを、選べます。"
+            return "\(sprouting.phrase)に芽が出ています。どの技へ伸ばすかを、選べます。"
         }
         if let latest = tree.learnedNodes.first {
             return "最近身についたのは「\(latest.title)」。年輪は\(Ranks.kanji(tree.totalRank))。"
@@ -182,7 +181,7 @@ public final class TreeViewModel {
         guard let node = tree.node(id) else { return "" }
         if node.isRoot {
             let progress = tree.progress(of: node.primaryElement)
-            guard progress.rank > 0 else { return "\(node.title)の根 · 記すと経験が積もります" }
+            guard progress.rank > 0 else { return "「\(node.title)」の根 · 記すと経験が積もります" }
             var text = "\(node.title) \(Ranks.label(progress.rank)) · 次の段まで あと\(progress.remaining)"
             if progress.sprouts > 0 { text += " · 芽 \(progress.sprouts)" }
             return text
@@ -199,9 +198,9 @@ public final class TreeViewModel {
         case .ready:
             switch tree.check(id) {
             case .available(let charge):
-                return "伸ばせます · \(content.element(charge)?.label ?? "")の芽を使います"
+                return "伸ばせます · \(content.element(charge)?.quoted ?? "")の芽を使います"
             case .needsSprout(let elements):
-                let names = elements.compactMap { content.element($0)?.label }.joined(separator: "か")
+                let names = elements.compactMap { content.element($0)?.quoted }.joined(separator: "か")
                 return "条件はそろいました · \(names)の段が上がると、芽が出ます"
             default:
                 return "育てられる技"

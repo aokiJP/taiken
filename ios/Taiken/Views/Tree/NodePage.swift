@@ -307,13 +307,13 @@ struct NodePage: View {
 
     private func learnTitle(_ check: LearnCheck) -> String {
         if case .available(let charge) = check, let element = model.tree.element(charge) {
-            return "\(element.label)の芽を使って伸ばす"
+            return "\(element.quoted)の芽を使って伸ばす"
         }
         return "伸ばす"
     }
 
     private func sproutHint(_ elements: [String]) -> String {
-        let names = elements.compactMap { model.tree.element($0)?.label }.joined(separator: "か")
+        let names = elements.compactMap { model.tree.element($0)?.quoted }.joined(separator: "か")
         return "条件はそろっています。\(names)の段が上がると芽が出て、伸ばせます。"
     }
 
@@ -548,7 +548,7 @@ struct RequirementBox: View {
                     conditionRow(
                         met: need.isMet,
                         text: "\(need.element.label) \(Ranks.label(need.need))",
-                        detail: need.isMet ? "いま\(Ranks.label(need.have))" : "いま\(Ranks.label(need.have))"
+                        detail: "いま\(Ranks.label(need.have))"
                     )
                 }
                 if let after = requirement.afterText {

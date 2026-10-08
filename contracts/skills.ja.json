@@ -62,8 +62,8 @@
       "kind": "art",
       "element": "see",
       "also": [],
-      "name": "光を見る",
-      "reading": "ひかりをみる",
+      "name": "光と影",
+      "reading": "ひかりとかげ",
       "ability": "光の色や、影のかたちが目に入ってくる。",
       "after": [],
       "needs": 0,
@@ -119,8 +119,8 @@
       "kind": "art",
       "element": "see",
       "also": [],
-      "name": "棚の外",
-      "reading": "たなのそと",
+      "name": "隅々",
+      "reading": "すみずみ",
       "ability": "見慣れた場所にも、まだ見ていない一角を見つけられる。",
       "after": [
         "see-chigai"
@@ -356,7 +356,7 @@
       "also": [],
       "name": "音の景色",
       "reading": "おとのけしき",
-      "ability": "目を閉じても、音だけでいる場所の景色が浮かぶ。",
+      "ability": "目を閉じても、音だけでその場の景色が浮かぶ。",
       "after": [
         "hear-toomimi",
         "hear-ma",
@@ -403,8 +403,8 @@
       "kind": "art",
       "element": "smell",
       "also": [],
-      "name": "外のひと息",
-      "reading": "そとのひといき",
+      "name": "ひと息目",
+      "reading": "ひといきめ",
       "ability": "外へ出た最初のひと息で、その日の空気が分かる。",
       "after": [],
       "needs": 0,
@@ -479,8 +479,8 @@
       "kind": "art",
       "element": "smell",
       "also": [],
-      "name": "匂いの境目",
-      "reading": "においのさかいめ",
+      "name": "歩く鼻",
+      "reading": "あるくはな",
       "ability": "歩いていて、匂いが切り替わる場所が分かる。",
       "after": [
         "smell-soto"
@@ -556,7 +556,7 @@
       "also": [],
       "name": "ひと口目",
       "reading": "ひとくちめ",
-      "ability": "ひと口目の味を、意識して受け取れる。",
+      "ability": "食べはじめの味を、意識して受け取れる。",
       "after": [],
       "needs": 0,
       "rank": {
@@ -578,8 +578,8 @@
       "kind": "art",
       "element": "taste",
       "also": [],
-      "name": "水の味",
-      "reading": "みずのあじ",
+      "name": "利き水",
+      "reading": "ききみず",
       "ability": "水やお茶にも、味の違いがあると分かる。",
       "after": [],
       "needs": 0,
@@ -601,8 +601,8 @@
       "kind": "art",
       "element": "taste",
       "also": [],
-      "name": "知らない一品",
-      "reading": "しらないいっぴん",
+      "name": "新しもの好き",
+      "reading": "あたらしものずき",
       "ability": "知らない味を、ためらわずに選べる。",
       "after": [],
       "needs": 0,
@@ -624,8 +624,8 @@
       "kind": "art",
       "element": "taste",
       "also": [],
-      "name": "最後のひと口",
-      "reading": "さいごのひとくち",
+      "name": "味の余韻",
+      "reading": "あじのよいん",
       "ability": "食べ終わりの味まで、覚えていられる。",
       "after": [
         "taste-hitokuchi"
@@ -679,8 +679,8 @@
       "kind": "art",
       "element": "taste",
       "also": [],
-      "name": "一皿の旅",
-      "reading": "ひとさらのたび",
+      "name": "皿の向こう",
+      "reading": "さらのむこう",
       "ability": "食材が、どこから来たのかを思い描ける。",
       "after": [
         "taste-shiranai"
@@ -731,9 +731,9 @@
       "kind": "art",
       "element": "touch",
       "also": [],
-      "name": "手ざわり",
-      "reading": "てざわり",
-      "ability": "触れているものの、温度や手ざわりが分かる。",
+      "name": "指先",
+      "reading": "ゆびさき",
+      "ability": "触れているものの、温度やきめの違いが分かる。",
       "after": [],
       "needs": 0,
       "rank": {
@@ -783,8 +783,8 @@
       "kind": "art",
       "element": "touch",
       "also": [],
-      "name": "手が覚えている",
-      "reading": "てがおぼえている",
+      "name": "手つき",
+      "reading": "てつき",
       "ability": "無意識にしている動作を、意識してなぞれる。",
       "after": [],
       "needs": 0,
@@ -935,8 +935,8 @@
       "kind": "art",
       "element": "move",
       "also": [],
-      "name": "伸び",
-      "reading": "のび",
+      "name": "体の声",
+      "reading": "からだのこえ",
       "ability": "体がいちばん気持ちよく伸びる方向が分かる。",
       "after": [],
       "needs": 0,
@@ -961,8 +961,8 @@
       "kind": "art",
       "element": "move",
       "also": [],
-      "name": "ひと筋ちがう道",
-      "reading": "ひとすじちがうみち",
+      "name": "脇道",
+      "reading": "わきみち",
       "ability": "いつもと違う道を、気軽に選べる。",
       "after": [],
       "needs": 0,
@@ -985,8 +985,8 @@
       "kind": "art",
       "element": "move",
       "also": [],
-      "name": "ゆっくり歩く",
-      "reading": "ゆっくりあるく",
+      "name": "そぞろ歩き",
+      "reading": "そぞろあるき",
       "ability": "急がない足で、景色の速さを変えられる。",
       "after": [
         "move-hakobi"
@@ -1009,8 +1009,8 @@
       "kind": "art",
       "element": "move",
       "also": [],
-      "name": "呼吸の深さ",
-      "reading": "こきゅうのふかさ",
+      "name": "息の底",
+      "reading": "いきのそこ",
       "ability": "体を動かしながら、息がいちばん深くなる瞬間が分かる。",
       "after": [
         "move-nobi"
@@ -1034,8 +1034,8 @@
       "kind": "art",
       "element": "move",
       "also": [],
-      "name": "景色を持ち帰る",
-      "reading": "けしきをもちかえる",
+      "name": "道すがら",
+      "reading": "みちすがら",
       "ability": "動いた先で出会った景色を、ひとつ持ち帰れる。",
       "after": [
         "move-michi"
@@ -1087,9 +1087,9 @@
       "kind": "art",
       "element": "pause",
       "also": [],
-      "name": "手を止める",
-      "reading": "てをとめる",
-      "ability": "切り替わりの前に、ひと呼吸おける。",
+      "name": "ひと呼吸",
+      "reading": "ひとこきゅう",
+      "ability": "切り替わりの前に、少し立ち止まれる。",
       "after": [],
       "needs": 0,
       "rank": {
@@ -1134,8 +1134,8 @@
       "kind": "art",
       "element": "pause",
       "also": [],
-      "name": "ひとつだけ",
-      "reading": "ひとつだけ",
+      "name": "一心",
+      "reading": "いっしん",
       "ability": "並行していることを、ひとつに絞れる。",
       "after": [],
       "needs": 0,
@@ -1156,8 +1156,8 @@
       "kind": "art",
       "element": "pause",
       "also": [],
-      "name": "待つ時間",
-      "reading": "まつじかん",
+      "name": "待ち上手",
+      "reading": "まちじょうず",
       "ability": "待つあいだを、空白ではなく景色として過ごせる。",
       "after": [
         "pause-tomeru"
@@ -1181,8 +1181,8 @@
       "kind": "art",
       "element": "pause",
       "also": [],
-      "name": "夜の暗さ",
-      "reading": "よるのくらさ",
+      "name": "夜の帳",
+      "reading": "よるのとばり",
       "ability": "眠る前の暗さを、味わえる。",
       "after": [
         "pause-nanimo"
@@ -1208,8 +1208,8 @@
       "kind": "art",
       "element": "pause",
       "also": [],
-      "name": "画面を置く",
-      "reading": "がめんをおく",
+      "name": "画面の外",
+      "reading": "がめんのそと",
       "ability": "画面から離れて、目の前のことに向き合える。",
       "after": [
         "pause-hitotsu"
@@ -1236,7 +1236,7 @@
       "also": [],
       "name": "余白",
       "reading": "よはく",
-      "ability": "忙しい日の中にも、自分の余白をつくれる。",
+      "ability": "忙しい日の中にも、自分のための間をつくれる。",
       "after": [
         "pause-matsu",
         "pause-yoru",
@@ -1307,8 +1307,8 @@
       "kind": "art",
       "element": "think",
       "also": [],
-      "name": "選んだ理由",
-      "reading": "えらんだりゆう",
+      "name": "決め手",
+      "reading": "きめて",
       "ability": "なぜそれを選んだのかを、一言で言える。",
       "after": [],
       "needs": 0,
@@ -1331,9 +1331,9 @@
       "kind": "art",
       "element": "think",
       "also": [],
-      "name": "一問の探偵",
-      "reading": "いちもんのたんてい",
-      "ability": "ひとつの問いを、一段深く掘れる。",
+      "name": "謎解き",
+      "reading": "なぞとき",
+      "ability": "ひとつの「なぜ」を、もう一歩深く掘れる。",
       "after": [
         "think-naze"
       ],
@@ -1358,8 +1358,8 @@
       "kind": "art",
       "element": "think",
       "also": [],
-      "name": "最初のひと区切り",
-      "reading": "さいしょのひとくぎり",
+      "name": "糸口",
+      "reading": "いとぐち",
       "ability": "重いことも、最初のひと区切りから始められる。",
       "after": [
         "think-tsumazuki"
@@ -1383,9 +1383,9 @@
       "kind": "art",
       "element": "think",
       "also": [],
-      "name": "昨日の自分",
-      "reading": "きのうのじぶん",
-      "ability": "昨日の自分と比べて、分かるようになったことに気づける。",
+      "name": "手応え",
+      "reading": "てごたえ",
+      "ability": "昨日より分かるようになったことに、気づける。",
       "after": [
         "think-riyuu"
       ],
@@ -1434,8 +1434,8 @@
       "kind": "art",
       "element": "word",
       "also": [],
-      "name": "一行で書く",
-      "reading": "いちぎょうでかく",
+      "name": "走り書き",
+      "reading": "はしりがき",
       "ability": "いまの気分や様子を、一行で書き留められる。",
       "after": [],
       "needs": 0,
@@ -1482,8 +1482,8 @@
       "kind": "art",
       "element": "word",
       "also": [],
-      "name": "手で書く",
-      "reading": "てでかく",
+      "name": "筆の運び",
+      "reading": "ふでのはこび",
       "ability": "手で書く文字の、速さと重さを感じられる。",
       "after": [],
       "needs": 0,
@@ -1506,8 +1506,8 @@
       "kind": "art",
       "element": "word",
       "also": [],
-      "name": "今日のひと言",
-      "reading": "きょうのひとこと",
+      "name": "見出し",
+      "reading": "みだし",
       "ability": "一日を、ひと言で言い表せる。",
       "after": [
         "word-ichigyo"
@@ -1533,7 +1533,7 @@
       "also": [],
       "name": "たとえる",
       "reading": "たとえる",
-      "ability": "気分や出来事を、何かにたとえられる。",
+      "ability": "気分や出来事を、天気や色のように言い表せる。",
       "after": [
         "word-nazukeru"
       ],
@@ -1558,7 +1558,7 @@
       "also": [],
       "name": "書き写す",
       "reading": "かきうつす",
-      "ability": "心に残った一文を、手で書き写せる。",
+      "ability": "心に残った一文を、手で写して味わえる。",
       "after": [
         "word-tegaki"
       ],
@@ -1607,8 +1607,8 @@
       "kind": "art",
       "element": "people",
       "also": [],
-      "name": "その人らしさ",
-      "reading": "そのひとらしさ",
+      "name": "持ち味",
+      "reading": "もちあじ",
       "ability": "会う人の、その人らしいところに気づける。",
       "after": [],
       "needs": 0,
@@ -1632,8 +1632,8 @@
       "kind": "art",
       "element": "people",
       "also": [],
-      "name": "最後まで聞く",
-      "reading": "さいごまできく",
+      "name": "聞き上手",
+      "reading": "ききじょうず",
       "ability": "相手の話を、最後まで聞いてから話せる。",
       "after": [],
       "needs": 0,
@@ -1705,9 +1705,9 @@
       "kind": "art",
       "element": "people",
       "also": [],
-      "name": "まだ聞いていない問い",
-      "reading": "まだきいていないとい",
-      "ability": "相手に、まだ聞いたことのない質問ができる。",
+      "name": "問いかけ",
+      "reading": "といかけ",
+      "ability": "身近な人にも、まだ聞いたことのない問いを向けられる。",
       "after": [
         "people-kiku"
       ],
@@ -1730,8 +1730,8 @@
       "kind": "art",
       "element": "people",
       "also": [],
-      "name": "名前で呼ぶ",
-      "reading": "なまえでよぶ",
+      "name": "呼びかけ",
+      "reading": "よびかけ",
       "ability": "話す相手を、名前で呼べる。",
       "after": [
         "people-soeru"
@@ -1758,7 +1758,7 @@
       "also": [],
       "name": "縁",
       "reading": "えん",
-      "ability": "人とのあいだに、小さなつながりを結べる。",
+      "ability": "人とのあいだの、小さなつながりを大事にできる。",
       "after": [
         "people-hyojo",
         "people-toi",
@@ -1787,7 +1787,7 @@
       ],
       "name": "見立て",
       "reading": "みたて",
-      "ability": "あるものを、別の何かに見立てて楽しめる。",
+      "ability": "あるものを、別の何かになぞらえて楽しめる。",
       "after": [
         "see-tomeru",
         "think-naze"
@@ -1813,9 +1813,9 @@
       "also": [
         "people"
       ],
-      "name": "すれ違う物語",
-      "reading": "すれちがうものがたり",
-      "ability": "すれ違う人の、このあとの物語を想像できる。",
+      "name": "物語の目",
+      "reading": "ものがたりのめ",
+      "ability": "すれ違う人の、このあとを想像できる。",
       "after": [
         "see-chigai",
         "people-rashisa"
@@ -1926,9 +1926,9 @@
       "also": [
         "pause"
       ],
-      "name": "ほどける",
-      "reading": "ほどける",
-      "ability": "体のこわばりに気づいて、ほどける。",
+      "name": "脱力",
+      "reading": "だつりょく",
+      "ability": "体のこわばりに気づいて、ゆるめられる。",
       "after": [
         "touch-teoboe",
         "pause-tomeru"
@@ -1958,7 +1958,7 @@
       ],
       "name": "体で覚える",
       "reading": "からだでおぼえる",
-      "ability": "体の動きを、手ざわりのように細かく感じられる。",
+      "ability": "動きのこつを、体の感覚でつかめる。",
       "after": [
         "move-hakobi",
         "touch-tezawari"
@@ -2127,8 +2127,8 @@
       "also": [
         "hear"
       ],
-      "name": "聞き手",
-      "reading": "ききて",
+      "name": "声の奥",
+      "reading": "こえのおく",
       "ability": "声と言葉と間から、相手の気持ちを聞き取れる。",
       "after": [
         "people-kiku",
@@ -2189,7 +2189,7 @@
       "name": "五感の交わり",
       "reading": "ごかんのまじわり",
       "ability": "ひとつの体験の中に、いくつもの感覚が重なっているのが分かる。",
-      "found": "ひとつの体験で、三つの要素に触れたとき",
+      "found": "ひとつの体験で、ふたつの感覚を含む三つの要素に触れたとき",
       "after": [],
       "needs": 0,
       "rank": {},
@@ -2337,8 +2337,8 @@
       "kind": "flash",
       "element": "move",
       "also": [],
-      "name": "極み",
-      "reading": "きわみ",
+      "name": "一筋",
+      "reading": "ひとすじ",
       "ability": "ひとつのことを、自分のものになるまで続けられる。",
       "found": "ひとつの技が、離に届いたとき",
       "after": [],

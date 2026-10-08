@@ -9,7 +9,8 @@ sync.sh から呼ばれる。問題があれば一覧を出して止まる。
 - 閃きは条件 (flash) と「閃いたとき」の一文を持ち、先の技・段・稽古を持たない
 - 先にあるとよい技 (after) が存在し、輪にならない。どの技も根からたどれる
 - 稽古はすべて体験ライブラリの体験。ライブラリのどの体験も、どれかの技の稽古になっている
-- できるようになること (ability) は「。」で終わる短い一文。季節の言葉は使わない
+- 技の名前は、体験ライブラリの体験の名前と重ならない (技は「やること」ではなく、身につく見方や力)
+- できるようになること (ability) は「。」で終わる短い一文。段の数 (一段・三段 …) と季節の言葉は使わない
 """
 import json
 import re
@@ -21,6 +22,8 @@ TIMES = {"dawn", "morning", "daytime", "evening", "night", "lateNight"}
 SEASON_WORDS = ("季節", "立春", "立夏", "立秋", "立冬", "節気", "七十二候", "旬", "春", "夏", "秋", "冬")
 ID = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 KANA = re.compile(r"^[ぁ-ゖー]+$")
+# 段は要素の深さを表すアプリの言葉なので、できるようになることの中では「一段深く」のようには使わない
+RANK_WORD = re.compile(r"[一二三四五六七八九十]段")
 
 
 def check(skills_doc, content):
@@ -32,6 +35,7 @@ def check(skills_doc, content):
         problems.append("mastery は 0 < ha < ri の整数")
     elements = [e["id"] for e in content["elements"]]
     library = {e["id"] for e in content["experiences"]}
+    library_titles = {e["title"] for e in content["experiences"]}
     skills = skills_doc.get("skills", [])
     by_id = {}
     for s in skills:
@@ -56,11 +60,15 @@ def check(skills_doc, content):
             problems.append(f"{i}: also は別の要素")
         if not (1 <= len(s["name"]) <= 10):
             problems.append(f"{i}: 名前は10文字まで")
+        if s["name"] in library_titles:
+            problems.append(f"{i}: 名前「{s['name']}」が体験ライブラリの体験と同じ (技は見方や力の名前にする)")
         if not KANA.match(s.get("reading", "")):
             problems.append(f"{i}: 読みはひらがな")
         ability = s.get("ability", "")
         if not ability.endswith("。") or len(ability) > 40:
             problems.append(f"{i}: ability は40文字までの、「。」で終わる一文")
+        if RANK_WORD.search(ability):
+            problems.append(f"{i}: ability に段の数を書かない (段は要素の深さの言葉)")
         text = s["name"] + ability + s.get("found", "")
         for word in SEASON_WORDS:
             if word in text:
