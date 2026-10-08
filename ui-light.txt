@@ -1,0 +1,7 @@
+Test Case '-[TaikenUITests.ExperienceFlowUITests testExperienceLoop]' started.
+Test Case '-[TaikenUITests.ExperienceFlowUITests testExperienceLoop]' passed (146.898 seconds).
+Test Case '-[TaikenUITests.ExperienceFlowUITests testOnboardingLeadsToHome]' started.
+Test Case '-[TaikenUITests.ExperienceFlowUITests testOnboardingLeadsToHome]' passed (18.465 seconds).
+	 Executed 2 tests, with 0 failures (0 unexpected) in 165.363 (165.366) seconds
+	 Executed 2 tests, with 0 failures (0 unexpected) in 165.363 (165.366) seconds
+	 Executed 2 tests, with 0 failures (0 unexpected) in 165.363 (165.367) seconds
