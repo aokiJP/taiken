@@ -53,6 +53,9 @@
 ### 開発
 - ウィジェット拡張ターゲット、App Group、アセットカタログを追加 (XcodeGen)
 - 実機用 IPA (署名なし) を作るワークフロー `.github/workflows/ipa.yml`
+- 画面の流れを最初から最後までたどる UI テストと、ライト/ダークのスクリーンショット (`.github/workflows/screens.yml`)
+- 日本語を開発言語にし、端末の言語にかかわらず日付と曜日を日本語で表示
+- SwiftData の保存先を使うクラスが ModelContainer を保持するように修正 (先に解放されると落ちる問題)
 - ブラウザで動くプロトタイプ `docs/prototype/taiken.html`
 
 ## 1.1.0

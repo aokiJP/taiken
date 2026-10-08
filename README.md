@@ -21,6 +21,10 @@
 - **アプリの外にも**: ウィジェット (今日の体験・七十二候)、体験中の Live Activity、朝の便り (一日一度・その日すでに触れていれば送らない)、ショートカット
 - **正直さ**: どのしくみが提案をつくったか (サーバーのAI / Apple Intelligence / 体験ライブラリ) をカードに出し、「次に渡す内容」を送る前に確かめられる。事実と推測は見た目で分ける
 
+![昼の空 (ライト): 今日の体験・体験中・印を押したところ・体験帳](docs/screenshots/overview-light.jpg)
+![夜の空 (ダーク): 今日の体験・体験中・印を押したところ・体験帳](docs/screenshots/overview-dark.jpg)
+
+iPhone 17 Pro (iOS 26) のシミュレータで、UI テストが体験の流れをたどりながら撮った画面です。ほかの場面は [docs/screenshots](docs/screenshots)。
 デザインの原則は [docs/DESIGN.md](docs/DESIGN.md)。ブラウザで動くプロトタイプは [docs/prototype/taiken.html](docs/prototype/taiken.html) (ダウンロードして開く)。
 
 ## 構成
@@ -91,6 +95,6 @@ Tailscale で iPhone からだけ繋がるようにし、アプリの「設定 �
 | iOS 中核 | `swift test`: Swift 6 言語モード、テスト138件 (季節の計算は国立天文台の2026年の暦と照合) | 全件成功 |
 | 契約 | Backend と iOS が同じ `contracts/` を検証。Backend は実際の出力も OpenAPI で検証 | 一致 |
 | 体験ライブラリ | `contracts/content.ja.json` を正として iOS・Backend にコピーし、バイト単位で一致を確認。選び方は Python の基準実装から作った14ケースを、Swift・TypeScript・プロトタイプの JavaScript が同じ結果で通る | 一致 |
-| アプリ・ウィジェット | CI の `ios-app` (シミュレータでビルドとテスト) と `IPA` (実機用ビルド) | Actions で確認 |
-
-アプリ層のテスト (`ios/TaikenTests`) は、SwiftData の v1 → v2 移行で体験帳が失われないこと、Keychain、ディープリンクなどを確認します。
+| アプリ層 | `TaikenTests` をシミュレータで: SwiftData の保存と v1 → v2 移行 (体験帳が失われない)、ディープリンク、依存の組み立て、Keychain (署名なしの CI では省略) | 全件成功 |
+| 画面の流れ | `TaikenUITests` をシミュレータ (iOS 26) で、ライト表示・ダーク表示の2回: はじめの案内 → 受け取る → 手がかり → 七十二候 → やってみる → 思い返して記す → 印 → 体験帳 → 記録 → 話す → 設定。各場面を撮影 (`Screens` ワークフロー) | 全件成功 |
+| 実機用ビルド | `IPA` ワークフロー: Xcode 26 / iOS 26 SDK でアプリとウィジェット拡張をビルドし、署名なしの IPA にまとめる | 成功 |
